@@ -1,0 +1,166 @@
+# GND     3.3
+
+
+esphome:
+  name: eh_dor_nor
+  platform: ESP8266
+  board: nodemcu
+  # ...
+
+wifi:
+  ssid: !secret wifi_ssid
+  password: !secret wifi_pass
+
+# Enable logging
+logger:
+  #level: VERY_VERBOSE
+
+# Enable Home Assistant API
+api:
+
+ota:
+
+i2c:
+
+pcf8574:
+  - id: 'pcf8574_hub'
+    address: 0x20
+    pcf8575: True
+
+output:
+  - platform: gpio
+    id: gpio_relay_1
+    pin:      
+      pcf8574: pcf8574_hub
+      number: 7
+      mode: OUTPUT
+      inverted: True
+  - platform: gpio
+    id: gpio_relay_2
+    pin:      
+      pcf8574: pcf8574_hub
+      number: 6
+      mode: OUTPUT
+      inverted: True
+  - platform: gpio
+    id: gpio_relay_3
+    pin:      
+      pcf8574: pcf8574_hub
+      number: 5
+      mode: OUTPUT
+      inverted: True
+  # - platform: gpio
+  #   id: gpio_relay_4
+  #   pin:      
+  #     pcf8574: pcf8574_hub
+  #     number: 4
+  #     mode: OUTPUT
+
+light:
+  - platform: binary
+    id: techo
+    name: "Dormitorio Norte Techo"
+    output: gpio_relay_1
+  - platform: binary
+    id: cama_pared
+    name: "Dormitorio Cama Pared"
+    output: gpio_relay_2
+  - platform: binary
+    id: cama_ventana
+    name: "Dormitorio Cama Ventana"
+    output: gpio_relay_3
+
+binary_sensor:
+  - platform: gpio
+    name: "Dormitorio norte Switch puerta 1"
+    internal: true
+    pin:
+      pcf8574: pcf8574_hub
+      number: 2 # ribbon purple / amarillo
+      mode: INPUT_PULLUP
+    on_state:
+      then:
+        - light.toggle: techo
+  - platform: gpio
+    name: "Dormitorio norte Switch puerta 2"
+    internal: true
+    filters:
+      - invert:
+    pin:
+      pcf8574: pcf8574_hub
+      number: 3 # ribbon white / marron 
+      mode: INPUT_PULLUP
+    on_state:
+      then:
+        - light.toggle: cama_pared
+  - platform: gpio
+    name: "Dormitorio norte Switch puerta 2"
+    internal: true
+    filters:
+      - invert:
+    pin:
+      pcf8574: pcf8574_hub
+      number: 8 # ribbon verde / rojo
+      mode: INPUT_PULLUP
+    on_state:
+      then:
+        - light.toggle: cama_ventana
+  - platform: gpio
+    name: "Dormitorio norte Switch cama pared 1"
+    internal: true
+    filters:
+      - invert:
+    pin:
+      pcf8574: pcf8574_hub
+      number: 0 # amarillo (sin cinta)
+      mode: INPUT_PULLUP
+    on_state:
+      then:
+        - light.toggle: cama_pared
+  - platform: gpio
+    name: "Dormitorio norte Switch cama pared 2"
+    internal: true
+    filters:
+      - invert:
+    pin:
+      pcf8574: pcf8574_hub
+      number: 1 # rojo (sin cinta)
+      mode: INPUT_PULLUP
+    on_state:
+      then:
+        - light.toggle: techo
+  - platform: gpio
+    name: "Dormitorio norte Switch cama ventana 1"
+    internal: true
+    filters:
+      - invert:
+    pin:
+      pcf8574: pcf8574_hub
+      number: 9 # pin debajo de ground # Azul (sin cinta)
+      mode: INPUT_PULLUP
+    on_state:
+      then:
+        - light.toggle: cama_ventana
+  - platform: gpio
+    name: "Dormitorio norte Switch cama ventana 2"
+    internal: true
+    filters:
+      - invert:
+    pin:
+      pcf8574: pcf8574_hub
+      number: 10 # pin debajo de 3.3 # Marron sin cinta
+      mode: INPUT_PULLUP
+    on_state:
+      then:
+        - light.toggle: techo
+  - platform: gpio
+    name: "Dormitorio norte Ventana"
+    device_class: window
+    pin:
+      pcf8574: pcf8574_hub
+      number: 14 # ribbon red / azul (con cinta)
+      mode: INPUT_PULLUP
+
+
+
+      

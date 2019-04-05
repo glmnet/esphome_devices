@@ -1,0 +1,20 @@
+esphome:
+  name: eh_dor_este
+  platform: ESP8266
+  board: nodemcu
+  # Use a local copy of ESPHome
+  esphome_core_version:
+    local: C:\glmgit\glmnet_esphome\esphome-core
+
+wifi:
+  ssid: !secret wifi_ssid
+  password: !secret wifi_pass
+
+api:
+  
+ota:
+
+i2c:
+
+logger:  
+  level: DEBUG

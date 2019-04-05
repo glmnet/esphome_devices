@@ -1,0 +1,108 @@
+esphome:
+  name: eh_patio
+  platform: ESP8266
+  board: nodemcu
+  # Use a local copy of ESPHome
+  includes:
+    - ape.h
+
+wifi:
+  ssid: !secret wifi_ssid
+  password: !secret wifi_pass
+
+api:
+  
+ota:
+
+i2c:
+
+logger:  
+  level: DEBUG
+
+custom_component:
+  - id: ape
+    lambda: |-
+      auto ape_component = new ArduinoPortExtender(i2ccomponent, 0x08);
+      return {ape_component};
+
+output:
+- platform: custom
+  type: binary
+  lambda: |-
+    return {ape_binary_output(ape, 7),
+            ape_binary_output(ape, 6),
+            ape_binary_output(ape, 5),
+            ape_binary_output(ape, 4)};
+  outputs:
+    - id: gpio_relay_1
+      inverted: true
+    - id: gpio_relay_2
+      inverted: true
+    - id: gpio_relay_3
+      inverted: true
+    - id: gpio_relay_4
+      inverted: true
+
+light:
+  - platform: binary
+    id: galeria
+    name: "Galeria"
+    output: gpio_relay_1
+  - platform: binary
+    id: patio_proyector_este
+    name: "Patio Proyector Este"
+    output: gpio_relay_2
+  - platform: binary
+    id: patio_proyector_oeste
+    name: "Patio Proyector Oeste"
+    output: gpio_relay_3
+
+switch:
+  - platform: output
+    id: sirena
+    name: "Sirena"
+    output: gpio_relay_4
+
+binary_sensor:
+  - platform: status
+    name: "Patio Status"
+  - platform: custom
+    lambda: |-
+      return {ape_binary_sensor(ape, 8),
+              ape_binary_sensor(ape, 9),
+              ape_binary_sensor(ape, 10),
+              ape_binary_sensor(ape, 0)};
+
+    binary_sensors:  
+      - name: "Puerta Frente"
+        device_class: door
+      - name: "Puerta Cocina"
+        device_class: door
+      - name: "Puerta Estudio"
+        device_class: door
+      - name: "Movimiento Galeria"
+        device_class: motion
+
+sensor:
+  - platform: custom
+    lambda: |-
+      auto my_sensor = new LM35Sensor(get_ape(ape), 1);
+      App.register_component(my_sensor);
+      return {my_sensor};
+    sensors:
+      - name: "Temperatura Galeria"
+        id: temperature
+        unit_of_measurement: °C
+        accuracy_decimals: 1
+
+###
+# module info:
+# Male Header: 
+# GND   |  GND  |  DI8 |  GND  |    NC
+# 12V   |  A1   |  5V  |  A0   |    NC
+
+# Female Header
+# GND  |  3.3V
+# DI9  |  DI10
+# DI13 |  DI11
+# DI12 |  NC

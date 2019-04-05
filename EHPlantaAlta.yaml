@@ -1,0 +1,20 @@
+esphome:
+  name: eh_planta_alta
+  platform: ESP8266
+  board: nodemcu
+  # ...
+
+wifi:
+  ssid: !secret wifi_ssid
+  password: !secret wifi_pass
+
+# Enable logging
+logger:
+  #level: VERY_VERBOSE
+
+# Enable Home Assistant API
+api:
+
+ota:
+
+i2c:
