@@ -10,3 +10,5 @@
 **/platformio.ini
 
 /secrets.yaml
+
+.vscode/
