@@ -2,6 +2,8 @@
 
 using namespace esphome;
 
+//#define APE_DEBUG // Must disable debug if using debug in other custom components for the __c causes a section type conflict with __c thingy
+
 static const char *TAGape = "ape";
 
 #define APE_CMD_DIGITAL_READ 0
@@ -78,7 +80,9 @@ class ArduinoPortExtender : public Component, public I2CDevice
     }
     void setup() override
     {
-        //ESP_LOGCONFIG(TAG, "Setting up ArduinoPortExtender at %d ... waiting up to 3 secs", address_);
+        #ifdef APE_DEBUG
+        ESP_LOGCONFIG(TAG, "Setting up ArduinoPortExtender at %d ... waiting up to 3 secs", address_);
+        #endif
 
         /* We cannot setup as usual as arduino boots later than esp8266 
         
@@ -92,13 +96,17 @@ class ArduinoPortExtender : public Component, public I2CDevice
         {
             if (this->read_bytes(APE_CMD_DIGITAL_READ, const_cast<uint8_t *>(this->read_buffer_), 3, 1))
             {
+                #ifdef APE_DEBUG
                 ESP_LOGCONFIG(TAGape, "ArduinoPortExpander found at %d in %d millis", address_, millis() - start);
+                #endif
                 delay(20);
 
                 for (ApeBinarySensor *pin : this->input_pins_)
                 {
                     uint8_t pinNo = pin->get_pin();
+                    #ifdef APE_DEBUG
                     ESP_LOGCONFIG(TAGape, "Setup input pin %d", pinNo);
+                    #endif
                     this->write_byte(APE_CMD_SETUP_PIN_INPUT_PULLUP, pinNo);
                     delay(20);
                 }
@@ -107,7 +115,9 @@ class ArduinoPortExtender : public Component, public I2CDevice
             }
             delay(20);
         }
+        #ifdef APE_DEBUG
         ESP_LOGE(TAGape, "ArduinoPortExpander NOT found at %d in %d millis", address_, millis() - start);
+        #endif
         this->mark_failed();
     }
     void loop() override
@@ -156,7 +166,9 @@ class ArduinoPortExtender : public Component, public I2CDevice
 
     void write_state(uint8_t pin, bool state)
     {
+        #ifdef APE_DEBUG
         ESP_LOGI(TAGape, "Writing %d to pin %d", state, pin);
+        #endif
         this->write_byte(state ? APE_CMD_WRITE_DIGITAL_HIGH : APE_CMD_WRITE_DIGITAL_LOW, pin);
         if (this->initial_state_)
         {
@@ -165,7 +177,9 @@ class ArduinoPortExtender : public Component, public I2CDevice
                 if (output->get_pin() == pin)
                 {
                     delay(20);
+                    #ifdef APE_DEBUG
                     ESP_LOGCONFIG(TAGape, "Setup output pin %d", pin);
+                    #endif
                     this->write_byte(APE_CMD_SETUP_PIN_OUTPUT, pin);
                     break;
                 }
@@ -212,7 +226,9 @@ class LM35Sensor : public PollingComponent, public sensor::Sensor
         if (readings_ == 10)
         {
             float temp = (1.1 * this->reading_ * 10) / 1023;
-            //ESP_LOGI(TAG, "Temperature: %.2f", temp);
+            #ifdef APE_DEBUG
+            ESP_LOGI(TAG, "Temperature: %.2f", temp);
+            #endif
             this->reading_ = 0;
             publish_state(temp);
         }

@@ -4,17 +4,24 @@
 
 using namespace esphome;
 
-static const char *TAGcoolix = "ac.coolix";
+// #define DEBUG_IR_AC_COOLIX
 
+#ifdef DEBUG_IR_AC_COOLIX
+static const char *TAGcoolix = "ac.coolix";
+#endif
 
 #include "IRsend.h"
 #include "ir_Coolix.h"
 
+#ifndef IR_INCLUDE_CPP
+#define IR_INCLUDE_CPP
 #include "irsend.cpp"
-#include "ir_Coolix.cpp"
 #include "irtimer.cpp"
 #include "irrecv.cpp"
 #include "irutils.cpp"
+#endif
+#include "ir_Coolix.cpp"
+
 
 class CoolixComponent;
 class CoolixCommand : public switch_::Switch
@@ -43,16 +50,18 @@ class CoolixCommand : public switch_::Switch
 class CoolixComponent : public Component
 {
   public:
-    explicit CoolixComponent(esphome::remote::RemoteTransmitterComponent* transmitter)
+    explicit CoolixComponent(uint8_t pin)
     {
-        this->transmitter_ = transmitter;
+        this->pin_ = pin;
     }
 
     void sendCommand(CoolixCommand* command)
     {
-        IRCoolixAC coolix(14);
+        IRCoolixAC coolix(this->pin_);
 
-        //ESP_LOGI(TAG, "Cmd AC mode: %d temp %d", command->get_mode(), command->get_temp());
+#ifdef DEBUG_IR_AC_COOLIX
+ESP_LOGI(TAG, "Cmd AC mode: %d temp %d", command->get_mode(), command->get_temp());
+#endif
         if (command->get_power())
         {
             coolix.setMode(command->get_mode());
@@ -70,12 +79,14 @@ class CoolixComponent : public Component
         return new CoolixCommand(this, power, mode, temp);
     }
   protected:
-    esphome::remote::RemoteTransmitterComponent* transmitter_;
+    uint8_t pin_;
 };
 
 void CoolixCommand::write_state(bool state)
 {
+    #ifdef DEBUG_IR_AC_COOLIX
     ESP_LOGI(TAGcoolix, "Switch set: %d", state);
+    #endif
     parent_->sendCommand(this);
 
 }

@@ -71,7 +71,10 @@ binary_sensor:
       return {ape_binary_sensor(ape, 8),
               ape_binary_sensor(ape, 9),
               ape_binary_sensor(ape, 10),
-              ape_binary_sensor(ape, 0)};
+              ape_binary_sensor(ape, 0),
+              ape_binary_sensor(ape, 13),
+              ape_binary_sensor(ape, 12),
+              ape_binary_sensor(ape, 11)};
 
     binary_sensors:  
       - name: "Puerta Frente"
@@ -82,6 +85,51 @@ binary_sensor:
         device_class: door
       - name: "Movimiento Galeria"
         device_class: motion
+      - name: "Switch Galeria 1"
+        internal: true
+        on_state:
+          then:
+            - light.toggle: galeria
+      - name: "Switch Galeria 2"
+        on_state:
+          then:
+            - script.execute: toggle_proyectores
+        internal: true
+      - name: "Switch Galeria 3"
+        internal: true
+        on_state:
+          then:
+            - light.toggle: patio_proyector_oeste
+  - platform: homeassistant
+    name: "Switch Galeria 2 from HA"
+    entity_id: binary_sensor.switch_estudio_galeria_2
+    on_state:
+      then: 
+        - light.toggle: galeria
+  - platform: homeassistant
+    name: "Switch Galeria 3 from HA"
+    entity_id: binary_sensor.switch_estudio_galeria_3
+    on_state:
+      then: 
+        - script.execute: toggle_proyectores
+
+script:
+  - id: toggle_proyectores
+    then:
+      - light.toggle: patio_proyector_este
+      - lambda: |-
+          bool esteStatus;
+          id(patio_proyector_este)->current_values_as_binary(&esteStatus);
+          if (esteStatus)
+          {
+            ESP_LOGD("main", "Este switch %d, turning on", esteStatus);
+            id(patio_proyector_oeste).turn_on().perform();
+          }
+          else
+          {
+            ESP_LOGD("main", "Este switch %d, turning off", esteStatus);
+            id(patio_proyector_oeste).turn_off().perform();
+          }
 
 sensor:
   - platform: custom
@@ -98,11 +146,12 @@ sensor:
 ###
 # module info:
 # Male Header: 
-# GND   |  GND  |  DI8 |  GND  |    NC
-# 12V   |  A1   |  5V  |  A0   |    NC
+# DI3   |  DI4  |  DI8 |  A1   |  5V
+# 12V   |  NC   |  NC  | GND   |  A0 
 
 # Female Header
 # GND  |  3.3V
 # DI9  |  DI10
 # DI13 |  DI11
 # DI12 |  NC
+
