@@ -29,11 +29,12 @@ remote_transmitter:
 
 # Individual switches
 switch:
-  - platform: remote_transmitter
+  - platform: template
     name: "X SmartTV Power"
-    nec:
-      address: 0xBF00
-      command: 0x3
+    turn_on_action:
+      remote_transmitter.transmit_nec:
+        address: 0xBF00
+        command: 0x3
 
   # - platform: remote_transmitter
   #   name: "X SmartTV Power 2"
@@ -49,17 +50,19 @@ switch:
   #     622, -1608, 620, -1612, 626, -1606, 590, -524, 
   #     620, -1612, 616 ]
 
-  - platform: remote_transmitter
+  - platform: template
     name: "X Sound Bar off"
-    nec:
-      address: 0x00
-      command: 0x45
+    turn_on_action:
+      remote_transmitter.transmit_nec:
+        address: 0x00
+        command: 0x45
   
-  - platform: remote_transmitter
+  - platform: template
     name: "Estudio Hyundai Power"
-    raw:
-      carrier_frequency: 38kHz
-      data: [ 8960,-4480,560,-560,560,-560,560,-560,560,-560,560,-560,560,-560,560,-560,560,-560,560,-1680,560,-1680,560,-1680,560,-1680,560,-1680,560,-1680,560,-560,560,-1680,560,-1680,560,-1680,560,-560,560,-560,560,-560,560,-560,560,-560,560,-560,560,-560,560,-560,560,-1680,560,-1680,560,-1680,560,-1680,560,-1680,560,-1680,560,-40405]
+    turn_on_action:
+      remote_transmitter.transmit_raw:
+        #carrier_frequency: 38kHz
+        code: [ 8960,-4480,560,-560,560,-560,560,-560,560,-560,560,-560,560,-560,560,-560,560,-560,560,-1680,560,-1680,560,-1680,560,-1680,560,-1680,560,-1680,560,-560,560,-1680,560,-1680,560,-1680,560,-560,560,-560,560,-560,560,-560,560,-560,560,-560,560,-560,560,-560,560,-1680,560,-1680,560,-1680,560,-1680,560,-1680,560,-1680,560,-40405]
 
   - platform: custom
     lambda: |-
