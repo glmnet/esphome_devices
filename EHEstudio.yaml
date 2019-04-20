@@ -4,9 +4,7 @@ esphome:
   board: nodemcu
   # Use a local copy of ESPHome
   includes:
-    - ac_coolix.h
     - ape.h
-    - glm_ir_nec.h
 
 wifi:
   ssid: !secret wifi_ssid
@@ -17,84 +15,42 @@ api:
 ota:
 
 i2c:
+  id: i2c_component
 
 logger:  
   level: DEBUG
 
-# Example configuration entry
 remote_transmitter:
   id: ir_sender
   pin: D5 #GPIO14
   carrier_duty_percent: 50%
 
-# Individual switches
-switch:
-  - platform: template
-    name: "X SmartTV Power"
-    turn_on_action:
-      remote_transmitter.transmit_nec:
-        address: 0xBF00
-        command: 0x3
-
-  # - platform: remote_transmitter
-  #   name: "X SmartTV Power 2"
-  #   raw:
-  #     carrier_frequency: 38kHz
-  #     data: [ 9004, -4426, 616, -498, 624, -490, 622, -494, 
-  #     620, -496, 618, -498, 626, -488, 626, -490, 
-  #     622, -492, 622, -1608, 618, -1614, 624, -1608, 
-  #     588, -1642, 596, -1636, 622, -1608, 588, -1642, 
-  #     594, -1636, 592, -1640, 618, -1614, 594, -1636, 
-  #     620, -494, 618, -496, 616, -500, 624, -1606, 
-  #     620, -494, 620, -496, 616, -498, 624, -490, 
-  #     622, -1608, 620, -1612, 626, -1606, 590, -524, 
-  #     620, -1612, 616 ]
-
-  - platform: template
-    name: "X Sound Bar off"
-    turn_on_action:
-      remote_transmitter.transmit_nec:
-        address: 0x00
-        command: 0x45
-  
-  - platform: template
-    name: "Estudio Hyundai Power"
-    turn_on_action:
-      remote_transmitter.transmit_raw:
-        #carrier_frequency: 38kHz
-        code: [ 8960,-4480,560,-560,560,-560,560,-560,560,-560,560,-560,560,-560,560,-560,560,-560,560,-1680,560,-1680,560,-1680,560,-1680,560,-1680,560,-1680,560,-560,560,-1680,560,-1680,560,-1680,560,-560,560,-560,560,-560,560,-560,560,-560,560,-560,560,-560,560,-560,560,-1680,560,-1680,560,-1680,560,-1680,560,-1680,560,-1680,560,-40405]
-
-  - platform: custom
-    lambda: |-
-      auto component = new CoolixComponent(14);
-      return {component->get_cmd(false, 0, 24),
-              component->get_cmd(true, kCoolixCool, 24)};
-    switches:
-      - name: "Turn Off AC"
-      - name: "Turn On AC Cool 24ºC"
-  
-  - platform: custom
-    lambda: |-
-      auto component = new NecComponent(14);
-      return {component->get_cmd(0x00, 0x47)};
-    switches:
-      - name: "Nec 0x0 - 0x47"  
-  
+climate:
+  platform: remote_transmitter
+  name: 'AC Estudio'
+  id: coolix_remote
+  transmitter: ir_sender
+  model: coolix
+  supports_heat: false
+  visual:
+    min_temperature: 17
+    max_temperature: 30
+    temperature_step: 1
 
 custom_component:
   - id: ape
     lambda: |-
-      auto ape_component = new ArduinoPortExtender(i2ccomponent, 0x08);
+      auto ape_component = new ArduinoPortExtender(id(i2c_component), 0x08);
       return {ape_component};
 
 output:
 - platform: custom
   type: binary
   lambda: |-
-    return {ape_binary_output(ape, 7),
-            ape_binary_output(ape, 6),
-            ape_binary_output(ape, 5),
-            ape_binary_output(ape, 4)};
+    return {ape_binary_output(id(ape), 7),
+            ape_binary_output(id(ape), 6),
+            ape_binary_output(id(ape), 5),
+            ape_binary_output(id(ape), 4)};
   outputs:
     - id: gpio_relay_1
       inverted: true
@@ -130,18 +86,18 @@ binary_sensor:
     name: "Estudio Status"
   - platform: custom
     lambda: |-
-      return {ape_binary_sensor(ape, 14 + 3),
-              ape_binary_sensor(ape, 2),
-              ape_binary_sensor(ape, 14 + 2),
-              ape_binary_sensor(ape, 8),
-              ape_binary_sensor(ape, 14 + 1),
-              ape_binary_sensor(ape, 12), 
-              ape_binary_sensor(ape, 10),
-              ape_binary_sensor(ape, 9),
-              ape_binary_sensor(ape, 13),
-              ape_binary_sensor(ape, 11),
-              ape_binary_sensor(ape, 14 + 0),
-              ape_binary_sensor(ape, 3)};
+      return {ape_binary_sensor(id(ape), 14 + 3),
+              ape_binary_sensor(id(ape), 2),
+              ape_binary_sensor(id(ape), 14 + 2),
+              ape_binary_sensor(id(ape), 8),
+              ape_binary_sensor(id(ape), 14 + 1),
+              ape_binary_sensor(id(ape), 12), 
+              ape_binary_sensor(id(ape), 10),
+              ape_binary_sensor(id(ape), 9),
+              ape_binary_sensor(id(ape), 13),
+              ape_binary_sensor(id(ape), 11),
+              ape_binary_sensor(id(ape), 14 + 0),
+              ape_binary_sensor(id(ape), 3)};
     binary_sensors:
       - name: "Switch estudio puerta 1" # A3
         internal: true

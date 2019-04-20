@@ -1,0 +1,55 @@
+esphome:
+  name: test_local
+  platform: ESP8266
+  board: nodemcu
+
+logger:
+  level: VERY_VERBOSE
+
+wifi:
+  ssid: !secret wifi_ssid
+  password: !secret wifi_pass
+  
+api:
+  
+ota:
+
+remote_transmitter:
+  id: remote_tx
+  carrier_duty_percent: 50%
+  pin: D5
+
+climate:
+  platform: remote_transmitter
+  name: 'AC Estudio'
+  id: coolix_remote
+  transmitter: remote_tx
+  model: tcl
+  supports_heat: false
+  visual:
+    min_temperature: 17
+    max_temperature: 30
+    temperature_step: 1
+
+switch:
+  - platform: template
+    name: 'Set Coolix Off'
+    turn_on_action:
+      - lambda: |-
+          id(coolix_remote)->make_call()
+            .set_mode(CLIMATE_MODE_OFF)
+            .perform();
+  - platform: template
+    name: 'Set Coolix Auto'
+    turn_on_action:
+      - lambda: |-
+          id(coolix_remote)->make_call()
+            .set_mode(CLIMATE_MODE_AUTO)
+            .perform();
+  - platform: template
+    name: 'Set Coolix Cool'
+    turn_on_action:
+      - lambda: |-
+          id(coolix_remote)->make_call()
+            .set_mode(CLIMATE_MODE_COOL)
+            .perform();
