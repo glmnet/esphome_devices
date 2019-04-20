@@ -20,16 +20,18 @@ remote_transmitter:
   pin: D5
 
 climate:
-  platform: remote_transmitter
-  name: 'AC Estudio'
-  id: coolix_remote
-  transmitter: remote_tx
-  model: tcl
-  supports_heat: false
-  visual:
-    min_temperature: 17
-    max_temperature: 30
-    temperature_step: 1
+  - platform: remote_transmitter
+    name: 'AC Estudio'
+    id: coolix_remote
+    transmitter: remote_tx
+    model: coolix
+    supports_heat: false
+  - platform: remote_transmitter
+    name: 'AC Estudio Tcl'
+    id: tcl_remote
+    transmitter: remote_tx
+    model: tcl
+    supports_heat: true
 
 switch:
   - platform: template

@@ -32,11 +32,7 @@ climate:
   transmitter: ir_sender
   model: coolix
   supports_heat: false
-  visual:
-    min_temperature: 17
-    max_temperature: 30
-    temperature_step: 1
-
+  
 custom_component:
   - id: ape
     lambda: |-
@@ -112,8 +108,7 @@ binary_sensor:
       - name: "Switch estudio galeria 1" # A2
         internal: true
         on_state:
-          then:
-            - light.toggle: luz_estudio
+          - light.toggle: luz_estudio
       - name: "Switch estudio galeria 2" # DI8
       - name: "Switch estudio galeria 3" # A1
       - name: "Ventana Comedor Norte" # DI12
