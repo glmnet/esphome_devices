@@ -1,0 +1,35 @@
+esphome:
+  name: test_nec
+  platform: ESP8266
+  board: nodemcu
+
+logger:
+  level: VERY_VERBOSE
+
+wifi:
+  ssid: !secret wifi_ssid
+  password: !secret wifi_pass
+  
+api:
+  
+ota:
+
+remote_transmitter:
+  id: remote_tx
+  carrier_duty_percent: 50%
+  pin: D5
+
+switch:
+  - platform: template
+    name: 'Edifier Mute'
+    turn_on_action:
+      - remote_transmitter.transmit_nec:
+          address: 0x00FF
+          command: 0x827D
+  - platform: template
+    name: 'Hyundai Netflix'
+    turn_on_action:
+      - remote_transmitter.transmit_nec:
+          address: 0xFD
+          command: 0xC23D # 0x43
+          
