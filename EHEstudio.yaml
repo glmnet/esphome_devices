@@ -20,17 +20,14 @@ i2c:
 logger:  
   level: DEBUG
 
+
 remote_transmitter:
-  id: ir_sender
-  pin: D5 #GPIO14
   carrier_duty_percent: 50%
+  pin: D5
 
 climate:
-  platform: remote_transmitter
+  platform: coolix
   name: 'AC Estudio'
-  id: coolix_remote
-  transmitter: ir_sender
-  model: coolix
   supports_heat: false
   
 custom_component:

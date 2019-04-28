@@ -30,8 +30,8 @@ remote_transmitter:
   pin: D5
 
 climate:
-  platform: coolix
-  name: 'test AC Estudio 3'
+  platform: tcl112
+  name: 'test AC TCL'
   #sensor: estudio_test_dht_temp
 #   - platform: remote_transmitter
 #     name: 'AC Estudio old'

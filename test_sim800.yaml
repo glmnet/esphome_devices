@@ -1,0 +1,38 @@
+esphome:
+  name: test_local
+  platform: ESP8266
+  board: nodemcuv2
+
+wifi:
+  ssid: !secret wifi_ssid
+  password: !secret wifi_pass
+
+# Enable logging
+logger:
+  level: VERBOSE
+
+# Enable Home Assistant API
+api:
+
+ota:
+
+uart:
+#  id: sim800uart
+  tx_pin: D0
+  rx_pin: D1
+  baud_rate: 9600
+
+gsm:
+#  uart_id: sim800uart
+  id: sms
+  on_sms_received:
+    lambda: |-
+      ESP_LOGD("main", "Received sms from %s: %s", sender.c_str(), message.c_str());
+
+binary_sensor:
+  platform: gpio
+  name: "Send sms"
+  pin: D8
+  on_press:
+    lambda: |-
+      id(sms).send_sms("+5493624207774", "Hello there from ESPHome");

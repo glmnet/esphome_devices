@@ -1,0 +1,56 @@
+esphome:
+  name: test_servo
+  platform: ESP8266
+  board: nodemcuv2
+
+wifi:
+  ssid: !secret wifi_ssid
+  password: !secret wifi_pass  
+  fast_connect: true
+
+# Enable logging
+
+# Enable logging
+logger:
+  level: VERY_VERBOSE
+
+# Enable Home Assistant API
+api:
+
+ota:
+
+servo:
+  - id: my_servo
+    output: pwm_output
+
+output:
+  - platform: gpio
+    pin: D1
+    inverted: False
+    id: gpio_d1_led
+    
+  - platform: esp8266_pwm
+    id: pwm_output
+    pin: D7
+    frequency: 50 Hz
+
+binary_sensor:
+  - platform: gpio
+    pin: D8
+    name: "Multisensor Motion"
+    device_class: motion
+    
+    on_press:
+      then:
+        - output.turn_on: gpio_d1_led
+        - servo.write:
+            id: my_servo
+            level: 70.0%          
+    on_release:
+      then:
+        - output.turn_off: gpio_d1_led
+        - servo.write:
+            id: my_servo
+            level: -70.0% 
+
+
