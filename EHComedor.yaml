@@ -106,11 +106,11 @@ binary_sensor:
         on_state:
           then:
             - light.toggle: garage
-      - name: "Reed Ventana garage"
+      - name: "Ventana Comedor Oeste"
         device_class: window
-      - name: "Reed Ventana frente"
+      - name: "Ventana Comedor Sur"
         device_class: window
-      - name: "Motion comedor"
+      - name: "Movimiento Comedor"
         device_class: motion
 
 switch:
