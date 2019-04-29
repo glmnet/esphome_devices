@@ -60,3 +60,6 @@ binary_sensor:
         on_state:
           then:
             - light.toggle: light_9
+
+climate:
+  platform: bang_bang            

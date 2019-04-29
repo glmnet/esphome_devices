@@ -12,3 +12,5 @@
 /secrets.yaml
 
 .vscode/
+
+!ArduinoPortExtender/**
