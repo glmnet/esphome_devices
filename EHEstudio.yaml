@@ -5,6 +5,9 @@ esphome:
   # Use a local copy of ESPHome
   includes:
     - ape.h
+  on_boot:
+    then:
+    - fan.turn_off: extractor_banio
 
 wifi:
   ssid: !secret wifi_ssid
@@ -18,8 +21,7 @@ i2c:
   id: i2c_component
 
 logger:  
-  level: DEBUG
-
+  level: VERBOSE
 
 remote_transmitter:
   carrier_duty_percent: 50%
@@ -31,10 +33,10 @@ climate:
   supports_heat: false
   
 custom_component:
-  - id: ape
-    lambda: |-
-      auto ape_component = new ArduinoPortExtender(id(i2c_component), 0x08);
-      return {ape_component};
+- id: ape
+  lambda: |-
+    auto ape_component = new ArduinoPortExtender(id(i2c_component), 0x08);
+    return {ape_component};
 
 output:
 - platform: custom
@@ -45,106 +47,134 @@ output:
             ape_binary_output(id(ape), 5),
             ape_binary_output(id(ape), 4)};
   outputs:
-    - id: gpio_relay_1
-      inverted: true
-    - id: gpio_relay_2
-      inverted: true
-    - id: gpio_relay_3
-      inverted: true
-    - id: gpio_relay_4
-      inverted: true
+  - id: gpio_relay_1
+    inverted: true
+  - id: gpio_relay_2
+    inverted: true
+  - id: gpio_relay_3
+    inverted: true
+  - id: gpio_relay_4
+    inverted: true
 
 light:
-  - platform: binary
-    id: luz_estudio
-    name: "Luz estudio"
-    output: gpio_relay_1
-  - platform: binary
-    id: luz_pasillo
-    name: "Luz pasillo"
-    output: gpio_relay_2
-  - platform: binary
-    id: luz_banio
-    name: "Luz baño"
-    output: gpio_relay_3
+- platform: binary
+  id: luz_estudio
+  name: "Luz estudio"
+  output: gpio_relay_1
+- platform: binary
+  id: luz_pasillo
+  name: "Luz pasillo"
+  output: gpio_relay_2
+- platform: binary
+  id: luz_banio
+  name: "Luz baño"
+  output: gpio_relay_3
 
 fan:
-  - platform: binary
-    id: extractor_banio
-    output: gpio_relay_4
-    name: "Extractor baño"
+- platform: binary
+  id: extractor_banio
+  output: gpio_relay_4
+  name: "Extractor baño"
+
+switch:
+- platform: restart
+  name: "Estudio Restart"
 
 binary_sensor:
-  - platform: status
-    name: "Estudio Status"
-  - platform: custom
-    lambda: |-
-      return {ape_binary_sensor(id(ape), 14 + 3),
-              ape_binary_sensor(id(ape), 2),
-              ape_binary_sensor(id(ape), 14 + 2),
-              ape_binary_sensor(id(ape), 8),
-              ape_binary_sensor(id(ape), 14 + 1),
-              ape_binary_sensor(id(ape), 12), 
-              ape_binary_sensor(id(ape), 10),
-              ape_binary_sensor(id(ape), 9),
-              ape_binary_sensor(id(ape), 13),
-              ape_binary_sensor(id(ape), 11),
-              ape_binary_sensor(id(ape), 14 + 0),
-              ape_binary_sensor(id(ape), 3)};
-    binary_sensors:
-      - name: "Switch estudio puerta 1" # A3
-        internal: true
-        on_state:
+- platform: status
+  name: "Estudio Status"
+- platform: custom
+  lambda: |-
+    return {ape_binary_sensor(id(ape), 14 + 3),
+            ape_binary_sensor(id(ape), 2),
+            ape_binary_sensor(id(ape), 14 + 2),
+            ape_binary_sensor(id(ape), 8),
+            ape_binary_sensor(id(ape), 14 + 1),
+            ape_binary_sensor(id(ape), 12), 
+            ape_binary_sensor(id(ape), 10),
+            ape_binary_sensor(id(ape), 9),
+            ape_binary_sensor(id(ape), 13),
+            ape_binary_sensor(id(ape), 11),
+            ape_binary_sensor(id(ape), 14 + 0),
+            ape_binary_sensor(id(ape), 3)};
+  binary_sensors:
+  - name: "Switch estudio puerta 1" # A3
+    internal: true
+    on_state:
+      then:
+      - light.toggle: luz_estudio
+  - name: "Switch estudio puerta 2" # DI2
+    internal: true
+    on_state:
+      then:
+      - light.toggle: luz_pasillo
+  - name: "Switch estudio galeria 1" # A2
+    internal: true
+    on_state:
+    - light.toggle: luz_estudio
+  - name: "Switch estudio galeria 2" # DI8
+  - name: "Switch estudio galeria 3" # A1
+  - name: "Ventana Comedor Norte" # DI12
+    device_class: window
+  - name: "Switch escalera 1" # DI10
+  - name: "Switch escalera 2" # DI9
+    on_state:
+      then:
+      - light.toggle: luz_pasillo
+  - name: "Switch baño 1" # DI13
+    filters:
+    - delayed_on: 50ms
+    - delayed_off: 50ms
+    on_state:
+      then:
+      - light.toggle: luz_banio
+      - script.stop: keep_banio_light
+      - script.execute: keep_banio_light
+  - name: "Switch baño 2" # DI11
+    on_state:
+      then:
+      - fan.toggle: extractor_banio
+      - delay: 600s
+      - fan.turn_off: extractor_banio
+  - name: "Movimiento estudio" # A0
+    device_class: motion
+  - name: "Puerta Baño" # DI3
+    id: puerta_banio
+    device_class: door
+    filters:
+    - delayed_on: 100ms
+    - delayed_off: 100ms
+    on_state:
+      then: 
+      - fan.turn_on: extractor_banio
+      - delay: 600s
+      - fan.turn_off: extractor_banio
+    on_press:
+      then:
+      - if:
+          condition:
+            lambda: 'return !id(keep_banio_light).script_is_running();'
           then:
-            - light.toggle: luz_estudio
-      - name: "Switch estudio puerta 2" # DI2
-        internal: true
-        on_state:
-          then:
-            - light.toggle: luz_pasillo
-      - name: "Switch estudio galeria 1" # A2
-        internal: true
-        on_state:
-          - light.toggle: luz_estudio
-      - name: "Switch estudio galeria 2" # DI8
-      - name: "Switch estudio galeria 3" # A1
-      - name: "Ventana Comedor Norte" # DI12
-        device_class: window
-      - name: "Switch escalera 1" # DI10
-      - name: "Switch escalera 2" # DI9
-        on_state:
-          then:
-            - light.toggle: luz_pasillo
-      - name: "Switch baño 1" # DI13
-        filters:
-          - delayed_on: 100ms
-          - delayed_off: 100ms
-        on_state:
-          then:
-            - light.toggle: luz_banio
-      - name: "Switch baño 2" # DI11
-        on_state:
-          then:
-            - fan.toggle: extractor_banio
-            - delay: 600s
-            - fan.turn_off: extractor_banio
-      - name: "Movimiento estudio" # A0
-        device_class: motion
-      - name: "Puerta Baño" # DI3
-        device_class: door
-        filters:
-          - delayed_on: 100ms
-          - delayed_off: 100ms
-        on_state:
-          then: 
-            - fan.turn_on: extractor_banio
-            - delay: 600s
-            - fan.turn_off: extractor_banio
-        on_press:
-          then:
-            - light.turn_on: luz_banio
-            - delay: 900s
-            - light.turn_off: luz_banio
+          - script.stop: auto_off_luz_banio
+          - script.execute: auto_off_luz_banio
+
+script:
+  - id: keep_banio_light
+    then:
+    - delay: 10s
+  - id: auto_off_luz_banio
+    then:
+    - light.turn_on: luz_banio
+    - if: id(puerta_banio).state # open
+      then: 
+        - delay: 300s
+      else:
+        - delay: 600s
+    - light.turn_off: luz_banio
+  - id: auto_off_extractor
+    - delay: 600s
+    - fan.turn_off: extractor_banio
+  
 
 ###
 # module info:

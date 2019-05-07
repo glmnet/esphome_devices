@@ -1,5 +1,5 @@
 esphome:
-  name: test_local
+  name: test_tcl112
   platform: ESP8266
   board: nodemcu
 
@@ -29,9 +29,14 @@ remote_transmitter:
   carrier_duty_percent: 50%
   pin: D5
 
+switch:
+  - platform: restart
+    name: "Test tcl112 restart"
+
 climate:
   platform: tcl112
   name: 'test AC TCL'
+  sensor: estudio_test_dht_temp
   #sensor: estudio_test_dht_temp
 #   - platform: remote_transmitter
 #     name: 'AC Estudio old'

@@ -117,3 +117,6 @@ climate:
   platform: tcl112
   name: 'AC Dormitorio Sur'
 
+switch:
+  - platform: restart
+    name: "Dormitorio Sur Restart"
