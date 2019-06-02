@@ -1,5 +1,6 @@
 esphome:
-  name: test_local
+  #name: test_local
+  name: eh_planta_alta
   platform: ESP8266
   board: nodemcuv2
 
@@ -9,7 +10,11 @@ wifi:
 
 # Enable logging
 logger:
-  level: VERBOSE
+  baud_rate: 0 # disable log by hardware UART
+  level: DEBUG
+  logs:
+    i2c: DEBUG
+    #sim800l: VERY_VERBOSE
 
 # Enable Home Assistant API
 api:
@@ -18,8 +23,8 @@ ota:
 
 uart:
 #  id: sim800uart
-  tx_pin: D0
-  rx_pin: D1
+  tx_pin: TX #D0
+  rx_pin: RX #D1
   baud_rate: 9600
 
 sim800l:
@@ -36,8 +41,15 @@ binary_sensor:
   name: "Send sms"
   pin: D8
   on_press:
-    lambda: |-
-      id(sms).send_sms("+5493624207774", "Hello there from ESPHome");
+    - sim800l.send_sms:
+        id: sms
+        recipient: "+5493624207774"
+        message: Hello from ESPHome yaml :P
+    # - climate.control:
+    #     id: bb
+    #     mode: COOL
+    # lambda: |-
+    #   id(sms).send_sms("+5493624207774", "Hello there from ESPHome");
 
 text_sensor:
   - platform: template
@@ -55,6 +67,17 @@ i2c:
   sda: D3
   scl: D4
 
+sensor:
+  - platform: dht
+    pin: D2
+    model: DHT22
+    temperature:
+      name: "Estudio Test Temperature"
+      id: estudio_test_dht_temp
+    humidity:
+      name: "Estudio Test Humidity"
+    update_interval: 5s
+
 display:
   - platform: ssd1306_i2c
     model: "SSD1306 128x64"
@@ -64,11 +87,23 @@ display:
       it.print(0, 0, id(my_font), id(received_sms_from).state.c_str());
       it.print(0, 14, id(my_font), id(received_sms_body).state.c_str());
 
-      
-remote_transmitter:
-  carrier_duty_percent: 50%
-  pin: D5
 
 climate:
-  platform: tcl112
-  name: 'test AC TCL'
+  - platform: bang_bang
+    id: bb
+    sensor: estudio_test_dht_temp
+    default_target_temperature_low: 10
+    default_target_temperature_high: 20
+    idle_action:
+      lambda: |- 
+        return;
+    cool_action:
+      lambda: |- 
+        return;
+# remote_transmitter:
+#   carrier_duty_percent: 50%
+#   pin: D5
+
+# climate:
+#   platform: tcl112
+#   name: 'test AC TCL'

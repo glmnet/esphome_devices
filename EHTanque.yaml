@@ -2,9 +2,6 @@ esphome:
   name: eh_tanque
   platform: ESP8266
   board: nodemcu
-  # Use a local copy of ESPHome
-  esphome_core_version:
-    local: C:\glmgit\glmnet_esphome\esphome-core
 
 wifi:
   ssid: !secret wifi_ssid

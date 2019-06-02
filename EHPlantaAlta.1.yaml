@@ -1,0 +1,13 @@
+esphome:
+  name: esphome
+  platform: ESP8266
+  board: nodemcu
+  
+output:
+- platform: custom
+  type: binary
+  lambda: |-
+    return 1;
+  outputs:
+  - id: a_custom_output
+    

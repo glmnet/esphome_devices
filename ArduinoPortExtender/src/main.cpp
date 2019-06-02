@@ -15,7 +15,7 @@ Ports:
 
 //#define DEBUG // remove debug so pin 0 and 1 can be used for IO
 
-#define I2C_ADDRESS 8
+#define I2C_ADDRESS 9
 
 void onRequest();
 void onReceive(int);

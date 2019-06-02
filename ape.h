@@ -1,5 +1,3 @@
-using namespace esphome;
-
 //#define APE_DEBUG // Must disable debug if using debug in other custom components for the __c causes a section type conflict with __c thingy
 
 static const char *TAGape = "ape";
@@ -27,6 +25,8 @@ static const char *TAGape = "ape";
 //#define ape_sensor(ape, pin) get_ape(ape)->get_sensor(pin)
 
 class ArduinoPortExtender;
+
+using namespace esphome;
 
 class ApeBinaryOutput : public output::BinaryOutput
 {
@@ -79,7 +79,7 @@ class ArduinoPortExtender : public Component, public I2CDevice
     void setup() override
     {
         #ifdef APE_DEBUG
-        ESP_LOGCONFIG(TAG, "Setting up ArduinoPortExtender at %d ... waiting up to 3 secs", address_);
+        ESP_LOGCONFIG(TAGape, "Setting up ArduinoPortExtender at %d ... waiting up to 3 secs", address_);
         #endif
 
         /* We cannot setup as usual as arduino boots later than esp8266 

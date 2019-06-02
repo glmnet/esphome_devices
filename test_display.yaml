@@ -1,0 +1,36 @@
+esphome:
+  name: test_servo
+  platform: ESP8266
+  board: nodemcuv2
+
+wifi:
+  ssid: !secret wifi_ssid
+  password: !secret wifi_pass  
+  fast_connect: true
+
+# Enable logging
+
+# Enable logging
+logger:
+  level: VERBOSE
+
+# Enable Home Assistant API
+
+ota:
+
+font:
+  - file: "Roboto-Regular.ttf"
+    id: my_font
+    size: 20
+
+i2c:
+  sda: D3
+  scl: D4
+
+display:
+  - platform: ssd1306_i2c
+    model: "SSD1306 128x64"
+    reset_pin: D0
+    address: 0x3C
+    lambda: |-
+      it.print(0, 0, id(my_font), "Hello World!");

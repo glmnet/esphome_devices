@@ -15,6 +15,7 @@ api:
 ota:
 
 i2c:
+  id: i2ccomponent
 
 logger:  
   level: DEBUG
@@ -87,9 +88,10 @@ binary_sensor:
         device_class: motion
       - name: "Switch Galeria 1"
         internal: true
-        on_state:
-          then:
-            - light.toggle: galeria
+        # disable because is pin 13 and needs pull up resisor
+        # on_state:
+        #   then:
+        #     - light.toggle: galeria
       - name: "Switch Galeria 2"
         on_state:
           then:
@@ -131,17 +133,17 @@ script:
             id(patio_proyector_oeste).turn_off().perform();
           }
 
-sensor:
-  - platform: custom
-    lambda: |-
-      auto my_sensor = new LM35Sensor(get_ape(ape), 1);
-      App.register_component(my_sensor);
-      return {my_sensor};
-    sensors:
-      - name: "Temperatura Galeria"
-        id: temperature
-        unit_of_measurement: °C
-        accuracy_decimals: 1
+# sensor:
+#   - platform: custom
+#     lambda: |-
+#       auto my_sensor = new LM35Sensor(get_ape(ape), 1);
+#       App.register_component(my_sensor);
+#       return {my_sensor};
+#     sensors:
+#       - name: "Temperatura Galeria"
+#         id: temperature
+#         unit_of_measurement: °C
+#         accuracy_decimals: 1
 
 ###
 # module info:
