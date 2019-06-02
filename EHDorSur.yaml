@@ -5,6 +5,10 @@ esphome:
   # Use a local copy of ESPHome
   includes:
     - ape.h
+  on_boot:
+    priority: -10
+    then:
+      - switch.turn_on: enable_ventana_switch
 
 wifi:
   ssid: !secret wifi_ssid
@@ -15,7 +19,8 @@ api:
 ota:
 
 i2c:
-
+  id: i2ccomponent
+  
 logger:  
   level: DEBUG
 
@@ -47,11 +52,11 @@ light:
     output: gpio_relay_1
   - platform: binary
     id: luz_dormitorio_sur_cama_pared
-    name: "Dormitorio Sur Cama Ventana"
+    name: "Dormitorio Sur Cama Pared"
     output: gpio_relay_2
   - platform: binary
     id: luz_dormitorio_sur_cama_ventana
-    name: "Dormitorio Sur Cama Pared"
+    name: "Dormitorio Sur Cama Ventana"
     output: gpio_relay_3
 
 
@@ -87,8 +92,8 @@ binary_sensor:
       - name: "Switch Cama Pared 1"
         internal: true
         on_state:
-          then:
-            - light.toggle: luz_dormitorio_sur_cama_pared
+            then:
+              - light.toggle: luz_dormitorio_sur_cama_pared
       - name: "Switch Cama Pared 2"
         internal: true
         on_state:
@@ -97,13 +102,19 @@ binary_sensor:
       - name: "Switch Cama Ventana 1"
         internal: true
         on_state:
-          then:
-            - light.toggle: luz_dormitorio_sur_cama_ventana
+          if:
+            condition:
+              lambda: 'return id(enable_ventana_switch).state;'
+            then:
+              light.toggle: luz_dormitorio_sur_cama_ventana
       - name: "Switch Cama Ventana 2"
         internal: true
         on_state:
-          then:
-            - light.toggle: luz_dormitorio_sur
+          if:
+            condition:
+              lambda: 'return id(enable_ventana_switch).state;'
+            then:
+              light.toggle: luz_dormitorio_sur
       - name: "Ventana Dormitorio Sur"
         device_class: window
 
@@ -112,9 +123,12 @@ remote_transmitter:
   pin: GPIO14
   carrier_duty_percent: 50%
 
+climate:
+  platform: tcl112
+  name: 'AC Dormitorio Sur'
 
-# Individual switches
 switch:
+<<<<<<< HEAD
   - platform: remote_transmitter
     name: "DorSur 25 cool"
     raw:
@@ -170,3 +184,11 @@ switch:
     nec:
       address: 0xFF
       command: 0x5AA5 #0x5A
+=======
+  - platform: restart
+    name: "Dormitorio Sur Restart"
+  - platform: template
+    id: enable_ventana_switch
+    name: "Habilitar Switch Ventana Dormitorio Sur"
+    optimistic: true
+>>>>>>> v1.13

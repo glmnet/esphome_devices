@@ -15,6 +15,7 @@ api:
 ota:
 
 i2c:
+  id: i2ccomponent
 
 logger:  
   level: VERBOSE
@@ -97,12 +98,10 @@ binary_sensor:
           then:
             - light.toggle: garage
       - name: "Switch Garage 2"
-        internal: true
         on_state:
           then:
             - light.toggle: garage
       - name: "Switch Garage 3"
-        internal: true
         on_state:
           then:
             - light.toggle: garage

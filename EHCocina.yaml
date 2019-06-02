@@ -15,6 +15,7 @@ api:
 ota:
 
 i2c:
+  id: i2c_component
 
 logger:  
   level: DEBUG
@@ -23,7 +24,7 @@ logger:
 custom_component:
 - id: ape
   lambda: |-
-    auto ape_component = new ArduinoPortExtender(i2ccomponent, 0x08);
+    auto ape_component = new ArduinoPortExtender(i2c_component, 0x08);
     return {ape_component};
 
 output:

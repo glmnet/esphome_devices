@@ -1,7 +1,3 @@
-#include "esphome.h"
-
-using namespace esphome;
-
 //#define APE_DEBUG // Must disable debug if using debug in other custom components for the __c causes a section type conflict with __c thingy
 
 static const char *TAGape = "ape";
@@ -22,13 +18,15 @@ static const char *TAGape = "ape";
 #define CMD_SETUP_ANALOG_INTERNAL 0x10
 #define CMD_SETUP_ANALOG_OTHER 0x11
 
-#define get_ape(constructor) static_cast<ArduinoPortExtender *>(const_cast<CustomComponentConstructor *>(&constructor)->get_component(0))
+#define get_ape(constructor) static_cast<ArduinoPortExtender *>(const_cast<custom_component::CustomComponentConstructor *>(&constructor)->get_component(0))
 
 #define ape_binary_output(ape, pin) get_ape(ape)->get_binary_output(pin)
 #define ape_binary_sensor(ape, pin) get_ape(ape)->get_binary_sensor(pin)
-#define ape_sensor(ape, pin) get_ape(ape)->get_sensor(pin)
+//#define ape_sensor(ape, pin) get_ape(ape)->get_sensor(pin)
 
 class ArduinoPortExtender;
+
+using namespace esphome;
 
 class ApeBinaryOutput : public output::BinaryOutput
 {
@@ -58,7 +56,7 @@ class ApeBinarySensor : public binary_sensor::BinarySensor
   protected:
     uint8_t pin_;
 };
-
+/*
 class ApeSensor : public sensor::Sensor
 {
   public:
@@ -70,7 +68,7 @@ class ApeSensor : public sensor::Sensor
 
   protected:
     uint8_t pin_;
-};
+};*/
 
 class ArduinoPortExtender : public Component, public I2CDevice
 {
@@ -81,7 +79,7 @@ class ArduinoPortExtender : public Component, public I2CDevice
     void setup() override
     {
         #ifdef APE_DEBUG
-        ESP_LOGCONFIG(TAG, "Setting up ArduinoPortExtender at %d ... waiting up to 3 secs", address_);
+        ESP_LOGCONFIG(TAGape, "Setting up ArduinoPortExtender at %d ... waiting up to 3 secs", address_);
         #endif
 
         /* We cannot setup as usual as arduino boots later than esp8266 
@@ -138,12 +136,12 @@ class ArduinoPortExtender : public Component, public I2CDevice
         this->initial_state_ = false;
     }
 
-    uint16_t analogRead(uint8_t pin)
+ /*   uint16_t analogRead(uint8_t pin)
     {
         this->read_bytes((uint8_t)(CMD_ANALOG_READ_A0 + pin), const_cast<uint8_t *>(this->read_buffer_), 2, 1);
         uint16_t value = this->read_buffer_[0] | ((uint16_t)this->read_buffer_[1] << 8);
         return value;
-    }
+    }*/
 
     output::BinaryOutput *get_binary_output(uint8_t pin)
     {
@@ -157,12 +155,12 @@ class ArduinoPortExtender : public Component, public I2CDevice
         input_pins_.push_back(binarySensor);
         return binarySensor;
     }
-    sensor::Sensor *get_sensor(uint8_t pin)
+/*    sensor::Sensor *get_sensor(uint8_t pin)
     {
         ApeSensor *sensor = new ApeSensor(this, pin);
         analog_pins_.push_back(sensor);
         return sensor;
-    }
+    }*/
 
     void write_state(uint8_t pin, bool state)
     {
@@ -192,9 +190,9 @@ class ArduinoPortExtender : public Component, public I2CDevice
     uint8_t read_buffer_[3]{0, 0, 0};
     std::vector<ApeBinaryOutput *> output_pins_;
     std::vector<ApeBinarySensor *> input_pins_;
-    std::vector<ApeSensor *> analog_pins_;
+    //std::vector<ApeSensor *> analog_pins_;
 };
-
+/*
 class LM35Sensor : public PollingComponent, public sensor::Sensor
 {
   public:
@@ -240,7 +238,7 @@ class LM35Sensor : public PollingComponent, public sensor::Sensor
     uint16_t reading_{0};
     uint8_t readings_{0};
 };
-
+*/
 void ApeBinaryOutput::write_state(bool state)
 {
     this->parent_->write_state(this->pin_, state);

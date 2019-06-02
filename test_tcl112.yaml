@@ -1,0 +1,75 @@
+esphome:
+  name: test_tcl112
+  platform: ESP8266
+  board: nodemcu
+
+logger:
+  level: VERY_VERBOSE
+
+wifi:
+  ssid: !secret wifi_ssid
+  password: !secret wifi_pass
+  
+api:
+  
+ota:
+
+sensor:
+  - platform: dht
+    pin: D2
+    model: DHT22
+    temperature:
+      name: "Estudio Test Temperature"
+      id: estudio_test_dht_temp
+    humidity:
+      name: "Estudio Test Humidity"
+    update_interval: 5s
+
+remote_transmitter:
+  carrier_duty_percent: 50%
+  pin: D5
+
+switch:
+  - platform: restart
+    name: "Test tcl112 restart"
+
+climate:
+  platform: tcl112
+  name: 'New AC No Sensor'
+  sensor: estudio_test_dht_temp
+  #sensor: estudio_test_dht_temp
+#   - platform: remote_transmitter
+#     name: 'AC Estudio old'
+#     id: coolix_remote
+#     transmitter: remote_tx
+#     model: coolix
+#     supports_heat: false
+#   - platform: remote_transmitter
+#     name: 'AC Estudio Tcl'
+#     id: tcl_remote
+#     transmitter: remote_tx
+#     model: tcl
+#     supports_heat: true
+
+# switch:
+#   - platform: template
+#     name: 'Set Coolix Off'
+#     turn_on_action:
+#       - lambda: |-
+#           id(coolix_remote)->make_call()
+#             .set_mode(CLIMATE_MODE_OFF)
+#             .perform();
+#   - platform: template
+#     name: 'Set Coolix Auto'
+#     turn_on_action:
+#       - lambda: |-
+#           id(coolix_remote)->make_call()
+#             .set_mode(CLIMATE_MODE_AUTO)
+#             .perform();
+#   - platform: template
+#     name: 'Set Coolix Cool'
+#     turn_on_action:
+#       - lambda: |-
+#           id(coolix_remote)->make_call()
+#             .set_mode(CLIMATE_MODE_COOL)
+#             .perform();
