@@ -28,22 +28,19 @@ logger:
   logs:
     i2c: DEBUG
     uart: DEBUG
-    #sim800l: VERY_VERBOSE
+    sim800l: DEBUG 
 
 # Enable Home Assistant API
 api:
   services:
   - service: send_sms
     variables:
-      param_recipient: string
-      param_message: string
+      recipient: string
+      message: string
     then:
-    # - lambda: |-
-    #     id(sim800l1).send_sms(param_recipient, param_message);
     - sim800l.send_sms:
-        id: sim800l1
-        recipient: !lambda 'return param_recipient;'
-        message: !lambda 'return param_message;'
+        recipient: !lambda 'return recipient;'
+        message: !lambda 'return message;'
 
 ota:
 
@@ -56,7 +53,6 @@ uart:
   rx_pin: RX
 
 sim800l:
-  id: sim800l1
   on_sms_received:
     - logger.log:
         format: "Received '%s' from %s"
@@ -87,6 +83,11 @@ custom_component:
 binary_sensor:
   - platform: status
     name: "Planta Alta Status"
+    on_release:
+      then:
+        - sim800l.send_sms:
+            recipient: '+5493624207774'
+            message: 'Conexion a Home Assistant perdida'
 
   - platform: homeassistant
     name: "Switch Escalera 1 from HA"
@@ -139,12 +140,16 @@ binary_sensor:
       - name: "Ventana Baño"
         device_class: window
       - name: "Tanque Agua Arriba Lleno"
+        on_press:
+          then:
+          - sim800l.send_sms:
+              recipient: '+5493624207774'
+              message: Tanque alto lleno
         on_release:
           then:
-            - sim800l.send_sms:
-                id: sim800l1
-                recipient: '+5493624207774'
-                message: Tanque vacio. Llenando...
+          - sim800l.send_sms:
+              recipient: '+5493624207774'
+              message: Tanque alto vacio
               
 output:
 - platform: custom
