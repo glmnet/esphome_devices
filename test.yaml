@@ -2,9 +2,13 @@ esphome:
   name: test_local
   platform: ESP8266
   board: nodemcu
+  includes:
+    - ape.h
 
 logger:
   level: VERY_VERBOSE
+  logs:
+    i2c: VERBOSE
 
 wifi:
   ssid: !secret wifi_ssid
@@ -16,7 +20,7 @@ ota:
 
 sensor:
   - platform: dht
-    pin: D2
+    pin: D4
     model: DHT22
     temperature:
       name: "Estudio Test Temperature"
@@ -25,46 +29,44 @@ sensor:
       name: "Estudio Test Humidity"
     update_interval: 5s
 
-remote_transmitter:
-  carrier_duty_percent: 50%
-  pin: D5
+i2c:
+  id: i2c_component
 
-climate:
-  platform: coolix
-  name: 'test AC Estudio 3'
-  #sensor: estudio_test_dht_temp
-#   - platform: remote_transmitter
-#     name: 'AC Estudio old'
-#     id: coolix_remote
-#     transmitter: remote_tx
-#     model: coolix
-#     supports_heat: false
-#   - platform: remote_transmitter
-#     name: 'AC Estudio Tcl'
-#     id: tcl_remote
-#     transmitter: remote_tx
-#     model: tcl
-#     supports_heat: true
+custom_component:
+- id: ape
+  lambda: |-
+    auto ape_component = new ArduinoPortExtender(id(i2c_component), 0x08);
+    return {ape_component};
 
-# switch:
-#   - platform: template
-#     name: 'Set Coolix Off'
-#     turn_on_action:
-#       - lambda: |-
-#           id(coolix_remote)->make_call()
-#             .set_mode(CLIMATE_MODE_OFF)
-#             .perform();
-#   - platform: template
-#     name: 'Set Coolix Auto'
-#     turn_on_action:
-#       - lambda: |-
-#           id(coolix_remote)->make_call()
-#             .set_mode(CLIMATE_MODE_AUTO)
-#             .perform();
-#   - platform: template
-#     name: 'Set Coolix Cool'
-#     turn_on_action:
-#       - lambda: |-
-#           id(coolix_remote)->make_call()
-#             .set_mode(CLIMATE_MODE_COOL)
-#             .perform();
+output:
+- platform: custom
+  type: binary
+  lambda: |-
+    return {ape_binary_output(id(ape), 13)};
+  outputs:
+    - id: arduino_led_13
+
+light:
+  - platform: binary
+    id: luz_led_test_arduino
+    name: Arduino Led 13
+    output: arduino_led_13
+
+binary_sensor:
+- platform: custom
+  lambda: |-
+    return {ape_binary_sensor(id(ape), 9)};
+
+  binary_sensors:
+  - name: "Switch Test 1" 
+- platform: homeassistant
+  name: "Switch Este Test 1 from HA"
+  entity_id: binary_sensor.switch_este_test_1
+  on_state:
+    then: 
+      - light.toggle: luz_led_test_arduino
+
+
+switch:
+  - platform: restart
+    name: "Test Restart"

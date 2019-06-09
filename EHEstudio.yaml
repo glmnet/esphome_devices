@@ -2,7 +2,6 @@ esphome:
   name: eh_estudio
   platform: ESP8266
   board: nodemcu
-  # Use a local copy of ESPHome
   includes:
     - ape.h
   on_boot:
@@ -164,14 +163,17 @@ script:
     - delay: 10s
   - id: auto_off_luz_banio
     then:
-    - light.turn_on: luz_banio
-    - if: id(puerta_banio).state # open
-      then: 
-        - delay: 300s
-      else:
-        - delay: 600s
-    - light.turn_off: luz_banio
+      - light.turn_on: luz_banio
+      - if: 
+          condition: 
+            binary_sensor.is_on: puerta_banio # open
+          then: 
+            - delay: 300s
+          else:
+            - delay: 600s
+      - light.turn_off: luz_banio
   - id: auto_off_extractor
+    then:
     - delay: 600s
     - fan.turn_off: extractor_banio
   

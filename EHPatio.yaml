@@ -63,6 +63,8 @@ switch:
     id: sirena
     name: "Sirena"
     output: gpio_relay_4
+  - platform: restart
+    name: "Patio Restart"
 
 binary_sensor:
   - platform: status
@@ -101,7 +103,7 @@ binary_sensor:
         internal: true
         on_state:
           then:
-            - light.toggle: patio_proyector_oeste
+            - light.toggle: galeria
   - platform: homeassistant
     name: "Switch Galeria 2 from HA"
     entity_id: binary_sensor.switch_estudio_galeria_2

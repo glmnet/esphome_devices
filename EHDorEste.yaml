@@ -2,9 +2,8 @@ esphome:
   name: eh_dor_este
   platform: ESP8266
   board: nodemcu
-  # Use a local copy of ESPHome
-  esphome_core_version:
-    local: C:\glmgit\glmnet_esphome\esphome-core
+  includes:
+    - ape.h
 
 wifi:
   ssid: !secret wifi_ssid
@@ -15,6 +14,82 @@ api:
 ota:
 
 i2c:
-
+  id: i2ccomponent
+  
 logger:  
   level: DEBUG
+
+custom_component:
+  - id: ape
+    lambda: |-
+      auto ape_component = new ArduinoPortExtender(i2ccomponent, 0x08);
+      return {ape_component};
+
+output:
+- platform: custom
+  type: binary
+  lambda: |-
+    return {ape_binary_output(ape, 7),
+            ape_binary_output(ape, 6)};
+  outputs:
+    - id: gpio_relay_1
+      inverted: true
+    - id: gpio_relay_2
+      inverted: true
+
+light:
+  - platform: binary
+    id: luz_dormitorio_este
+    name: "Dormitorio Este"
+    output: gpio_relay_1
+  - platform: binary
+    id: luz_dormitorio_este_cama
+    name: "Dormitorio Este Cama"
+    output: gpio_relay_2
+
+binary_sensor:
+  - platform: status
+    name: "Dormitorio Este Status"
+  - platform: custom
+    lambda: |-
+      return {ape_binary_sensor(ape, 2), // ribbon purple
+              ape_binary_sensor(ape, 3), // ribbon white 
+              ape_binary_sensor(ape, 8), // ribbon verde 
+              ape_binary_sensor(ape, 1),
+              ape_binary_sensor(ape, 14), // ribbon red 
+              ape_binary_sensor(ape, 0)};
+    binary_sensors:
+      - name: "Switch Puerta 1"
+        internal: true
+        on_state:
+          then:
+            - light.toggle: luz_dormitorio_este
+      - name: "Switch puerta 2"
+        internal: true
+        on_state:
+          then:
+            - light.toggle: luz_dormitorio_este_cama
+      - name: "Switch Cama 1"
+        internal: true
+        on_state:
+          then:
+            - light.toggle: luz_dormitorio_este_cama
+      - name: "Switch Cama 2"
+        internal: true
+        on_state:
+            then:
+              - light.toggle: luz_dormitorio_este_cama
+      - name: "Ventana Dormitorio Este"
+        device_class: window
+      - name: "Switch Este Test 1"
+
+  - platform: homeassistant
+    name: "Switch Test 1 from HA"
+    entity_id: binary_sensor.switch_test_1
+    on_state:
+      then: 
+        - light.toggle: luz_dormitorio_este
+        
+switch:
+  - platform: restart
+    name: "Dormitorio Este Restart"
