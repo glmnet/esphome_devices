@@ -69,6 +69,9 @@ switch:
 binary_sensor:
   - platform: status
     name: "Patio Status"
+    on_press:
+    - script.execute: api_just_connected
+
   - platform: custom
     lambda: |-
       return {ape_binary_sensor(ape, 8),
@@ -109,15 +112,31 @@ binary_sensor:
     entity_id: binary_sensor.switch_estudio_galeria_2
     on_state:
       then: 
-        - light.toggle: galeria
+        if: 
+          condition: 
+            not: 
+              script.is_running: api_just_connected
+          then:
+            light.toggle: galeria
+          else:
+            logger.log: 'Not toggling galeria, api just connected'
+
   - platform: homeassistant
     name: "Switch Galeria 3 from HA"
     entity_id: binary_sensor.switch_estudio_galeria_3
     on_state:
       then: 
-        - script.execute: toggle_proyectores
+        if: 
+          condition: 
+            not: 
+              script.is_running: api_just_connected
+          then:
+            script.execute: toggle_proyectores
 
 script:
+  - id: api_just_connected
+    then:
+      - delay: 5s
   - id: toggle_proyectores
     then:
       - light.toggle: patio_proyector_este
