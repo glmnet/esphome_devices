@@ -83,18 +83,26 @@ custom_component:
 binary_sensor:
   - platform: status
     name: "Planta Alta Status"
+    on_press:
+      then:
+      - script.execute: api_just_connected
     on_release:
       then:
-        - sim800l.send_sms:
-            recipient: '+5493624207774'
-            message: 'Conexion a Home Assistant perdida'
+      - sim800l.send_sms:
+          recipient: '+5493624207774'
+          message: 'Conexion a Home Assistant perdida'
 
   - platform: homeassistant
     name: "Switch Escalera 1 from HA"
     entity_id: binary_sensor.switch_escalera_1
     on_state:
       then: 
-        - light.toggle: luz_escalera
+        if: 
+          condition: 
+            not: 
+              script.is_running: api_just_connected
+          then:
+            - light.toggle: luz_escalera
 
   - platform: custom
     lambda: |-
@@ -208,6 +216,10 @@ light:
     name: "Luz Patio Oeste"
     output: gpio_relay_7
   
+script:
+  - id: api_just_connected
+    then:
+      - delay: 40s
 
   
 ## MW / UW Marked Wire / Unmarked Wire

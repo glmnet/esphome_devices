@@ -2,7 +2,6 @@ esphome:
   name: eh_patio
   platform: ESP8266
   board: nodemcu
-  # Use a local copy of ESPHome
   includes:
     - ape.h
 
@@ -70,7 +69,8 @@ binary_sensor:
   - platform: status
     name: "Patio Status"
     on_press:
-    - script.execute: api_just_connected
+      then:
+      - script.execute: api_just_connected
 
   - platform: custom
     lambda: |-
@@ -136,7 +136,7 @@ binary_sensor:
 script:
   - id: api_just_connected
     then:
-      - delay: 5s
+      - delay: 40s
   - id: toggle_proyectores
     then:
       - light.toggle: patio_proyector_este

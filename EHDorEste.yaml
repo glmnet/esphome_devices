@@ -10,13 +10,13 @@ wifi:
   password: !secret wifi_pass
 
 api:
-  
+
 ota:
 
 i2c:
   id: i2ccomponent
-  
-logger:  
+
+logger:
   level: DEBUG
 
 custom_component:
@@ -52,12 +52,11 @@ binary_sensor:
     name: "Dormitorio Este Status"
   - platform: custom
     lambda: |-
-      return {ape_binary_sensor(ape, 2), // ribbon purple
-              ape_binary_sensor(ape, 3), // ribbon white 
-              ape_binary_sensor(ape, 8), // ribbon verde 
-              ape_binary_sensor(ape, 1),
-              ape_binary_sensor(ape, 14), // ribbon red 
-              ape_binary_sensor(ape, 0)};
+      return {ape_binary_sensor(ape, 15), // A1 ribbon orange
+              ape_binary_sensor(ape, 3), // ribbon white
+              ape_binary_sensor(ape, 8), // ribbon green
+              ape_binary_sensor(ape, 2), // ribbon purple
+              ape_binary_sensor(ape, 14)}; // A0 ribbon red
     binary_sensors:
       - name: "Switch Puerta 1"
         internal: true
@@ -73,7 +72,7 @@ binary_sensor:
         internal: true
         on_state:
           then:
-            - light.toggle: luz_dormitorio_este_cama
+            - light.toggle: luz_dormitorio_este
       - name: "Switch Cama 2"
         internal: true
         on_state:
@@ -81,15 +80,14 @@ binary_sensor:
               - light.toggle: luz_dormitorio_este_cama
       - name: "Ventana Dormitorio Este"
         device_class: window
-      - name: "Switch Este Test 1"
 
   - platform: homeassistant
     name: "Switch Test 1 from HA"
     entity_id: binary_sensor.switch_test_1
     on_state:
-      then: 
+      then:
         - light.toggle: luz_dormitorio_este
-        
+
 switch:
   - platform: restart
     name: "Dormitorio Este Restart"

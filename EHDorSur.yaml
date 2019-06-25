@@ -15,13 +15,13 @@ wifi:
   password: !secret wifi_pass
 
 api:
-  
+
 ota:
 
 i2c:
   id: i2ccomponent
-  
-logger:  
+
+logger:
   level: DEBUG
 
 custom_component:
@@ -66,13 +66,13 @@ binary_sensor:
   - platform: custom
     lambda: |-
       return {ape_binary_sensor(ape, 2), // ribbon purple
-              ape_binary_sensor(ape, 3), // ribbon white 
-              ape_binary_sensor(ape, 8), // ribbon verde 
-              ape_binary_sensor(ape, 1), 
-              ape_binary_sensor(ape, 0), 
+              ape_binary_sensor(ape, 16), // ribbon white
+              ape_binary_sensor(ape, 8), // ribbon verde
+              ape_binary_sensor(ape, 1),
+              ape_binary_sensor(ape, 0),
               ape_binary_sensor(ape, 9), //  "Cama Derecha, estaba en A4/A5"
               ape_binary_sensor(ape, 10), // "Cama Derecha"
-              ape_binary_sensor(ape, 14)}; // ribbon red 
+              ape_binary_sensor(ape, 14)}; // ribbon red
     binary_sensors:
       - name: "Switch Puerta 1"
         internal: true
@@ -118,7 +118,6 @@ binary_sensor:
       - name: "Ventana Dormitorio Sur"
         device_class: window
 
-# Example configuration entry
 remote_transmitter:
   pin: GPIO14
   carrier_duty_percent: 50%

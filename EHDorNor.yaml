@@ -1,11 +1,9 @@
-# GND     3.3
-
-
 esphome:
   name: eh_dor_nor
   platform: ESP8266
   board: nodemcu
-  # ...
+  includes:
+    - ape.h
 
 wifi:
   ssid: !secret wifi_ssid
@@ -13,7 +11,7 @@ wifi:
 
 # Enable logging
 logger:
-  #level: VERY_VERBOSE
+  level: VERBOSE
 
 # Enable Home Assistant API
 api:
@@ -21,40 +19,29 @@ api:
 ota:
 
 i2c:
+  id: i2ccomponent
 
-pcf8574:
-  - id: 'pcf8574_hub'
-    address: 0x20
-    pcf8575: True
+custom_component:
+  - id: ape
+    lambda: |-
+      auto ape_component = new ArduinoPortExtender(i2ccomponent, 0x08);
+      return {ape_component};
 
 output:
-  - platform: gpio
-    id: gpio_relay_1
-    pin:      
-      pcf8574: pcf8574_hub
-      number: 7
-      mode: OUTPUT
-      inverted: True
-  - platform: gpio
-    id: gpio_relay_2
-    pin:      
-      pcf8574: pcf8574_hub
-      number: 6
-      mode: OUTPUT
-      inverted: True
-  - platform: gpio
-    id: gpio_relay_3
-    pin:      
-      pcf8574: pcf8574_hub
-      number: 5
-      mode: OUTPUT
-      inverted: True
-  # - platform: gpio
-  #   id: gpio_relay_4
-  #   pin:      
-  #     pcf8574: pcf8574_hub
-  #     number: 4
-  #     mode: OUTPUT
+- platform: custom
+  type: binary
+  lambda: |-
+    return {ape_binary_output(ape, 7),
+            ape_binary_output(ape, 6),
+            ape_binary_output(ape, 5)};
+  outputs:
+    - id: gpio_relay_1
+      inverted: true
+    - id: gpio_relay_2
+      inverted: true
+    - id: gpio_relay_3
+      inverted: true
+
 
 light:
   - platform: binary
@@ -71,96 +58,61 @@ light:
     output: gpio_relay_3
 
 binary_sensor:
-  - platform: gpio
-    name: "Dormitorio norte Switch puerta 1"
-    internal: true
-    pin:
-      pcf8574: pcf8574_hub
-      number: 2 # ribbon purple / amarillo
-      mode: INPUT_PULLUP
-    on_state:
-      then:
-        - light.toggle: techo
-  - platform: gpio
-    name: "Dormitorio norte Switch puerta 2"
-    internal: true
-    filters:
-      - invert:
-    pin:
-      pcf8574: pcf8574_hub
-      number: 3 # ribbon white / marron 
-      mode: INPUT_PULLUP
-    on_state:
-      then:
-        - light.toggle: cama_pared
-  - platform: gpio
-    name: "Dormitorio norte Switch puerta 2"
-    internal: true
-    filters:
-      - invert:
-    pin:
-      pcf8574: pcf8574_hub
-      number: 8 # ribbon verde / rojo
-      mode: INPUT_PULLUP
-    on_state:
-      then:
-        - light.toggle: cama_ventana
-  - platform: gpio
-    name: "Dormitorio norte Switch cama pared 1"
-    internal: true
-    filters:
-      - invert:
-    pin:
-      pcf8574: pcf8574_hub
-      number: 0 # amarillo (sin cinta)
-      mode: INPUT_PULLUP
-    on_state:
-      then:
-        - light.toggle: cama_pared
-  - platform: gpio
-    name: "Dormitorio norte Switch cama pared 2"
-    internal: true
-    filters:
-      - invert:
-    pin:
-      pcf8574: pcf8574_hub
-      number: 1 # rojo (sin cinta)
-      mode: INPUT_PULLUP
-    on_state:
-      then:
-        - light.toggle: techo
-  - platform: gpio
-    name: "Dormitorio norte Switch cama ventana 1"
-    internal: true
-    filters:
-      - invert:
-    pin:
-      pcf8574: pcf8574_hub
-      number: 9 # pin debajo de ground # Azul (sin cinta)
-      mode: INPUT_PULLUP
-    on_state:
-      then:
-        - light.toggle: cama_ventana
-  - platform: gpio
-    name: "Dormitorio norte Switch cama ventana 2"
-    internal: true
-    filters:
-      - invert:
-    pin:
-      pcf8574: pcf8574_hub
-      number: 10 # pin debajo de 3.3 # Marron sin cinta
-      mode: INPUT_PULLUP
-    on_state:
-      then:
-        - light.toggle: techo
-  - platform: gpio
-    name: "Dormitorio norte Ventana"
-    device_class: window
-    pin:
-      pcf8574: pcf8574_hub
-      number: 14 # ribbon red / azul (con cinta)
-      mode: INPUT_PULLUP
+  - platform: status
+    name: "Dormitorio Este Status"
+  - platform: custom
+    lambda: |-
+      return {ape_binary_sensor(ape, 2), // A1 ribbon orange
+              ape_binary_sensor(ape, 3), // ribbon white
+              ape_binary_sensor(ape, 8), // ribbon green
+              ape_binary_sensor(ape, 0),
+              ape_binary_sensor(ape, 1),
+              ape_binary_sensor(ape, 9),
+              ape_binary_sensor(ape, 10),
+              ape_binary_sensor(ape, 14)};
+    binary_sensors:
+      - name: "Dormitorio norte Switch puerta 1"
+        internal: true
+        on_state:
+          then:
+            - light.toggle: techo
+      - name: "Dormitorio norte Switch puerta 2"
+        internal: true
+        on_state:
+          then:
+            - light.toggle: cama_pared
+      - name: "Dormitorio norte Switch puerta 2"
+        internal: true
+        on_state:
+          then:
+            - light.toggle: cama_ventana
+      - name: "Dormitorio norte Switch cama pared 1"
+        internal: true
+        on_state:
+          then:
+            - light.toggle: cama_pared
+      - name: "Dormitorio norte Switch cama pared 2"
+        internal: true
+        on_state:
+          then:
+            - light.toggle: techo
+      - name: "Dormitorio norte Switch cama ventana 1"
+        internal: true
+        on_state:
+          then:
+            - light.toggle: cama_ventana
+      - name: "Dormitorio norte Switch cama ventana 2"
+        internal: true
+        on_state:
+          then:
+            - light.toggle: techo
+      - name: "Dormitorio norte Ventana"
+        device_class: window
 
+remote_transmitter:
+  pin: GPIO14
+  carrier_duty_percent: 50%
 
-
-      
+climate:
+  platform: coolix
+  name: 'AC Dormitorio Norte'

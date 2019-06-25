@@ -2,16 +2,48 @@ esphome:
   name: eh_tanque
   platform: ESP8266
   board: nodemcu
+  includes:
+    - ape.h
 
 wifi:
   ssid: !secret wifi_ssid
   password: !secret wifi_pass
 
 api:
-  
+
 ota:
 
 i2c:
+  id: i2ccomponent
 
-logger:  
+logger:
   level: DEBUG
+
+
+
+custom_component:
+  - id: ape
+    lambda: |-
+      auto ape_component = new ArduinoPortExtender(i2ccomponent, 0x08);
+      return {ape_component};
+
+output:
+- platform: custom
+  type: binary
+  lambda: |-
+    return {ape_binary_output(ape, 4)};
+  outputs:
+    - id: gpio_relay_1
+
+switch:
+  - platform: output
+    name: "Bomba Tanque"
+    id: bomba_tanque
+    output: gpio_relay_1
+
+binary_sensor:
+  - platform: status
+    name: "Tanque Status"
+    on_release:
+      then:
+      - switch.turn_off: bomba_tanque
