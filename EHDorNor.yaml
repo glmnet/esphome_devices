@@ -59,7 +59,7 @@ light:
 
 binary_sensor:
   - platform: status
-    name: "Dormitorio Este Status"
+    name: "Dormitorio Norte Status"
   - platform: custom
     lambda: |-
       return {ape_binary_sensor(ape, 2), // A1 ribbon orange

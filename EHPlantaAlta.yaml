@@ -7,28 +7,28 @@ esphome:
   on_loop:
     then:
       # set the common neutral wire relay for patio lights
-      lambda: |- 
-        bool binary1;
-        bool binary2;
-        id(luz_patio_oeste).current_values_as_binary(&binary1);
-        id(luz_patio_este).current_values_as_binary(&binary2);
-        if (binary1 || binary2)
-          id(gpio_relay_5).turn_on();
-        else
-          id(gpio_relay_5).turn_off();
+      if:
+        condition:
+          or:
+            - light.is_on: luz_patio_este
+            - light.is_on: luz_patio_oeste
+        then:
+          output.turn_on: gpio_relay_5
+        else:
+          output.turn_off: gpio_relay_5
 
 wifi:
   ssid: !secret wifi_ssid
   password: !secret wifi_pass
 
-# Enable logging 
+# Enable logging
 logger:
   baud_rate: 0 # disable log by hardware UART
   level: VERBOSE
   logs:
     i2c: DEBUG
     uart: DEBUG
-    sim800l: DEBUG 
+    sim800l: DEBUG
 
 # Enable Home Assistant API
 api:
@@ -87,33 +87,40 @@ binary_sensor:
       then:
       - script.execute: api_just_connected
     on_release:
-      then:
-      - sim800l.send_sms:
-          recipient: '+5493624207774'
-          message: 'Conexion a Home Assistant perdida'
+        if:
+          condition:
+            for:
+              time: 1min
+              condition:
+                not:
+                  api.connected:
+          then:
+          - sim800l.send_sms:
+              recipient: '+5493624207774'
+              message: 'Conexion a Home Assistant perdida'
 
   - platform: homeassistant
     name: "Switch Escalera 1 from HA"
     entity_id: binary_sensor.switch_escalera_1
     on_state:
-      then: 
-        if: 
-          condition: 
-            not: 
+      then:
+        if:
+          condition:
+            not:
               script.is_running: api_just_connected
           then:
             - light.toggle: luz_escalera
 
   - platform: custom
     lambda: |-
-      return {ape_binary_sensor(ape2, 6), 
-              ape_binary_sensor(ape2, 8), 
-              ape_binary_sensor(ape2, 4), 
-              ape_binary_sensor(ape2, 7), 
+      return {ape_binary_sensor(ape2, 6),
+              ape_binary_sensor(ape2, 8),
+              ape_binary_sensor(ape2, 4),
+              ape_binary_sensor(ape2, 7),
               ape_binary_sensor(ape2, 3),
-              ape_binary_sensor(ape2, 9), 
-              ape_binary_sensor(ape2, 5), 
-              ape_binary_sensor(ape2, 2), 
+              ape_binary_sensor(ape2, 9),
+              ape_binary_sensor(ape2, 5),
+              ape_binary_sensor(ape2, 2),
               ape_binary_sensor(ape2, 11)};
     binary_sensors:
       - name: "Switch Escalera 1"
@@ -148,24 +155,24 @@ binary_sensor:
       - name: "Ventana Baño"
         device_class: window
       - name: "Tanque Agua Arriba Lleno"
-        on_press:
-          then:
-          - sim800l.send_sms:
-              recipient: '+5493624207774'
-              message: Tanque alto lleno
-        on_release:
-          then:
-          - sim800l.send_sms:
-              recipient: '+5493624207774'
-              message: Tanque alto vacio
-              
+        # on_press:
+        #   then:
+        #   - sim800l.send_sms:
+        #       recipient: '+5493624207774'
+        #       message: Tanque alto lleno
+        # on_release:
+        #   then:
+        #   - sim800l.send_sms:
+        #       recipient: '+5493624207774'
+        #       message: Tanque alto vacio
+
 output:
 - platform: custom
   type: binary
   lambda: |- # LTR all relays
     return {ape_binary_output(ape, 2), // Baño
-            ape_binary_output(ape, 3), // Escalera 
-            ape_binary_output(ape, 4), // Ante Baño 
+            ape_binary_output(ape, 3), // Escalera
+            ape_binary_output(ape, 4), // Ante Baño
             ape_binary_output(ape, 5), // Hall
             ape_binary_output(ape, 10), // Comun Luz Patio
             ape_binary_output(ape, 11), // Luz Patio Este
@@ -215,13 +222,17 @@ light:
     id: luz_patio_oeste
     name: "Luz Patio Oeste"
     output: gpio_relay_7
-  
+
 script:
   - id: api_just_connected
     then:
       - delay: 40s
 
-  
+
+switch:
+  - platform: restart
+    name: "Planta Alta Restart"
+
 ## MW / UW Marked Wire / Unmarked Wire
 
 # MW - White 0V
@@ -229,7 +240,7 @@ script:
 
 
 
-# APE2 06 Ribbon 3 Black - # MW - Yellow - Int Escalera 1 
+# APE2 06 Ribbon 3 Black - # MW - Yellow - Int Escalera 1
 # APE2 08 Ribbon 3 Purple - # UW - White - Int Escalera 2
 # APE2 04 Ribbon 3 Blue - # UW - Yellow - Int Ante Baño 1
 # APE2 07 Ribbon 3 Green - # UW - Red - Int Ante Baño 2
@@ -237,8 +248,8 @@ script:
 # APE2 09 Ribbon 3 White - # MW - Blue - PIR Baño
 # APE2 05 Ribbon 3 Gray - # MW - Marron - PIR Hall
 # APE2 02 Ribbon 3 Red - # UW - Marron - Alarma Ventana Hall
-# APE2 12 Ribbon 3 Brown - 
-# APE2 13 Ribbon 3 Orange 
+# APE2 12 Ribbon 3 Brown -
+# APE2 13 Ribbon 3 Orange
 
 # APE2 11 Ribbon 2 White - Tanque 1 - Azul
 # APE2 10 Ribbon 2 Purple - Tanque 2 - Verde

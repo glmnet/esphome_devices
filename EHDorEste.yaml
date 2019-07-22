@@ -81,13 +81,6 @@ binary_sensor:
       - name: "Ventana Dormitorio Este"
         device_class: window
 
-  - platform: homeassistant
-    name: "Switch Test 1 from HA"
-    entity_id: binary_sensor.switch_test_1
-    on_state:
-      then:
-        - light.toggle: luz_dormitorio_este
-
 switch:
   - platform: restart
     name: "Dormitorio Este Restart"

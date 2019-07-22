@@ -11,13 +11,13 @@ wifi:
   password: !secret wifi_pass
 
 api:
-  
+
 ota:
 
 i2c:
   id: i2ccomponent
 
-logger:  
+logger:
   level: VERBOSE
 
 custom_component:
@@ -67,16 +67,16 @@ binary_sensor:
     name: "Comedor Status"
   - platform: custom
     lambda: |-
-      return {ape_binary_sensor(ape, 2), // ribbon purple / amarillo 
+      return {ape_binary_sensor(ape, 2), // ribbon purple / amarillo
               ape_binary_sensor(ape, 3), // ribbon white / marron
-              ape_binary_sensor(ape, 10), // pin debajo de 3.3 
+              ape_binary_sensor(ape, 10), // pin debajo de 3.3
               ape_binary_sensor(ape, 8), // ribbon verde / rojo
               ape_binary_sensor(ape, 14), // ribbon red / azul (con cinta)
               ape_binary_sensor(ape, 15), // A1
               ape_binary_sensor(ape, 0),
               ape_binary_sensor(ape, 1),
-              ape_binary_sensor(ape, 9)}; // pin debajo de ground 
-    binary_sensors:  
+              ape_binary_sensor(ape, 9)}; // pin debajo de ground
+    binary_sensors:
       - name: "Switch Comedor Puerta 1"
         internal: true
         on_state:
@@ -98,13 +98,7 @@ binary_sensor:
           then:
             - light.toggle: garage
       - name: "Switch Garage 2"
-        on_state:
-          then:
-            - light.toggle: garage
       - name: "Switch Garage 3"
-        on_state:
-          then:
-            - light.toggle: garage
       - name: "Ventana Comedor Oeste"
         device_class: window
       - name: "Ventana Comedor Sur"

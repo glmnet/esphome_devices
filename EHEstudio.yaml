@@ -13,24 +13,24 @@ wifi:
   password: !secret wifi_pass
 
 api:
-  
+
 ota:
 
 i2c:
   id: i2c_component
 
-logger:  
+logger:
   level: VERBOSE
 
-remote_transmitter:
-  carrier_duty_percent: 50%
-  pin: D5
+# remote_transmitter:
+#   carrier_duty_percent: 50%
+#   pin: D5
 
-climate:
-  platform: coolix
-  name: 'AC Estudio'
-  supports_heat: false
-  
+# climate:
+#   platform: coolix
+#   name: 'AC Estudio'
+#   supports_heat: false
+
 custom_component:
 - id: ape
   lambda: |-
@@ -89,7 +89,7 @@ binary_sensor:
             ape_binary_sensor(id(ape), 14 + 2),
             ape_binary_sensor(id(ape), 8),
             ape_binary_sensor(id(ape), 14 + 1),
-            ape_binary_sensor(id(ape), 12), 
+            ape_binary_sensor(id(ape), 12),
             ape_binary_sensor(id(ape), 10),
             ape_binary_sensor(id(ape), 9),
             ape_binary_sensor(id(ape), 13),
@@ -144,7 +144,7 @@ binary_sensor:
     - delayed_on: 100ms
     - delayed_off: 100ms
     on_state:
-      then: 
+      then:
       - fan.turn_on: extractor_banio
       - delay: 600s
       - fan.turn_off: extractor_banio
@@ -164,10 +164,10 @@ script:
   - id: auto_off_luz_banio
     then:
       - light.turn_on: luz_banio
-      - if: 
-          condition: 
+      - if:
+          condition:
             binary_sensor.is_on: puerta_banio # open
-          then: 
+          then:
             - delay: 300s
           else:
             - delay: 600s
@@ -176,11 +176,11 @@ script:
     then:
     - delay: 600s
     - fan.turn_off: extractor_banio
-  
+
 
 ###
 # module info:
-# Male Header: 
+# Male Header:
 # GND - White | DI2 - Pur |  DI8 - Greeen |  NC       | A2 Brown
 # 12V - Black | A1 - Gray |  5V -    Blue |  A0 - Yel | A3 Red
 
@@ -194,7 +194,7 @@ script:
 # Cables entre estudio - baño
 # Cable 1
 # Blanco - GND
-# Azul   - 12V          - 
+# Azul   - 12V          -
 # Marron - IR LED       - GPIO14
 # Amaril - PIR          - r Yell
 # Rojo   - Puerta SW 1  - r Red

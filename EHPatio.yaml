@@ -8,15 +8,14 @@ esphome:
 wifi:
   ssid: !secret wifi_ssid
   password: !secret wifi_pass
-
 api:
-  
+
 ota:
 
 i2c:
   id: i2ccomponent
 
-logger:  
+logger:
   level: DEBUG
 
 custom_component:
@@ -32,7 +31,8 @@ output:
     return {ape_binary_output(ape, 7),
             ape_binary_output(ape, 6),
             ape_binary_output(ape, 5),
-            ape_binary_output(ape, 4)};
+            ape_binary_output(ape, 4),
+            ape_binary_output(ape, 13)};
   outputs:
     - id: gpio_relay_1
       inverted: true
@@ -42,6 +42,8 @@ output:
       inverted: true
     - id: gpio_relay_4
       inverted: true
+    - id: ardu_13_npn
+
 
 light:
   - platform: binary
@@ -56,21 +58,182 @@ light:
     id: patio_proyector_oeste
     name: "Patio Proyector Oeste"
     output: gpio_relay_3
+  - platform: binary
+    id: sirena_led
+    name: "LED Sirena"
+    output: ardu_13_npn
+
+remote_transmitter:
+  pin: GPIO12
+  # RF uses a 100% carrier signal
+  carrier_duty_percent: 100%
 
 switch:
-  - platform: output
-    id: sirena
-    name: "Sirena"
-    output: gpio_relay_4
-  - platform: restart
-    name: "Patio Restart"
+- platform: output
+  id: sirena
+  name: "Sirena"
+  output: gpio_relay_4
+- platform: restart
+  name: "Patio Restart"
+
+- platform: template
+  id: C3_Lock
+  turn_on_action:
+    - remote_transmitter.transmit_rc_switch_raw:
+        code: '110100000011010100001100'
+        protocol: 1
+        repeat:
+            times: 5
+            wait_time: 2ms
+- platform: template
+  id: C3_UnLock
+  name: RC_C3_Unlock
+  turn_on_action:
+    - remote_transmitter.transmit_rc_switch_raw:
+        code: '110100000011010100110000'
+        protocol: 1
+        repeat:
+            times: 5
+            wait_time: 2ms
+- platform: template
+  id: C3_Bajar
+  name: RC_C3_Bajar
+  turn_on_action:
+    - remote_transmitter.transmit_rc_switch_raw:
+        code: '110100000011010100000011'
+        protocol: 1
+        repeat:
+            times: 5
+            wait_time: 2ms
+- platform: template
+  id: C3_Subir
+  name: RC_C3_Subir
+  turn_on_action:
+    - remote_transmitter.transmit_rc_switch_raw:
+        code: '110100000011010111000000'
+        protocol: 1
+        repeat:
+            times: 5
+            wait_time: 2ms
+
+
+- platform: template
+  id: C4_Lock
+  turn_on_action:
+    - remote_transmitter.transmit_rc_switch_raw:
+        code: '110111010100001100001100'
+        protocol: 1
+        repeat:
+            times: 5
+            wait_time: 2ms
+- platform: template
+  id: C4_UnLock
+  turn_on_action:
+    - remote_transmitter.transmit_rc_switch_raw:
+        code: '110111010100001100110000'
+        protocol: 1
+        repeat:
+            times: 5
+            wait_time: 2ms
+- platform: template
+  id: C4_Bajar
+  turn_on_action:
+    - remote_transmitter.transmit_rc_switch_raw:
+        code: '110111010100001111000000'
+        protocol: 1
+        repeat:
+            times: 5
+            wait_time: 2ms
+- platform: template
+  id: C4_Subir
+  turn_on_action:
+    - remote_transmitter.transmit_rc_switch_raw:
+        code: '110111010100001100000011'
+        protocol: 1
+        repeat:
+            times: 5
+            wait_time: 2ms
+
+- platform: template
+  id: C9_Lock
+  turn_on_action:
+    - remote_transmitter.transmit_rc_switch_raw:
+        code: '110100000011110100001100'
+        protocol: 1
+        repeat:
+            times: 5
+            wait_time: 2ms
+- platform: template
+  id: C9_UnLock
+  turn_on_action:
+    - remote_transmitter.transmit_rc_switch_raw:
+        code: '110100000011110100110000'
+        protocol: 1
+        repeat:
+            times: 5
+            wait_time: 2ms
+- platform: template
+  id: C9_Bajar
+  turn_on_action:
+    - remote_transmitter.transmit_rc_switch_raw:
+        code: '110100000011110100000011'
+        protocol: 1
+        repeat:
+            times: 5
+            wait_time: 2ms
+- platform: template
+  id: C9_Subir
+  turn_on_action:
+    - remote_transmitter.transmit_rc_switch_raw:
+        code: '110100000011110111000000'
+        protocol: 1
+        repeat:
+            times: 5
+            wait_time: 2ms
+
+cover:
+  - platform: time_based
+    device_class: blind
+    name: "Cortina 9 Muro"
+    open_action:
+      - switch.turn_on: C9_Subir
+    open_duration: 40s
+    close_action:
+      - switch.turn_on: C9_Bajar
+    close_duration: 40s
+    stop_action:
+      - switch.turn_on: C9_UnLock
+    has_built_in_endstop: true
+
+  - platform: time_based
+    device_class: shade
+    name: "Cortina 4 Centro"
+    open_action:
+      - switch.turn_on: C4_Subir
+    open_duration: 40s
+    close_action:
+      - switch.turn_on: C4_Bajar
+    close_duration: 40s
+    stop_action:
+      - switch.turn_on: C4_UnLock
+    has_built_in_endstop: true
+
+  - platform: time_based
+    device_class: shutter
+    name: "Cortina 3 Pasillo"
+    open_action:
+      - switch.turn_on: C3_Subir
+    open_duration: 40s
+    close_action:
+      - switch.turn_on: C3_Bajar
+    close_duration: 40s
+    stop_action:
+      - switch.turn_on: C3_UnLock
+    has_built_in_endstop: true
 
 binary_sensor:
   - platform: status
     name: "Patio Status"
-    on_press:
-      then:
-      - script.execute: api_just_connected
 
   - platform: custom
     lambda: |-
@@ -78,11 +241,11 @@ binary_sensor:
               ape_binary_sensor(ape, 9),
               ape_binary_sensor(ape, 10),
               ape_binary_sensor(ape, 0),
-              ape_binary_sensor(ape, 13),
+              ape_binary_sensor(ape, 14 + 1),
               ape_binary_sensor(ape, 12),
               ape_binary_sensor(ape, 11)};
 
-    binary_sensors:  
+    binary_sensors:
       - name: "Puerta Frente"
         device_class: door
       - name: "Puerta Cocina"
@@ -93,50 +256,17 @@ binary_sensor:
         device_class: motion
       - name: "Switch Galeria 1"
         internal: true
-        # disable because is pin 13 and needs pull up resisor
-        # on_state:
-        #   then:
-        #     - light.toggle: galeria
-      - name: "Switch Galeria 2"
+        on_state:
+          then:
+            - light.toggle: galeria
+      - name: "Switch Galeria Proyectores"
         on_state:
           then:
             - script.execute: toggle_proyectores
         internal: true
-      - name: "Switch Galeria 3"
-        internal: true
-        on_state:
-          then:
-            - light.toggle: galeria
-  - platform: homeassistant
-    name: "Switch Galeria 2 from HA"
-    entity_id: binary_sensor.switch_estudio_galeria_2
-    on_state:
-      then: 
-        if: 
-          condition: 
-            not: 
-              script.is_running: api_just_connected
-          then:
-            light.toggle: galeria
-          else:
-            logger.log: 'Not toggling galeria, api just connected'
-
-  - platform: homeassistant
-    name: "Switch Galeria 3 from HA"
-    entity_id: binary_sensor.switch_estudio_galeria_3
-    on_state:
-      then: 
-        if: 
-          condition: 
-            not: 
-              script.is_running: api_just_connected
-          then:
-            script.execute: toggle_proyectores
+      - name: "Switch Galeria Patio"
 
 script:
-  - id: api_just_connected
-    then:
-      - delay: 40s
   - id: toggle_proyectores
     then:
       - light.toggle: patio_proyector_este
@@ -154,27 +284,24 @@ script:
             id(patio_proyector_oeste).turn_off().perform();
           }
 
-# sensor:
-#   - platform: custom
-#     lambda: |-
-#       auto my_sensor = new LM35Sensor(get_ape(ape), 1);
-#       App.register_component(my_sensor);
-#       return {my_sensor};
-#     sensors:
-#       - name: "Temperatura Galeria"
-#         id: temperature
-#         unit_of_measurement: °C
-#         accuracy_decimals: 1
+dallas:
+  pin: GPIO14
+  update_interval: 60s
+
+sensor:
+  - platform: dallas
+    address: 0x2771C02712646128
+    name: Temperatura Patio
 
 ###
 # module info:
-# Male Header: 
-# DI3   |  DI4  |  DI8 |  A1   |  5V
-# 12V   |  NC   |  NC  | GND   |  A0 
+# Male Header:
+# DI3   |  DI4  |  DI8 | T13   |  5V
+# 12V   |  NC   |  NC  | GND   |  A0
 
 # Female Header
 # GND  |  3.3V
 # DI9  |  DI10
-# DI13 |  DI11
+# A1   |  DI11
 # DI12 |  NC
 
