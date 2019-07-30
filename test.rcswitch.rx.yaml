@@ -1,0 +1,31 @@
+esphome:
+  name: test_local2
+  platform: ESP8266
+  board: nodemcu
+  platformio_options:
+    upload_speed: 921600
+
+logger:
+  level: VERBOSE
+
+wifi:
+  ssid: !secret wifi_ssid
+  password: !secret wifi_pass
+  fast_connect: true
+  manual_ip:
+    static_ip: 10.0.1.199
+    gateway: 10.0.1.1
+    subnet: 255.0.0.0
+
+api:
+
+# ota:
+
+remote_receiver:
+  pin: D4
+  dump:
+    - rc_switch
+  tolerance: 50%
+  filter: 250us
+  idle: 4ms
+  buffer_size: 2kb

@@ -1,0 +1,183 @@
+esphome:
+  name: test_local
+  platform: ESP8266
+  board: nodemcu
+  platformio_options:
+    upload_speed: 921600
+
+logger:
+  level: DEBUG
+
+wifi:
+  ssid: !secret wifi_ssid
+  password: !secret wifi_pass
+  fast_connect: true
+#   manual_ip:
+#     static_ip: 10.0.1.199
+#     gateway: 10.0.1.1
+#     subnet: 255.0.0.0
+
+api:
+
+# ota:
+
+remote_transmitter:
+  pin: D7
+  # RF uses a 100% carrier signal
+  carrier_duty_percent: 100%
+
+
+
+
+switch:
+- platform: template
+  id: C3_Lock
+  turn_on_action:
+    - remote_transmitter.transmit_rc_switch_raw:
+        code: '110100000011010100001100'
+        protocol: 1
+        repeat:
+            times: 5
+            wait_time: 2ms
+- platform: template
+  id: C3_UnLock
+  turn_on_action:
+    - remote_transmitter.transmit_rc_switch_raw:
+        code: '110100000011010100110000'
+        protocol: 1
+        repeat:
+            times: 5
+            wait_time: 2ms
+- platform: template
+  id: C3_Bajar
+  turn_on_action:
+    - remote_transmitter.transmit_rc_switch_raw:
+        code: '110100000011010100000011'
+        protocol: 1
+        repeat:
+            times: 5
+            wait_time: 2ms
+- platform: template
+  id: C3_Subir
+  turn_on_action:
+    - remote_transmitter.transmit_rc_switch_raw:
+        code: '110100000011010111000000'
+        protocol: 1
+        repeat:
+            times: 5
+            wait_time: 2ms
+
+
+- platform: template
+  id: C4_Lock
+  turn_on_action:
+    - remote_transmitter.transmit_rc_switch_raw:
+        code: '110111010100001100001100'
+        protocol: 1
+        repeat:
+            times: 5
+            wait_time: 2ms
+- platform: template
+  id: C4_UnLock
+  turn_on_action:
+    - remote_transmitter.transmit_rc_switch_raw:
+        code: '110111010100001100110000'
+        protocol: 1
+        repeat:
+            times: 5
+            wait_time: 2ms
+- platform: template
+  id: C4_Bajar
+  turn_on_action:
+    - remote_transmitter.transmit_rc_switch_raw:
+        code: '110111010100001111000000'
+        protocol: 1
+        repeat:
+            times: 5
+            wait_time: 2ms
+- platform: template
+  id: C4_Subir
+  turn_on_action:
+    - remote_transmitter.transmit_rc_switch_raw:
+        code: '110111010100001100000011'
+        protocol: 1
+        repeat:
+            times: 5
+            wait_time: 2ms
+
+- platform: template
+  id: C9_Lock
+  turn_on_action:
+    - remote_transmitter.transmit_rc_switch_raw:
+        code: '110100000011110100001100'
+        protocol: 1
+        repeat:
+            times: 5
+            wait_time: 2ms
+- platform: template
+  id: C9_UnLock
+  turn_on_action:
+    - remote_transmitter.transmit_rc_switch_raw:
+        code: '110100000011110100110000'
+        protocol: 1
+        repeat:
+            times: 5
+            wait_time: 2ms
+- platform: template
+  id: C9_Bajar
+  turn_on_action:
+    - remote_transmitter.transmit_rc_switch_raw:
+        code: '110100000011110100000011'
+        protocol: 1
+        repeat:
+            times: 5
+            wait_time: 2ms
+- platform: template
+  id: C9_Subir
+  turn_on_action:
+    - remote_transmitter.transmit_rc_switch_raw:
+        code: '110100000011110111000000'
+        protocol: 1
+        repeat:
+            times: 5
+            wait_time: 2ms
+
+cover:
+  - platform: time_based
+    device_class: blind
+    name: "Cortina 9 Muro"
+    open_action:
+      - switch.turn_on: C9_Subir
+    open_duration: 20s
+    close_action:
+      - switch.turn_on: C9_Bajar
+    close_duration: 20s
+    stop_action:
+      - switch.turn_on: C9_UnLock
+    has_built_in_endstop: true
+
+  - platform: time_based
+    device_class: shade
+    name: "Cortina 4 Centro"
+    open_action:
+      - switch.turn_on: C4_Subir
+    open_duration: 20s
+    close_action:
+      - switch.turn_on: C4_Bajar
+    close_duration: 20s
+    stop_action:
+      - switch.turn_on: C4_UnLock
+    has_built_in_endstop: true
+
+  - platform: time_based
+    device_class: shutter
+    name: "Cortina 3 Pasillo"
+    open_action:
+      - switch.turn_on: C3_Subir
+    open_duration: 20s
+    close_action:
+      - switch.turn_on: C3_Bajar
+    close_duration: 20s
+    stop_action:
+      - switch.turn_on: C3_UnLock
+    has_built_in_endstop: true

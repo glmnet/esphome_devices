@@ -1,0 +1,100 @@
+esphome:
+  name: test_local
+  platform: ESP8266
+  board: nodemcu
+  includes: ape.h
+
+logger:
+  level: DEBUG
+
+wifi:
+  ssid: !secret wifi_ssid
+  password: !secret wifi_pass
+
+api:
+  
+ota:
+
+i2c:
+  id: i2ccomponent
+
+# remote_receiver:
+#   id: rcvr
+#   pin:
+#     number: D5
+#     inverted: True
+#     mode: INPUT_PULLUP
+#   dump: all
+
+# remote_transmitter:
+#   carrier_duty_percent: 50%
+#   pin: D6
+
+# climate:
+#   - platform: coolix
+#     receiver_id: rcvr
+#     name: AC
+
+binary_sensor:
+# - platform: remote_receiver
+#   name: NEC Button X
+#   nec:
+#     address: 0x00FF
+#     command: 0xE21D
+
+- platform: status
+  id: api_online
+  on_press:
+    then:
+      - script.execute: api_just_connected
+      - light.turn_on: led_green
+  on_release:
+    then:
+      - light.turn_off: led_green
+- platform: homeassistant
+  name: "Switch Galeria 2 from HA"
+  entity_id: binary_sensor.switch_estudio_galeria_2
+  on_state:
+    then: 
+      if: 
+        condition: 
+          not: 
+            script.is_running: api_just_connected
+        then:
+          light.toggle: pro_mini_led
+        else:
+          logger.log: 'Not toggling pro_mini_led, api just connected'
+
+custom_component:
+  - id: ape
+    lambda: |-
+      auto ape_component = new ArduinoPortExtender(i2ccomponent, 0x08);
+      return {ape_component};
+
+output:
+- platform: custom
+  type: binary
+  lambda: |-
+    return {ape_binary_output(ape, 13)};
+  outputs:
+    - id: gpio_relay_1
+      inverted: true
+- platform: gpio
+  id: gpio_d3
+  pin: D3
+
+light:
+  - platform: binary
+    id: pro_mini_led
+    name: "Pro Mini LED"
+    output: gpio_relay_1
+
+  - platform: binary
+    id: led_green    
+    name: "Green LED"
+    output: gpio_d3
+
+script:
+  - id: api_just_connected
+    then:
+      - delay: 30s
