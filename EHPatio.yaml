@@ -8,9 +8,15 @@ esphome:
 wifi:
   ssid: !secret wifi_ssid
   password: !secret wifi_pass
-api:
+  # networks:
+  #   - ssid: !secret wifi_ssid
+  #     password: !secret wifi_pass
+  #     bssid: !secret bssid_mikrotik
+  # fast_connect: true
 
 ota:
+
+api:
 
 i2c:
   id: i2ccomponent
@@ -62,6 +68,17 @@ light:
     id: sirena_led
     name: "LED Sirena"
     output: ardu_13_npn
+    effects:
+      - strobe:
+      - strobe:
+         name: Flash
+         colors:
+          - state: True
+            brightness: 100%
+            duration: 500ms
+          - state: False
+            duration: 250ms
+
 
 remote_transmitter:
   pin: GPIO12
@@ -87,7 +104,6 @@ switch:
             wait_time: 2ms
 - platform: template
   id: C3_UnLock
-  name: RC_C3_Unlock
   turn_on_action:
     - remote_transmitter.transmit_rc_switch_raw:
         code: '110100000011010100110000'
@@ -97,7 +113,6 @@ switch:
             wait_time: 2ms
 - platform: template
   id: C3_Bajar
-  name: RC_C3_Bajar
   turn_on_action:
     - remote_transmitter.transmit_rc_switch_raw:
         code: '110100000011010100000011'
@@ -107,7 +122,6 @@ switch:
             wait_time: 2ms
 - platform: template
   id: C3_Subir
-  name: RC_C3_Subir
   turn_on_action:
     - remote_transmitter.transmit_rc_switch_raw:
         code: '110100000011010111000000'

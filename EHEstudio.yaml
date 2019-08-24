@@ -111,8 +111,8 @@ binary_sensor:
     internal: true
     on_state:
     - light.toggle: luz_estudio
-  - name: "Switch estudio galeria 2" # DI8
-  - name: "Switch estudio galeria 3" # A1
+  - name: "Switch Estudio Galeria" # DI8
+  - name: "Switch Estudio Patio" # A1
   - name: "Ventana Comedor Norte" # DI12
     device_class: window
   - name: "Switch escalera 1" # DI10
@@ -163,6 +163,7 @@ script:
     - delay: 10s
   - id: auto_off_luz_banio
     then:
+      - script.stop: auto_off_luz_banio
       - light.turn_on: luz_banio
       - if:
           condition:
@@ -174,6 +175,7 @@ script:
       - light.turn_off: luz_banio
   - id: auto_off_extractor
     then:
+    - script.stop: auto_off_extractor
     - delay: 600s
     - fan.turn_off: extractor_banio
 

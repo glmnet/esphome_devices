@@ -17,9 +17,13 @@ esphome:
         else:
           output.turn_off: gpio_relay_5
 
+
 wifi:
-  ssid: !secret wifi_ssid
-  password: !secret wifi_pass
+  networks:
+    - ssid: !secret wifi_ssid
+      password: !secret wifi_pass
+      bssid: !secret bssid_mikrotik
+  fast_connect: true
 
 # Enable logging
 logger:

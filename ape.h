@@ -41,6 +41,7 @@ class ApeBinaryOutput : public output::BinaryOutput
 
   protected:
     ArduinoPortExtender *parent_;
+    uint8_t setup_{true};
     uint8_t pin_;
 };
 
@@ -82,8 +83,8 @@ class ArduinoPortExtender : public Component, public I2CDevice
         ESP_LOGCONFIG(TAGape, "Setting up ArduinoPortExtender at %d ... waiting up to 3 secs", address_);
         #endif
 
-        /* We cannot setup as usual as arduino boots later than esp8266 
-        
+        /* We cannot setup as usual as arduino boots later than esp8266
+
             Poll i2c bus for our Arduino for a n seconds instead of failing fast,
             also this is important as pin setup (INPUT_PULLUP, OUTPUT it's done once)
         */
@@ -162,26 +163,15 @@ class ArduinoPortExtender : public Component, public I2CDevice
         return sensor;
     }*/
 
-    void write_state(uint8_t pin, bool state)
+    void write_state(uint8_t pin, bool state, bool setup)
     {
         #ifdef APE_DEBUG
         ESP_LOGI(TAGape, "Writing %d to pin %d", state, pin);
         #endif
         this->write_byte(state ? APE_CMD_WRITE_DIGITAL_HIGH : APE_CMD_WRITE_DIGITAL_LOW, pin);
-        if (this->initial_state_)
-        {
-            for (ApeBinaryOutput *output : this->output_pins_)
-            {
-                if (output->get_pin() == pin)
-                {
-                    delay(20);
-                    #ifdef APE_DEBUG
-                    ESP_LOGCONFIG(TAGape, "Setup output pin %d", pin);
-                    #endif
-                    this->write_byte(APE_CMD_SETUP_PIN_OUTPUT, pin);
-                    break;
-                }
-            }
+        if (setup) {
+            delay(20);
+            this->write_byte(APE_CMD_SETUP_PIN_OUTPUT, pin);
         }
     }
 
@@ -192,6 +182,13 @@ class ArduinoPortExtender : public Component, public I2CDevice
     std::vector<ApeBinarySensor *> input_pins_;
     //std::vector<ApeSensor *> analog_pins_;
 };
+
+void ApeBinaryOutput::write_state(bool state)
+{
+    this->parent_->write_state(this->pin_, state, this->setup_);
+    this->setup_ = false;
+}
+
 /*
 class LM35Sensor : public PollingComponent, public sensor::Sensor
 {
@@ -239,7 +236,3 @@ class LM35Sensor : public PollingComponent, public sensor::Sensor
     uint8_t readings_{0};
 };
 */
-void ApeBinaryOutput::write_state(bool state)
-{
-    this->parent_->write_state(this->pin_, state);
-}

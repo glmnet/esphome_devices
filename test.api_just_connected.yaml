@@ -12,11 +12,16 @@ wifi:
   password: !secret wifi_pass
 
 api:
-  
+
 ota:
 
 i2c:
   id: i2ccomponent
+
+sensor:
+  - platform: wifi_signal
+    name: "WiFi Signal Sensor"
+    update_interval: 60s
 
 # remote_receiver:
 #   id: rcvr
@@ -55,10 +60,10 @@ binary_sensor:
   name: "Switch Galeria 2 from HA"
   entity_id: binary_sensor.switch_estudio_galeria_2
   on_state:
-    then: 
-      if: 
-        condition: 
-          not: 
+    then:
+      if:
+        condition:
+          not:
             script.is_running: api_just_connected
         then:
           light.toggle: pro_mini_led
@@ -90,7 +95,7 @@ light:
     output: gpio_relay_1
 
   - platform: binary
-    id: led_green    
+    id: led_green
     name: "Green LED"
     output: gpio_d3
 
