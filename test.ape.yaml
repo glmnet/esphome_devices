@@ -1,0 +1,60 @@
+esphome:
+  name: test_local
+  platform: ESP8266
+  board: nodemcu
+  platformio_options:
+    upload_speed: 921600
+  includes:
+    - ape.h
+
+wifi:
+  ssid: !secret wifi_ssid
+  password: !secret wifi_pass
+
+api:
+
+ota:
+
+i2c:
+  id: i2ccomponent
+
+logger:
+  level: DEBUG
+
+custom_component:
+  - id: ape
+    lambda: |-
+      auto ape_component = new ArduinoPortExtender(i2ccomponent, 0x08);
+      return {ape_component};
+
+output:
+- platform: custom
+  type: binary
+  lambda: |-
+    return {ape_binary_output(ape, 3),
+            ape_binary_output(ape, 4)};
+  outputs:
+    - id: output_pin_3
+      #name: Output pin 3
+    - id: output_pin_4
+      #name: Output pin 4
+
+switch:
+  - platform: output
+    name: Switch pin 3
+    output: output_pin_3
+  - platform: output
+    name: Switch pin 4
+    output: output_pin_4
+
+binary_sensor:
+  - platform: custom
+    lambda: |-
+      return {ape_binary_sensor(ape, 14), // 14 = A0
+              ape_binary_sensor(ape, 9)};
+
+    binary_sensors:
+      - id: binary_sensor_pin2
+        name: Binary sensor pin 2
+      - id: binary_sensor_pin3
+        name: Binary sensor pin 3
