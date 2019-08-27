@@ -127,14 +127,13 @@ binary_sensor:
     on_state:
       then:
       - light.toggle: luz_banio
-      - script.stop: keep_banio_light
       - script.execute: keep_banio_light
   - name: "Switch baño 2" # DI11
     on_state:
       then:
       - fan.toggle: extractor_banio
       - delay: 600s
-      - fan.turn_off: extractor_banio
+      - script.execute: auto_off_extractor
   - name: "Movimiento estudio" # A0
     device_class: motion
   - name: "Puerta Baño" # DI3
@@ -147,19 +146,20 @@ binary_sensor:
       then:
       - fan.turn_on: extractor_banio
       - delay: 600s
-      - fan.turn_off: extractor_banio
+      - script.execute: auto_off_extractor
     on_press:
       then:
       - if:
           condition:
-            lambda: 'return !id(keep_banio_light).script_is_running();'
+            not:
+              - script.is_running: keep_banio_light
           then:
-          - script.stop: auto_off_luz_banio
           - script.execute: auto_off_luz_banio
 
 script:
   - id: keep_banio_light
     then:
+    - script.stop: keep_banio_light
     - delay: 10s
   - id: auto_off_luz_banio
     then:

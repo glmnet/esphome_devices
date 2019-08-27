@@ -35,15 +35,17 @@ output:
             ape_binary_output(ape, 4)};
   outputs:
     - id: output_pin_3
-      #name: Output pin 3
+      inverted: true
     - id: output_pin_4
-      #name: Output pin 4
+      inverted: true
 
 switch:
   - platform: output
     name: Switch pin 3
     output: output_pin_3
-  - platform: output
+
+light:
+  - platform: binary
     name: Switch pin 4
     output: output_pin_4
 

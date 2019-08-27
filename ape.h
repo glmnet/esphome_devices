@@ -1,4 +1,8 @@
-//#define APE_DEBUG // Must disable debug if using debug in other custom components for the __c causes a section type conflict with __c thingy
+
+// Must disable debug if using debug main.cpp or in other custom components for the
+//  __c causes a section type conflict with __c thingy
+
+//#define APE_DEBUG
 
 static const char *TAGape = "ape";
 
@@ -44,6 +48,8 @@ public:
 protected:
   ArduinoPortExtender *parent_;
   uint8_t pin_;
+  // Pins are setup as output after the state is written, Arduino has no open drain outputs, after setting an output it will either sink or source thus activating outputs writen to false during a flick.
+  bool setup_{true};
   bool state_{false};
 
   friend class ArduinoPortExtender;
@@ -127,9 +133,11 @@ public:
         }
         for (ApeBinaryOutput *output : this->output_pins_)
         {
-          App.feed_wdt();
-          this->write_state(output->pin_, output->state_, true);
-          delay(20);
+          if (!output->setup_) { // this output has a valid value already
+            this->write_state(output->pin_, output->state_, true);
+            App.feed_wdt();
+            delay(20);
+          }
         }
         return;
       }
@@ -147,7 +155,9 @@ public:
 
     if (!this->read_bytes(APE_CMD_DIGITAL_READ, const_cast<uint8_t *>(this->read_buffer_), 3, 1))
     {
+#ifdef APE_DEBUG
       ESP_LOGE(TAGape, "Error reading. Reconfiguring pending.");
+#endif
       this->status_set_error();
       this->configure_timeout_ = millis() + 5000;
       return;
@@ -205,7 +215,9 @@ public:
     {
       App.feed_wdt();
       delay(20);
+#ifdef APE_DEBUG
       ESP_LOGI(TAGape, "Setup output pin %d", pin);
+#endif
       this->write_byte(APE_CMD_SETUP_PIN_OUTPUT, pin);
     }
   }
@@ -223,7 +235,8 @@ protected:
 void ApeBinaryOutput::write_state(bool state)
 {
   this->state_ = state;
-  this->parent_->write_state(this->pin_, state);
+  this->parent_->write_state(this->pin_, state, this->setup_);
+  this->setup_ = false;
 }
 
 /*
