@@ -21,3 +21,31 @@ logger:
 api:
 
 ota:
+
+output:
+  - platform: ledc
+    pin: GPIO19
+    id: 'buzzer'
+
+switch:
+  - platform: template
+    name: buzzzzzz
+    turn_on_action:
+      then:
+        - output.ledc.set_frequency:
+            id: buzzer
+            frequency: 800Hz
+        - output.set_level:
+            id: buzzer
+            level: 50%
+        - delay: 500ms
+        - output.turn_off: buzzer
+        - delay: 200ms
+        - output.ledc.set_frequency:
+            id: buzzer
+            frequency: 600Hz
+        - output.set_level:
+            id: buzzer
+            level: 50%
+        - delay: 500ms
+        - output.turn_off: buzzer

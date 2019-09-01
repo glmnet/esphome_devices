@@ -20,11 +20,13 @@ i2c:
 
 logger:
   level: DEBUG
+  esp8266_store_log_strings_in_flash: False
+
 
 custom_component:
   - id: ape
     lambda: |-
-      auto ape_component = new ArduinoPortExtender(i2ccomponent, 0x08);
+      auto ape_component = new ArduinoPortExtender(i2ccomponent, 0x08, true);
       return {ape_component};
 
 output:
@@ -49,6 +51,22 @@ light:
     name: Switch pin 4
     output: output_pin_4
 
+sensor:
+  - platform: custom
+    lambda: |-
+      return {ape_analog_input(ape, 1),  // 1 = A1
+              ape_analog_input(ape, 2)};
+    sensors:
+      - name: Analog A1
+        id: analog_a1
+        filters:
+          - throttle: 1s
+      - name: Analog A2
+        id: analog_a2
+        filters:
+          - throttle: 2sec
+
+
 binary_sensor:
   - platform: custom
     lambda: |-
@@ -60,3 +78,11 @@ binary_sensor:
         name: Binary sensor pin 2
       - id: binary_sensor_pin3
         name: Binary sensor pin 3
+
+
+interval:
+  - interval: 1 seconds
+    then:
+      lambda: |-
+        ESP_LOGI("main", "Analog sensor: %f", ((id(analog_a1).state / 1023.0 * 3.3) * 12.95) / 2.3258);
+

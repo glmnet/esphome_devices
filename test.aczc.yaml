@@ -1,0 +1,16 @@
+esphome:
+  name: test_local
+  platform: ESP8266
+  board: nodemcu
+  platformio_options:
+    upload_speed: 921600
+  includes:
+    - aczc.h
+
+wifi:
+  ssid: !secret wifi_ssid
+  password: !secret wifi_pass
+
+api:
+
+ota:
