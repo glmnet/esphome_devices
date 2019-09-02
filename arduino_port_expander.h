@@ -1,13 +1,13 @@
-// Must disable debug if using debug main.cpp or in other custom components for the
+// Must disable logging if using logging in main.cpp or in other custom components for the
 //  __c causes a section type conflict with __c thingy
-// you can enable debug and use debug if you enable this in logger:
+// you can enable logging and use it if you enable this in logger:
 /*
 logger:
   level: DEBUG
   esp8266_store_log_strings_in_flash: False
   */
 
-//#define APE_DEBUG
+//#define APE_LOGGING
 
 // take advantage of LOG_ defines to decide which code to include
 #ifdef LOG_BINARY_OUTPUT
@@ -38,13 +38,14 @@ static const char *TAGape = "ape";
 #define CMD_SETUP_ANALOG_INTERNAL 0x10
 #define CMD_SETUP_ANALOG_DEFAULT 0x11
 
-#define get_ape(constructor) static_cast<ArduinoPortExtender *>(const_cast<custom_component::CustomComponentConstructor *>(&constructor)->get_component(0))
+#define get_ape(constructor) static_cast<ArduinoPortExpander *> \
+  (const_cast<custom_component::CustomComponentConstructor *>(&constructor)->get_component(0))
 
 #define ape_binary_output(ape, pin) get_ape(ape)->get_binary_output(pin)
 #define ape_binary_sensor(ape, pin) get_ape(ape)->get_binary_sensor(pin)
 #define ape_analog_input(ape, pin) get_ape(ape)->get_analog_input(pin)
 
-class ArduinoPortExtender;
+class ArduinoPortExpander;
 
 using namespace esphome;
 
@@ -52,7 +53,7 @@ using namespace esphome;
 class ApeBinaryOutput : public output::BinaryOutput
 {
 public:
-  ApeBinaryOutput(ArduinoPortExtender *parent, uint8_t pin)
+  ApeBinaryOutput(ArduinoPortExpander *parent, uint8_t pin)
   {
     this->parent_ = parent;
     this->pin_ = pin;
@@ -61,13 +62,13 @@ public:
   uint8_t get_pin() { return this->pin_; }
 
 protected:
-  ArduinoPortExtender *parent_;
+  ArduinoPortExpander *parent_;
   uint8_t pin_;
   // Pins are setup as output after the state is written, Arduino has no open drain outputs, after setting an output it will either sink or source thus activating outputs writen to false during a flick.
   bool setup_{true};
   bool state_{false};
 
-  friend class ArduinoPortExtender;
+  friend class ArduinoPortExpander;
 };
 #endif
 
@@ -75,7 +76,7 @@ protected:
 class ApeBinarySensor : public binary_sensor::BinarySensor
 {
 public:
-  ApeBinarySensor(ArduinoPortExtender *parent, uint8_t pin)
+  ApeBinarySensor(ArduinoPortExpander *parent, uint8_t pin)
   {
     this->pin_ = pin;
   }
@@ -90,7 +91,7 @@ protected:
 class ApeAnalogInput : public sensor::Sensor
 {
 public:
-  ApeAnalogInput(ArduinoPortExtender *parent, uint8_t pin)
+  ApeAnalogInput(ArduinoPortExpander *parent, uint8_t pin)
   {
     this->pin_ = pin;
   }
@@ -101,17 +102,17 @@ protected:
 };
 #endif
 
-class ArduinoPortExtender : public Component, public I2CDevice
+class ArduinoPortExpander : public Component, public I2CDevice
 {
 public:
-  ArduinoPortExtender(I2CComponent *parent, uint8_t address, bool vref_default = false) : I2CDevice(parent, address)
+  ArduinoPortExpander(I2CComponent *parent, uint8_t address, bool vref_default = false) : I2CDevice(parent, address)
   {
     this->vref_default_ = vref_default;
   }
   void setup() override
   {
-#ifdef APE_DEBUG
-    ESP_LOGCONFIG(TAGape, "Setting up ArduinoPortExtender at %#02x ...", address_);
+#ifdef APE_LOGGING
+    ESP_LOGCONFIG(TAGape, "Setting up ArduinoPortExpander at %#02x ...", address_);
 #endif
 
     /* We cannot setup as usual as arduino boots later than esp8266
@@ -132,7 +133,7 @@ public:
 
       if (this->read_bytes(APE_CMD_DIGITAL_READ, const_cast<uint8_t *>(this->read_buffer_), 3, 1))
       {
-#ifdef APE_DEBUG
+#ifdef APE_LOGGING
         ESP_LOGCONFIG(TAGape, "ArduinoPortExpander found at %#02x", address_);
 #endif
         delay(10);
@@ -149,7 +150,7 @@ public:
         {
           App.feed_wdt();
           uint8_t pinNo = pin->get_pin();
-#ifdef APE_DEBUG
+#ifdef APE_LOGGING
           ESP_LOGCONFIG(TAGape, "Setup input pin %d", pinNo);
 #endif
           this->write_byte(APE_CMD_SETUP_PIN_INPUT_PULLUP, pinNo);
@@ -172,7 +173,7 @@ public:
         {
           App.feed_wdt();
           uint8_t pinNo = sensor->get_pin();
-#ifdef APE_DEBUG
+#ifdef APE_LOGGING
           ESP_LOGCONFIG(TAGape, "Setup analog input pin %d", pinNo);
 #endif
           this->write_byte(APE_CMD_SETUP_PIN_INPUT, pinNo);
@@ -186,7 +187,7 @@ public:
     }
     if (this->configure_timeout_ != 0 && millis() > this->configure_timeout_)
     {
-#ifdef APE_DEBUG
+#ifdef APE_LOGGING
       ESP_LOGE(TAGape, "ArduinoPortExpander NOT found at %#02x", address_);
 #endif
       this->mark_failed();
@@ -196,7 +197,7 @@ public:
 #ifdef APE_BINARY_SENSOR
     if (!this->read_bytes(APE_CMD_DIGITAL_READ, const_cast<uint8_t *>(this->read_buffer_), 3, 1))
     {
-#ifdef APE_DEBUG
+#ifdef APE_LOGGING
       ESP_LOGE(TAGape, "Error reading. Reconfiguring pending.");
 #endif
       this->status_set_error();
@@ -226,12 +227,11 @@ public:
 #endif
   }
 
-
 #ifdef APE_SENSOR
   uint16_t analogRead(uint8_t pin)
   {
     bool ok = this->read_bytes((uint8_t)(CMD_ANALOG_READ_A0 + pin), const_cast<uint8_t *>(this->read_buffer_), 2, 1);
-#ifdef APE_DEBUG
+#ifdef APE_LOGGING
     ESP_LOGVV(TAGape, "analog read pin: %d ok: %d byte0: %d byte1: %d", pin, ok, this->read_buffer_[0], this->read_buffer_[1]);
 #endif
     uint16_t value = this->read_buffer_[0] | ((uint16_t)this->read_buffer_[1] << 8);
@@ -267,7 +267,7 @@ public:
   {
     if (this->configure_timeout_ != 0)
       return;
-#ifdef APE_DEBUG
+#ifdef APE_LOGGING
     ESP_LOGD(TAGape, "Writing %d to pin %d", state, pin);
 #endif
     this->write_byte(state ? APE_CMD_WRITE_DIGITAL_HIGH : APE_CMD_WRITE_DIGITAL_LOW, pin);
@@ -275,7 +275,7 @@ public:
     {
       App.feed_wdt();
       delay(20);
-#ifdef APE_DEBUG
+#ifdef APE_LOGGING
       ESP_LOGI(TAGape, "Setup output pin %d", pin);
 #endif
       this->write_byte(APE_CMD_SETUP_PIN_OUTPUT, pin);
