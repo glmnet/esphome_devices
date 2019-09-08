@@ -1,0 +1,49 @@
+esphome:
+  name: eh_cerco
+  platform: ESP8266
+  board: nodemcu
+
+wifi:
+  ssid: !secret wifi_ssid
+  password: !secret wifi_pass
+
+api:
+
+ota:
+
+logger:
+  baud_rate: 0 # using pins for IO
+  level: VERBOSE
+
+sensor:
+  - platform: adc
+    pin: A0
+    name: "Bateria Cerco"
+    update_interval: 5s
+    filters:
+      # 12.61V = 0.825195
+      - multiply: 15.2816
+
+binary_sensor:
+  - platform: gpio
+    pin:
+      number: GPIO3 #RX
+      mode: INPUT_PULLUP
+    filters:
+      - invert:
+    id: pulse
+  - platform: gpio
+    pin:
+      number: GPIO1 #TX
+      mode: INPUT_PULLUP
+    filters:
+      - invert:
+    id: line
+    name: "AC Cerco"
+  - platform: gpio
+    pin:
+      number: GPIO16
+    filters:
+      - invert:
+    id: alarm
+    name: "Alarma Cerco"

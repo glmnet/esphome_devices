@@ -1,0 +1,57 @@
+esphome:
+  name: test_servo
+  platform: ESP8266
+  board: nodemcuv2
+  platformio_options:
+    upload_speed: 921600
+
+wifi:
+  ssid: !secret wifi_ssid
+  password: !secret wifi_pass
+  fast_connect: true
+
+# Enable logging
+
+# Enable logging
+logger:
+  level: VERBOSE
+
+# Enable Home Assistant API
+
+ota:
+
+font:
+  - file: "Roboto-Regular.ttf"
+    id: my_font
+    size: 20
+
+i2c:
+  sda: D3
+  scl: D4
+
+globals:
+  - id: bright
+    type: int
+    restore_value: no
+    initial_value: '0'
+
+display:
+  - id: blue_display
+    platform: ssd1306_i2c
+    model: "SSD1306 128x64"
+    reset_pin: D0
+    update_interval: 500ms
+    address: 0x3C
+    brightness: 10%
+    lambda: |-
+      it.printf(0, 40, id(my_font), "GLM %d%%", id(bright));
+
+interval:
+  - interval: 1sec
+    then:
+      lambda: |-
+        auto d = id(blue_display);
+        id(bright) += 10;
+        if (id(bright) > 100) id(bright) = 0;
+        d->set_brightness(id(bright) / 100.0);
+        d->setup();

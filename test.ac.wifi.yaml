@@ -1,0 +1,28 @@
+esphome:
+  name: eh_comedor_bgh
+  platform: ESP8266
+  board: nodemcuv2
+  platformio_options:
+    upload_speed: 921600
+
+api:
+
+ota:
+
+wifi:
+  ssid: !secret wifi_ssid
+  password: !secret wifi_pass
+  fast_connect: true
+
+# Enable logging
+
+logger:
+  level: VERY_VERBOSE
+  baud_rate: 0
+
+uart:
+  tx_pin: TX
+  rx_pin: RX
+  baud_rate: 115200
+
+

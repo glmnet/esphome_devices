@@ -1,0 +1,54 @@
+esphome:
+  name: eh_camera2
+  platform: ESP32
+  board: nodemcu-32s
+  platformio_options:
+    upload_speed: 921600
+
+wifi:
+  ssid: !secret wifi_ssid
+  password: !secret wifi_pass
+
+  # Enable fallback hotspot (captive portal) in case wifi connection fails
+  # ap:
+  #   ssid: "Test Esp32 Fallback Hotspot"
+  #   password: "HBPaN3WZOE38"
+
+# captive_portal:
+
+# Enable logging
+logger:
+
+# Enable Home Assistant API
+api:
+
+ota:
+
+esp32_camera:
+  external_clock:
+    pin: GPIO0
+    frequency: 20MHz
+  i2c_pins:
+    sda: GPIO26
+    scl: GPIO27
+  data_pins: [GPIO5, GPIO18, GPIO19, GPIO21, GPIO36, GPIO39, GPIO34, GPIO35]
+  vsync_pin: GPIO25
+  href_pin: GPIO23
+  pixel_clock_pin: GPIO22
+  power_down_pin: GPIO32
+
+  # Image settings
+  name: Camera ESP32 2
+  resolution: 1600x1200
+  max_framerate: 1Hz
+
+
+output:
+  - platform: gpio
+    pin: GPIO4
+    id: gpio_led
+
+light:
+  - platform: binary
+    output: gpio_led
+    name:  Camera ESP32 2 Flash
