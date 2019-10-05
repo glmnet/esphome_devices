@@ -223,8 +223,8 @@ public:
       uint8_t pinNo = pin->get_pin();
       pin->publish_state(analogRead(pinNo));
     }
-    this->initial_state_ = false;
 #endif
+    this->initial_state_ = false;
   }
 
 #ifdef APE_SENSOR
