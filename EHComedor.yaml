@@ -4,7 +4,7 @@ esphome:
   board: nodemcu
   # Use a local copy of ESPHome
   includes:
-    - ape.h
+    - arduino_port_expander.h
 
 wifi:
   ssid: !secret wifi_ssid

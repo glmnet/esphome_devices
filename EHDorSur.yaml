@@ -4,7 +4,7 @@ esphome:
   board: nodemcu
   # Use a local copy of ESPHome
   includes:
-    - ape.h
+    - arduino_port_expander.h
   on_boot:
     priority: -10
     then:
@@ -27,7 +27,7 @@ logger:
 custom_component:
   - id: ape
     lambda: |-
-      auto ape_component = new ArduinoPortExtender(i2ccomponent, 0x08);
+      auto ape_component = new ArduinoPortExpander(i2ccomponent, 0x08);
       return {ape_component};
 
 output:
@@ -117,14 +117,6 @@ binary_sensor:
               light.toggle: luz_dormitorio_sur
       - name: "Ventana Dormitorio Sur"
         device_class: window
-
-remote_transmitter:
-  pin: GPIO14
-  carrier_duty_percent: 50%
-
-climate:
-  platform: tcl112
-  name: 'AC Dormitorio Sur'
 
 switch:
   - platform: restart

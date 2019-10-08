@@ -1,0 +1,48 @@
+esphome:
+  name: lalaa
+  platform: ESP8266
+  board: d1_mini
+  build_path: lalaa
+
+wifi:
+  ssid: !secret wifi_ssid
+  password: !secret wifi_pass
+
+globals:
+  - id: samsung_data
+    type: uint32_t
+
+remote_transmitter:
+  pin: D4
+  carrier_duty_percent: 50%
+
+
+mqtt:
+  broker: 10.0.1.222
+
+  on_json_message:
+    - topic: irsend/samsung
+      qos: 0
+      then:
+        - lambda: |-
+            if (x.containsKey("data")) {
+              id(samsung_data) = x["data"];
+              ESP_LOGD("IR", "Samsung code: %lu", id(samsung_data));
+            }
+
+        - remote_transmitter.transmit_samsung:
+            data: !lambda 'return id(samsung_data);'
+
+sensor:
+  - platform: template
+    name: "bed_stevo"
+    lambda: |-
+      if  (1 == 2 )
+      {
+        // Stevo in bed
+        return true;
+      }
+      else
+      {
+        return false;
+      }

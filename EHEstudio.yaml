@@ -3,7 +3,7 @@ esphome:
   platform: ESP8266
   board: nodemcu
   includes:
-    - ape.h
+    - arduino_port_expander.h
   on_boot:
     then:
     - fan.turn_off: extractor_banio
@@ -22,9 +22,9 @@ i2c:
 logger:
   level: VERBOSE
 
-# remote_transmitter:
-#   carrier_duty_percent: 50%
-#   pin: D5
+remote_transmitter:
+  carrier_duty_percent: 50%
+  pin: D5
 
 # climate:
 #   platform: coolix
@@ -34,7 +34,7 @@ logger:
 custom_component:
 - id: ape
   lambda: |-
-    auto ape_component = new ArduinoPortExtender(id(i2c_component), 0x08);
+    auto ape_component = new ArduinoPortExpander(id(i2c_component), 0x08);
     return {ape_component};
 
 output:
@@ -78,6 +78,25 @@ fan:
 switch:
 - platform: restart
   name: "Estudio Restart"
+
+- platform: template
+  name: 'Edifier Mute'
+  turn_on_action:
+    - remote_transmitter.transmit_nec:
+        address: 0x00FF
+        command: 0x827D
+- platform: template
+  name: 'Hyundai Netflix'
+  turn_on_action:
+    - remote_transmitter.transmit_nec:
+        address: 0xFD
+        command: 0xC23D # 0x43
+- platform: template
+  name: 'Soundbar power'
+  turn_on_action:
+    - remote_transmitter.transmit_nec:
+        address: 0xFF
+        command: 0xA25D
 
 binary_sensor:
 - platform: status

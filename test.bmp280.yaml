@@ -1,0 +1,35 @@
+esphome:
+  name: test_local
+  platform: ESP8266
+  board: nodemcu
+  platformio_options:
+    upload_speed: 921600
+  includes:
+    - arduino_port_expander.h
+
+wifi:
+  ssid: !secret wifi_ssid
+  password: !secret wifi_pass
+
+api:
+
+ota:
+
+# define i2c device
+# for an ESP8266 SDA is D2 and goes to Arduino's A4
+#                SCL is D1 and goes to Arduino's A5
+i2c:
+  id: i2c_component
+
+logger:
+  level: DEBUG
+
+sensor:
+  - platform: bmp280
+    temperature:
+      name: "Outside Temperature"
+      oversampling: 16x
+    pressure:
+      name: "Outside Pressure"
+    address: 0x76
+    update_interval: 60s

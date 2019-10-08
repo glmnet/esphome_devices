@@ -22,9 +22,11 @@ api:
 # ota:
 
 remote_receiver:
-  pin: D4
+  pin: D6
   dump:
     - rc_switch
+    - rc5
+
   tolerance: 50%
   filter: 250us
   idle: 4ms

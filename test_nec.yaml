@@ -3,21 +3,33 @@ esphome:
   platform: ESP8266
   board: nodemcu
 
+  platformio_options:
+    upload_speed: 921600
+
+
 logger:
-  level: VERY_VERBOSE
+  level: VERBOSE
 
 wifi:
   ssid: !secret wifi_ssid
   password: !secret wifi_pass
-  
+
 api:
-  
+
 ota:
 
+remote_receiver:
+  id: rcvr
+  pin:
+    number: D5
+    inverted: True
+    mode: INPUT_PULLUP
+  tolerance: 50%
+  dump: all
+
 remote_transmitter:
-  id: remote_tx
   carrier_duty_percent: 50%
-  pin: D5
+  pin: D6
 
 switch:
   - platform: template
@@ -32,4 +44,9 @@ switch:
       - remote_transmitter.transmit_nec:
           address: 0xFD
           command: 0xC23D # 0x43
-          
+  - platform: template
+    name: 'Soundbar power'
+    turn_on_action:
+      - remote_transmitter.transmit_nec:
+          address: 0xFF
+          command: 0xA25D

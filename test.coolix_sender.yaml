@@ -1,5 +1,5 @@
 esphome:
-  name: coolix_receiver
+  name: coolix_sender
   platform: ESP8266
   board: nodemcu
   platformio_options:
@@ -16,7 +16,7 @@ wifi:
   password: !secret wifi_pass
   fast_connect: true
   manual_ip:
-    static_ip: 10.0.1.199
+    static_ip: 10.0.1.198
     gateway: 10.0.1.1
     subnet: 255.0.0.0
 

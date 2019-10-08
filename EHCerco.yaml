@@ -19,31 +19,47 @@ sensor:
   - platform: adc
     pin: A0
     name: "Bateria Cerco"
-    update_interval: 5s
+    update_interval: 60s
     filters:
       # 12.61V = 0.825195
-      - multiply: 15.2816
+      # 10.26 -> 0.6767
+      # 12.78 -> 0.8457
+      # formula: 12.78 / 0.8457 = multiply
+      - multiply: 15.135
 
 binary_sensor:
+  - platform: status
+    name: "Cerco Status"
   - platform: gpio
     pin:
       number: GPIO3 #RX
       mode: INPUT_PULLUP
     filters:
       - invert:
+      - delayed_off: 2s # pulses every second
     id: pulse
+    name: Activado
+
   - platform: gpio
     pin:
       number: GPIO1 #TX
       mode: INPUT_PULLUP
+    id: alarm # green
+    name: " Alarma Cerco"
     filters:
       - invert:
-    id: line
-    name: "AC Cerco"
   - platform: gpio
     pin:
-      number: GPIO16
-    filters:
-      - invert:
-    id: alarm
-    name: "Alarma Cerco"
+      number: GPIO4
+    id: line
+    device_class: power
+    name: "Linea AC Cerco"
+
+
+
+  # brown +12v bat
+  # white brown 0v
+  # blue pulse
+  # green alarm C
+  # white orange alarm NO
+  # orange line

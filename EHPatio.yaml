@@ -3,16 +3,11 @@ esphome:
   platform: ESP8266
   board: nodemcu
   includes:
-    - ape.h
+    - arduino_port_expander.h
 
 wifi:
   ssid: !secret wifi_ssid
   password: !secret wifi_pass
-  # networks:
-  #   - ssid: !secret wifi_ssid
-  #     password: !secret wifi_pass
-  #     bssid: !secret bssid_mikrotik
-  # fast_connect: true
 
 ota:
 
@@ -27,7 +22,7 @@ logger:
 custom_component:
   - id: ape
     lambda: |-
-      auto ape_component = new ArduinoPortExtender(i2ccomponent, 0x08);
+      auto ape_component = new ArduinoPortExpander(i2ccomponent, 0x08);
       return {ape_component};
 
 output:
@@ -202,8 +197,19 @@ switch:
         code: '110100000011110111000000'
         protocol: 1
         repeat:
-            times: 5
-            wait_time: 2ms
+          times: 5
+          wait_time: 2ms
+
+- platform: template
+  name: Comando Activacion Cerco
+  turn_on_action:
+    - remote_transmitter.transmit_rc_switch_raw:
+        code: '1011110110111101111000100101'
+        protocol: 6
+        repeat:
+          times: 2
+          wait_time: 2ms
+
 
 cover:
   - platform: time_based
@@ -300,7 +306,7 @@ script:
 
 dallas:
   pin: GPIO14
-  update_interval: 60s
+  update_interval: 600s
 
 sensor:
   - platform: dallas

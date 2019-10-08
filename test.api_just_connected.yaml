@@ -2,7 +2,7 @@ esphome:
   name: test_local
   platform: ESP8266
   board: nodemcu
-  includes: ape.h
+  includes: arduino_port_expander.h
 
 logger:
   level: DEBUG

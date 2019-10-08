@@ -1,0 +1,32 @@
+esphome:
+  name: test_local
+  platform: ESP8266
+  board: nodemcu
+  platformio_options:
+    upload_speed: 921600
+
+logger:
+  level: VERY_VERBOSE
+
+wifi:
+  ssid: !secret wifi_ssid
+  password: !secret wifi_pass
+
+api:
+
+ota:
+
+
+sensor:
+  - platform: pulse_counter
+    pin: GPIO12 #D6
+    name: "Tanque agua flujo entrada"
+    update_interval: 5s
+    filters:
+    - lambda: return (x / 27.0) * 60.0;
+    unit_of_measurement: "L/hr"
+  - platform: pulse_counter
+    pin: D5 #
+    name: "Tanque agua flujo entrada D5"
+    update_interval: 5s
+    unit_of_measurement: "L/hr"

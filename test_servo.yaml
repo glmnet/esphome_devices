@@ -5,7 +5,7 @@ esphome:
 
 wifi:
   ssid: !secret wifi_ssid
-  password: !secret wifi_pass  
+  password: !secret wifi_pass
   fast_connect: true
 
 # Enable logging
@@ -28,7 +28,7 @@ output:
     pin: D1
     inverted: False
     id: gpio_d1_led
-    
+
   - platform: esp8266_pwm
     id: pwm_output
     pin: D7
@@ -39,18 +39,17 @@ binary_sensor:
     pin: D8
     name: "Multisensor Motion"
     device_class: motion
-    
     on_press:
       then:
         - output.turn_on: gpio_d1_led
         - servo.write:
             id: my_servo
-            level: 70.0%          
+            level: 70.0%
     on_release:
       then:
         - output.turn_off: gpio_d1_led
         - servo.write:
             id: my_servo
-            level: -70.0% 
+            level: -70.0%
 
 

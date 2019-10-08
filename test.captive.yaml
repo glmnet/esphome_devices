@@ -12,8 +12,7 @@ ota:
 
 wifi:
   ssid: !secret wifi_ssid
-  password: !secret wifi_pass
-
+  password: deftretresss
   ap:
     ssid: "ESP Hotspot"
     password: "12345678"
@@ -30,6 +29,6 @@ output:
 
 # Example usage in a light
 light:
-  - platform: monochromatic
-    output: pwm_output
-    name: "ESP Light"
+- platform: monochromatic
+  output: pwm_output
+  name: "ESP Light"
