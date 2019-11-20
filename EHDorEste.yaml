@@ -3,7 +3,7 @@ esphome:
   platform: ESP8266
   board: nodemcu
   includes:
-    - ape.h
+    - arduino_port_expander.h
 
 wifi:
   ssid: !secret wifi_ssid
@@ -26,16 +26,16 @@ custom_component:
       return {ape_component};
 
 output:
-- platform: custom
-  type: binary
-  lambda: |-
-    return {ape_binary_output(ape, 7),
-            ape_binary_output(ape, 6)};
-  outputs:
-    - id: gpio_relay_1
-      inverted: true
-    - id: gpio_relay_2
-      inverted: true
+  - platform: custom
+    type: binary
+    lambda: |-
+      return {ape_binary_output(ape, 7),
+              ape_binary_output(ape, 6)};
+    outputs:
+      - id: gpio_relay_1
+        inverted: true
+      - id: gpio_relay_2
+        inverted: true
 
 light:
   - platform: binary
@@ -76,8 +76,8 @@ binary_sensor:
       - name: "Switch Cama 2"
         internal: true
         on_state:
-            then:
-              - light.toggle: luz_dormitorio_este_cama
+          then:
+            - light.toggle: luz_dormitorio_este_cama
       - name: "Ventana Dormitorio Este"
         device_class: window
 
