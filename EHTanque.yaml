@@ -1,13 +1,12 @@
+---
 esphome:
   name: eh_tanque
   platform: ESP8266
   board: nodemcu
   includes:
-    - ape.h
+    - arduino_port_expander.h
 
-wifi:
-  ssid: !secret wifi_ssid
-  password: !secret wifi_pass
+<<: !include common/wifi.yaml
 
 api:
 
@@ -18,28 +17,47 @@ i2c:
 
 logger:
   level: DEBUG
-
-
+  baud_rate: 0
 
 custom_component:
   - id: ape
     lambda: |-
-      auto ape_component = new ArduinoPortExtender(i2ccomponent, 0x08);
+      auto ape_component = new ArduinoPortExpander(i2ccomponent, 0x08);
       return {ape_component};
 
 output:
 - platform: custom
   type: binary
   lambda: |-
-    return {ape_binary_output(ape, 4)};
+    return {ape_binary_output(ape, 7),
+            ape_binary_output(ape, 6),
+            ape_binary_output(ape, 5),
+            ape_binary_output(ape, 4)};
   outputs:
     - id: gpio_relay_1
+      inverted: true
+    - id: gpio_relay_2
+      inverted: true
+    - id: gpio_relay_3
+      inverted: true
+    - id: gpio_relay_4
+      inverted: true
 
 switch:
   - platform: output
     name: "Bomba Tanque"
     id: bomba_tanque
     output: gpio_relay_1
+  - platform: output
+    name: "Toma Tanque"
+    id: toma_tanque
+    output: gpio_relay_2
+
+light:
+  - platform: binary
+    id: luz_tanque
+    name: "Luz tanque"
+    output: gpio_relay_3
 
 binary_sensor:
   - platform: status
@@ -47,3 +65,61 @@ binary_sensor:
     on_release:
       then:
       - switch.turn_off: bomba_tanque
+  - platform: gpio
+    id: tanque_abajo_lleno
+    pin:
+      number: GPIO14
+      mode: INPUT_PULLUP
+    name: Tanque abajo lleno
+
+    on_press:
+      # tank almost full
+      - sensor.template.publish:
+          id: tank_liters
+          state: !lambda 'return 900.0;'
+    on_release:
+      # tank almost empty
+      - sensor.template.publish:
+          id: tank_liters
+          state: !lambda 'return 80.0;'
+
+  - platform: custom
+    lambda: |-
+      return {ape_binary_sensor(ape, 3)};
+    binary_sensors:
+      - name: "Switch luz tanque"
+        internal: true
+        on_state:
+          then:
+            - light.toggle: luz_tanque
+
+sensor:
+  - platform: pulse_counter
+    pin: GPIO12
+    name: "Flujo agua"
+    on_value:
+      - sensor.template.publish:
+          id: tank_liters
+          state: !lambda |-
+            float new_level = id(tank_liters).state;
+            if (isnan(new_level))
+              new_level = id(tanque_abajo_lleno).state ? 900.0 : 50.0;
+            new_level += x / 450;
+            if (new_level > 900.0 && !id(tanque_abajo_lleno).state)
+              return 900;
+            if (new_level > 1000) return 1000;
+            return new_level;
+
+  - platform: template
+    name: Litros Tanque Abajo
+    id: tank_liters
+    on_value:
+      - sensor.template.publish:
+          id: tank_level
+          # tank max is 1000 liters, convert to %
+          state: !lambda "return x/10.0;"
+
+  - platform: template
+    name: Nivel Tanque Abajo
+    id: tank_level
+

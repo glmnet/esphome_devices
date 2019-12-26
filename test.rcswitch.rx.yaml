@@ -25,9 +25,27 @@ remote_receiver:
   pin: D6
   dump:
     - rc_switch
-    - rc5
+    - raw
 
-  tolerance: 50%
+  tolerance: 20%
   filter: 250us
   idle: 4ms
   buffer_size: 2kb
+
+
+remote_transmitter:
+  pin: D7
+  # RF uses a 100% carrier signal
+  carrier_duty_percent: 100%
+
+binary_sensor:
+- platform: gpio
+  pin: D3
+  id: laal
+  on_press:
+    - remote_transmitter.transmit_rc_switch_raw:
+        code: '110100000011110111000000'
+        protocol: 1
+        repeat:
+          times: 5
+          wait_time: 1ms

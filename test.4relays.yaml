@@ -1,0 +1,69 @@
+esphome:
+  name: test_local
+  platform: ESP8266
+  board: nodemcu
+  # Use a local copy of ESPHome
+  includes:
+    - arduino_port_expander.h
+
+wifi:
+  ssid: !secret wifi_ssid
+  password: !secret wifi_pass
+
+api:
+
+ota:
+
+i2c:
+  id: i2c_component
+
+logger:
+  level: DEBUG
+
+
+custom_component:
+- id: ape
+  lambda: |-
+    auto ape_component = new ArduinoPortExpander(i2c_component, 0x08);
+    return {ape_component};
+
+output:
+- platform: custom
+  type: binary
+  lambda: |-
+    return {ape_binary_output(ape, 7),
+            ape_binary_output(ape, 6),
+            ape_binary_output(ape, 5),
+            ape_binary_output(ape, 4)};
+  outputs:
+    - id: gpio_relay_1
+      inverted: true
+    - id: gpio_relay_2
+      inverted: true
+    - id: gpio_relay_3
+      inverted: true
+    - id: gpio_relay_4
+      inverted: true
+
+light:
+  - platform: binary
+    id: relay1
+    name: "Relay1"
+    output: gpio_relay_1
+  - platform: binary
+    id: relay2
+    name: "Relay2"
+    output: gpio_relay_2
+  - platform: binary
+    id: relay3
+    name: "Relay3"
+    output: gpio_relay_3
+  - platform: binary
+    id: relay4
+    name: "Relay4"
+    output: gpio_relay_4
+
+sensor:
+  - platform: pulse_counter
+    pin: GPIO14
+    name: "Pulse Counter"

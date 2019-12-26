@@ -36,7 +36,6 @@ esp32_camera:
   href_pin: GPIO23
   pixel_clock_pin: GPIO22
   power_down_pin: GPIO32
-  fdsaf: fasdss
   # Image settings
 
   name: Camera ESP32 2

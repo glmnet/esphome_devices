@@ -4,20 +4,20 @@ esphome:
   board: nodemcu
   # Use a local copy of ESPHome
   includes:
-    - ape.h
+    - arduino_port_expander.h
 
 wifi:
   ssid: !secret wifi_ssid
   password: !secret wifi_pass
-  
+
 api:
-  
+
 ota:
 
 i2c:
   id: i2c_component
 
-logger:  
+logger:
   level: DEBUG
 
 
@@ -65,10 +65,10 @@ binary_sensor:
   - platform: custom
     lambda: |-
       return {ape_binary_sensor(ape, 2), // ribbon purple
-              ape_binary_sensor(ape, 3), // ribbon white 
-              ape_binary_sensor(ape, 8), // ribbon verde 
+              ape_binary_sensor(ape, 3), // ribbon white
+              ape_binary_sensor(ape, 8), // ribbon verde
               ape_binary_sensor(ape, 15), // A1 ribbon orange
-              ape_binary_sensor(ape, 14)}; // ribbon red 
+              ape_binary_sensor(ape, 14)}; // ribbon red
     binary_sensors:
       - name: "Switch Cocina puerta 1"
         internal: true

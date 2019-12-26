@@ -55,3 +55,4 @@ interval:
         if (id(bright) > 100) id(bright) = 0;
         d->set_brightness(id(bright) / 100.0);
         d->setup();
+

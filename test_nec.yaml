@@ -6,13 +6,10 @@ esphome:
   platformio_options:
     upload_speed: 921600
 
-
 logger:
   level: VERBOSE
 
-wifi:
-  ssid: !secret wifi_ssid
-  password: !secret wifi_pass
+<<: !include common/wifi.yaml
 
 api:
 

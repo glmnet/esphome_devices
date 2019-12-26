@@ -198,7 +198,7 @@ switch:
         protocol: 1
         repeat:
           times: 5
-          wait_time: 2ms
+          wait_time: 1ms
 
 - platform: template
   name: Comando Activacion Cerco
@@ -207,7 +207,7 @@ switch:
         code: '1011110110111101111000100101'
         protocol: 6
         repeat:
-          times: 2
+          times: 4
           wait_time: 2ms
 
 

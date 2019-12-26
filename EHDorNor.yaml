@@ -1,9 +1,9 @@
 esphome:
-  name: eh_dor_nor
+  name: eh_dor_nor-test
   platform: ESP8266
   board: nodemcu
   includes:
-    - ape.h
+    - arduino_port_expander.h
 
 wifi:
   ssid: !secret wifi_ssid
@@ -24,7 +24,7 @@ i2c:
 custom_component:
   - id: ape
     lambda: |-
-      auto ape_component = new ArduinoPortExtender(i2ccomponent, 0x08);
+      auto ape_component = new ArduinoPortExpander(i2ccomponent, 0x08);
       return {ape_component};
 
 output:

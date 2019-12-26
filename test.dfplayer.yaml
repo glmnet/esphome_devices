@@ -24,14 +24,15 @@ uart:
   baud_rate: 9600
 
 dfplayer:
+  id: my_df_player
   on_finished_playback:
     then:
-      if:
-        condition:
-          not:
-            dfplayer.is_playing
-        then:
-          logger.log: 'Playback finished event'
+      logger.log: 'Somebody press play!'
+
+binary_sensor:
+- platform: template
+  name: "dfplayer_is_playing"
+  lambda: 'return id(my_df_player).is_playing();'
 
 api:
   services:
@@ -77,6 +78,12 @@ api:
     then:
       - dfplayer.set_device:
           device: TF_CARD
+  - service: dfplayer_set_device_str
+    variables:
+      device: string
+    then:
+      - dfplayer.set_device:
+          device: !lambda 'return (device == "USB")? dfplayer::USB : dfplayer::TF_CARD;'
 
   - service: dfplayer_set_volume
     variables:
