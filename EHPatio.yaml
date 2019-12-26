@@ -26,25 +26,24 @@ custom_component:
       return {ape_component};
 
 output:
-- platform: custom
-  type: binary
-  lambda: |-
-    return {ape_binary_output(ape, 7),
-            ape_binary_output(ape, 6),
-            ape_binary_output(ape, 5),
-            ape_binary_output(ape, 4),
-            ape_binary_output(ape, 13)};
-  outputs:
-    - id: gpio_relay_1
-      inverted: true
-    - id: gpio_relay_2
-      inverted: true
-    - id: gpio_relay_3
-      inverted: true
-    - id: gpio_relay_4
-      inverted: true
-    - id: ardu_13_npn
-
+  - platform: custom
+    type: binary
+    lambda: |-
+      return {ape_binary_output(ape, 7),
+              ape_binary_output(ape, 6),
+              ape_binary_output(ape, 5),
+              ape_binary_output(ape, 4),
+              ape_binary_output(ape, 13)};
+    outputs:
+      - id: gpio_relay_1
+        inverted: true
+      - id: gpio_relay_2
+        inverted: true
+      - id: gpio_relay_3
+        inverted: true
+      - id: gpio_relay_4
+        inverted: true
+      - id: ardu_13_npn
 
 light:
   - platform: binary
@@ -66,14 +65,13 @@ light:
     effects:
       - strobe:
       - strobe:
-         name: Flash
-         colors:
-          - state: True
-            brightness: 100%
-            duration: 500ms
-          - state: False
-            duration: 250ms
-
+          name: Flash
+          colors:
+            - state: True
+              brightness: 100%
+              duration: 500ms
+            - state: False
+              duration: 250ms
 
 remote_transmitter:
   pin: GPIO12
@@ -81,139 +79,137 @@ remote_transmitter:
   carrier_duty_percent: 100%
 
 switch:
-- platform: output
-  id: sirena
-  name: "Sirena"
-  output: gpio_relay_4
-- platform: restart
-  name: "Patio Restart"
+  - platform: output
+    id: sirena
+    name: "Sirena"
+    output: gpio_relay_4
+  - platform: restart
+    name: "Patio Restart"
 
-- platform: template
-  id: C3_Lock
-  turn_on_action:
-    - remote_transmitter.transmit_rc_switch_raw:
-        code: '110100000011010100001100'
-        protocol: 1
-        repeat:
+  - platform: template
+    id: C3_Lock
+    turn_on_action:
+      - remote_transmitter.transmit_rc_switch_raw:
+          code: "110100000011010100001100"
+          protocol: 1
+          repeat:
             times: 5
             wait_time: 2ms
-- platform: template
-  id: C3_UnLock
-  turn_on_action:
-    - remote_transmitter.transmit_rc_switch_raw:
-        code: '110100000011010100110000'
-        protocol: 1
-        repeat:
+  - platform: template
+    id: C3_UnLock
+    turn_on_action:
+      - remote_transmitter.transmit_rc_switch_raw:
+          code: "110100000011010100110000"
+          protocol: 1
+          repeat:
             times: 5
             wait_time: 2ms
-- platform: template
-  id: C3_Bajar
-  turn_on_action:
-    - remote_transmitter.transmit_rc_switch_raw:
-        code: '110100000011010100000011'
-        protocol: 1
-        repeat:
+  - platform: template
+    id: C3_Bajar
+    turn_on_action:
+      - remote_transmitter.transmit_rc_switch_raw:
+          code: "110100000011010100000011"
+          protocol: 1
+          repeat:
             times: 5
             wait_time: 2ms
-- platform: template
-  id: C3_Subir
-  turn_on_action:
-    - remote_transmitter.transmit_rc_switch_raw:
-        code: '110100000011010111000000'
-        protocol: 1
-        repeat:
-            times: 5
-            wait_time: 2ms
-
-
-- platform: template
-  id: C4_Lock
-  turn_on_action:
-    - remote_transmitter.transmit_rc_switch_raw:
-        code: '110111010100001100001100'
-        protocol: 1
-        repeat:
-            times: 5
-            wait_time: 2ms
-- platform: template
-  id: C4_UnLock
-  turn_on_action:
-    - remote_transmitter.transmit_rc_switch_raw:
-        code: '110111010100001100110000'
-        protocol: 1
-        repeat:
-            times: 5
-            wait_time: 2ms
-- platform: template
-  id: C4_Bajar
-  turn_on_action:
-    - remote_transmitter.transmit_rc_switch_raw:
-        code: '110111010100001111000000'
-        protocol: 1
-        repeat:
-            times: 5
-            wait_time: 2ms
-- platform: template
-  id: C4_Subir
-  turn_on_action:
-    - remote_transmitter.transmit_rc_switch_raw:
-        code: '110111010100001100000011'
-        protocol: 1
-        repeat:
+  - platform: template
+    id: C3_Subir
+    turn_on_action:
+      - remote_transmitter.transmit_rc_switch_raw:
+          code: "110100000011010111000000"
+          protocol: 1
+          repeat:
             times: 5
             wait_time: 2ms
 
-- platform: template
-  id: C9_Lock
-  turn_on_action:
-    - remote_transmitter.transmit_rc_switch_raw:
-        code: '110100000011110100001100'
-        protocol: 1
-        repeat:
+  - platform: template
+    id: C4_Lock
+    turn_on_action:
+      - remote_transmitter.transmit_rc_switch_raw:
+          code: "110111010100001100001100"
+          protocol: 1
+          repeat:
             times: 5
             wait_time: 2ms
-- platform: template
-  id: C9_UnLock
-  turn_on_action:
-    - remote_transmitter.transmit_rc_switch_raw:
-        code: '110100000011110100110000'
-        protocol: 1
-        repeat:
+  - platform: template
+    id: C4_UnLock
+    turn_on_action:
+      - remote_transmitter.transmit_rc_switch_raw:
+          code: "110111010100001100110000"
+          protocol: 1
+          repeat:
             times: 5
             wait_time: 2ms
-- platform: template
-  id: C9_Bajar
-  turn_on_action:
-    - remote_transmitter.transmit_rc_switch_raw:
-        code: '110100000011110100000011'
-        protocol: 1
-        repeat:
+  - platform: template
+    id: C4_Bajar
+    turn_on_action:
+      - remote_transmitter.transmit_rc_switch_raw:
+          code: "110111010100001111000000"
+          protocol: 1
+          repeat:
             times: 5
             wait_time: 2ms
-- platform: template
-  id: C9_Subir
-  turn_on_action:
-    - remote_transmitter.transmit_rc_switch_raw:
-        code: '110100000011110111000000'
-        protocol: 1
-        repeat:
-          times: 5
-          wait_time: 1ms
+  - platform: template
+    id: C4_Subir
+    turn_on_action:
+      - remote_transmitter.transmit_rc_switch_raw:
+          code: "110111010100001100000011"
+          protocol: 1
+          repeat:
+            times: 5
+            wait_time: 2ms
 
-- platform: template
-  name: Comando Activacion Cerco
-  turn_on_action:
-    - remote_transmitter.transmit_rc_switch_raw:
-        code: '1011110110111101111000100101'
-        protocol: 6
-        repeat:
-          times: 4
-          wait_time: 2ms
+  - platform: template
+    id: C9_Lock
+    turn_on_action:
+      - remote_transmitter.transmit_rc_switch_raw:
+          code: "110100000011110100001100"
+          protocol: 1
+          repeat:
+            times: 5
+            wait_time: 2ms
+  - platform: template
+    id: C9_UnLock
+    turn_on_action:
+      - remote_transmitter.transmit_rc_switch_raw:
+          code: "110100000011110100110000"
+          protocol: 1
+          repeat:
+            times: 5
+            wait_time: 2ms
+  - platform: template
+    id: C9_Bajar
+    turn_on_action:
+      - remote_transmitter.transmit_rc_switch_raw:
+          code: "110100000011110100000011"
+          protocol: 1
+          repeat:
+            times: 5
+            wait_time: 2ms
+  - platform: template
+    id: C9_Subir
+    turn_on_action:
+      - remote_transmitter.transmit_rc_switch_raw:
+          code: "110100000011110111000000"
+          protocol: 1
+          repeat:
+            times: 5
+            wait_time: 2ms
 
+  - platform: template
+    name: Comando Activacion Cerco
+    turn_on_action:
+      - remote_transmitter.transmit_rc_switch_raw:
+          code: "1011110110111101111000100101"
+          protocol: 6
+          repeat:
+            times: 2
+            wait_time: 2ms
 
 cover:
   - platform: time_based
-    device_class: blind
+    device_class: shutter
     name: "Cortina 9 Muro"
     open_action:
       - switch.turn_on: C9_Subir
@@ -226,7 +222,7 @@ cover:
     has_built_in_endstop: true
 
   - platform: time_based
-    device_class: shade
+    device_class: shutter
     name: "Cortina 4 Centro"
     open_action:
       - switch.turn_on: C4_Subir
@@ -312,7 +308,6 @@ sensor:
   - platform: dallas
     address: 0x2771C02712646128
     name: Temperatura Patio
-
 ###
 # module info:
 # Male Header:
