@@ -3,7 +3,7 @@ esphome:
   platform: ESP8266
   board: nodemcu
   includes:
-    - ape.h
+    - arduino_port_expander.h
   on_loop:
     then:
       # set the common neutral wire relay for patio lights

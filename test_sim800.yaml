@@ -95,10 +95,10 @@ climate:
     default_target_temperature_low: 10
     default_target_temperature_high: 20
     idle_action:
-      lambda: |- 
+      lambda: |-
         return;
     cool_action:
-      lambda: |- 
+      lambda: |-
         return;
 # remote_transmitter:
 #   carrier_duty_percent: 50%

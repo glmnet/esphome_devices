@@ -24,28 +24,30 @@ ota:
 
 output:
   - platform: ledc
-    pin: GPIO19
-    id: 'buzzer'
+    pin: GPIO2
+    id: led_output
 
-switch:
-  - platform: template
-    name: buzzzzzz
-    turn_on_action:
+light:
+  - platform: monochromatic
+    name: luz
+    output: led_output
+    id: luz_
+
+web_server:
+
+
+sensor:
+- platform: esp32_hall
+  name: "ESP32 Hall Sensor"
+  update_interval: 1s
+  id: hall
+  on_value:
+    if:
+      condition:
+        sensor.in_range:
+          id: hall
+          above: 50.0
       then:
-        - output.ledc.set_frequency:
-            id: buzzer
-            frequency: 800Hz
-        - output.set_level:
-            id: buzzer
-            level: 50%
-        - delay: 500ms
-        - output.turn_off: buzzer
-        - delay: 200ms
-        - output.ledc.set_frequency:
-            id: buzzer
-            frequency: 600Hz
-        - output.set_level:
-            id: buzzer
-            level: 50%
-        - delay: 500ms
-        - output.turn_off: buzzer
+      - light.turn_on: luz_
+      else:
+      - light.turn_off: luz_

@@ -1,0 +1,37 @@
+esphome:
+  name: test_toshiba
+  platform: ESP8266
+  board: nodemcu
+
+logger:
+  level: VERY_VERBOSE
+
+wifi:
+  ssid: !secret wifi_ssid
+  password: !secret wifi_pass
+
+api:
+
+ota:
+
+
+sensor:
+  - platform: dht
+    pin: D2
+    model: DHT22
+    temperature:
+      name: "Estudio Test Temperature"
+      id: estudio_test_dht_temp
+    humidity:
+      name: "Estudio Test Humidity"
+    update_interval: 5s
+
+remote_transmitter:
+  carrier_duty_percent: 50%
+  pin: D5
+
+
+climate:
+  platform: mitsubishi
+  name: 'New AC No Sensor'
+  sensor: estudio_test_dht_temp

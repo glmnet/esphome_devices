@@ -1,0 +1,35 @@
+esphome:
+  name: test_local2
+  platform: ESP8266
+  board: nodemcu
+  platformio_options:
+    upload_speed: 921600
+
+wifi:
+  ssid: !secret wifi_ssid
+  password: !secret wifi_pass
+  output_power: 20.5dB
+  manual_ip:
+    static_ip: 10.0.1.199
+    gateway: 10.0.1.1
+    subnet: 255.0.0.0
+
+api:
+
+
+logger:
+  level: VERBOSE
+
+output:
+  - platform: dimmer
+    id: dimmer1
+    gate_pin: D7
+    zero_cross_pin:
+      number: D6
+      mode: INPUT
+      inverted: yes
+
+light:
+  - platform: monochromatic
+    output: dimmer1
+    name: Dimmer Light

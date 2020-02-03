@@ -20,7 +20,7 @@ remote_receiver:
     number: D5
     inverted: True
     mode: INPUT_PULLUP
-  tolerance: 50%
+  tolerance: 45%
   dump: raw
 
 remote_transmitter:
