@@ -1,0 +1,36 @@
+# single test esp12f led (GPIO2) and some boards (GPIO16 led)
+# leds are toggled with GPIO0 (usually built in flash button)
+
+esphome:
+  name: uptime_test
+  platform: ESP8266
+  board: nodemcuv2
+  platformio_options:
+    upload_speed: 921600
+
+logger:
+  level: VERY_VERBOSE
+
+binary_sensor:
+  - platform: gpio
+    id: flash_btn
+    pin: GPIO0
+    on_press:
+      - light.toggle: esp_led_light
+      - light.toggle: esp_led_light2
+
+output:
+  - platform: gpio
+    pin: GPIO2
+    id: esp_led
+  - platform: gpio
+    pin: GPIO16
+    id: esp_led2
+
+light:
+  - platform: binary
+    output: esp_led
+    id: esp_led_light
+  - platform: binary
+    output: esp_led2
+    id: esp_led_light2
