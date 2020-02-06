@@ -16,6 +16,7 @@ wifi:
 
 api:
 
+ota:
 
 logger:
   level: VERBOSE
@@ -29,7 +30,18 @@ output:
       mode: INPUT
       inverted: yes
 
+  # - platform: dimmer
+  #   id: dimmer2
+  #   gate_pin: D8
+  #   zero_cross_pin:
+  #     number: D6
+  #     mode: INPUT
+  #     inverted: yes
+
 light:
   - platform: monochromatic
     output: dimmer1
     name: Dimmer Light
+  # - platform: monochromatic
+  #   output: dimmer2
+  #   name: Dimmer Light 2

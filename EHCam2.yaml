@@ -9,11 +9,6 @@ wifi:
   ssid: !secret wifi_ssid
   password: !secret wifi_pass
 
-  # Enable fallback hotspot (captive portal) in case wifi connection fails
-  # ap:
-  #   ssid: "Test Esp32 Fallback Hotspot"
-  #   password: "HBPaN3WZOE38"
-
 # captive_portal:
 
 # Enable logging
@@ -38,9 +33,9 @@ esp32_camera:
   power_down_pin: GPIO32
   # Image settings
 
-  name: Camera ESP32 2
-  resolution: 1600x1200
-  max_framerate: 1Hz
+  name: Camera ESP32 1
+  #resolution: 1600x1200
+  max_framerate: 0.5Hz
 
 
 output:
@@ -53,4 +48,4 @@ output:
 light:
   - platform: binary
     output: gpio_led
-    name:  Camera ESP32 2 Flash
+    name:  Camera ESP32 1 Flash

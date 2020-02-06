@@ -71,6 +71,8 @@ binary_sensor:
       number: GPIO14
       mode: INPUT_PULLUP
     name: Tanque abajo lleno
+    filters:
+      - delayed_on_off: 2s # debounce for some noisy from pump or generator
 
     on_press:
       # tank almost full
@@ -82,6 +84,9 @@ binary_sensor:
       - sensor.template.publish:
           id: tank_liters
           state: !lambda 'return 80.0;'
+      # prevent pump run without water
+      - delay: 50s
+      - switch.turn_off: bomba_tanque
 
   - platform: custom
     lambda: |-
@@ -111,15 +116,37 @@ sensor:
             return new_level;
 
   - platform: template
-    name: Litros Tanque Abajo
     id: tank_liters
     on_value:
       - sensor.template.publish:
           id: tank_level
           # tank max is 1000 liters, convert to %
           state: !lambda "return x/10.0;"
+    unit_of_measurement: litre
 
   - platform: template
     name: Nivel Tanque Abajo
     id: tank_level
+    unit_of_measurement: '%'
 
+
+interval:
+  - interval: 1s
+    then:
+      - if:
+          condition:
+            switch.is_on: bomba_tanque
+          # about 500 liters of water are pumped on 22 minutes so
+          # about 0.38 liters every second are pumped out of the tank
+          then:
+          - lambda: |-
+              float new_level = id(tank_liters).state;
+              if (isnan(new_level))
+                new_level = id(tanque_abajo_lleno).state ? 900.0 : 50.0;
+
+              new_level -= 0.38;
+              if (new_level < 0)
+                new_level = 0;
+              if (new_level < 80.0 && id(tanque_abajo_lleno).state)
+                new_level = 80;
+              id(tank_liters).publish_state(new_level);

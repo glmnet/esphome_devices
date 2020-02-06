@@ -2,6 +2,18 @@ esphome:
   name: test_servo
   platform: ESP8266
   board: nodemcuv2
+  on_boot:
+    priority: 400
+    then:
+      servo.write:
+        id: curtain_test_servo
+        level: -90.0 %
+
+substitutions:
+  static_ip: XXX.XXX.XX.XX
+  status_gpio: '2'
+  btn_up: 'D2'
+  btn_stop: 'D1'
 
 wifi:
   ssid: !secret wifi_ssid
@@ -19,37 +31,53 @@ api:
 
 ota:
 
+
 servo:
-  - id: my_servo
+  - id: curtain_test_servo
     output: pwm_output
+    restore: false
 
+
+
+# Example output platform
+# On ESP32, use ledc output
 output:
-  - platform: gpio
-    pin: D1
-    inverted: False
-    id: gpio_d1_led
-
   - platform: esp8266_pwm
     id: pwm_output
-    pin: D7
+    pin: D0
     frequency: 50 Hz
 
 binary_sensor:
   - platform: gpio
-    pin: D8
-    name: "Multisensor Motion"
-    device_class: motion
+    pin:
+      number: $btn_up
+      mode: INPUT_PULLUP
+    name: "Up"
+    id: "curtain_up"
     on_press:
       then:
-        - output.turn_on: gpio_d1_led
-        - servo.write:
-            id: my_servo
-            level: 70.0%
+      - servo.write:
+          id: curtain_test_servo
+          level: -100.0%
     on_release:
       then:
-        - output.turn_off: gpio_d1_led
-        - servo.write:
-            id: my_servo
-            level: -70.0%
+      - servo.write:
+          id: curtain_test_servo
+          level: 100.0%
 
+  - platform: gpio
+    pin:
+      number: $btn_stop
+      mode: INPUT_PULLUP
+    name: "Stop"
+    id: "curtain_stop"
+    on_state:
+      then:
+        lambda: |-
+            id(curtain_test_servo).detach();
+
+status_led:
+  pin:
+    number: $status_gpio
+    inverted: yes
 

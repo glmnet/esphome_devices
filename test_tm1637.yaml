@@ -1,0 +1,62 @@
+esphome:
+  name: test_local
+  platform: ESP8266
+  board: nodemcuv2
+  platformio_options:
+    upload_speed: 921600
+
+logger:
+  level: VERBOSE
+
+wifi:
+  ssid: !secret wifi_ssid
+  password: !secret wifi_pass
+
+api:
+
+time:
+  - platform: homeassistant
+    id: homeassistant_time
+
+display:
+  platform: tm1637
+  id: laal
+  clk_pin: D6
+  dio_pin: D5
+  update_interval: 500ms
+  intensity: 3
+  lambda: |-
+      static int i = 0;
+      i++;
+      if ((i % 2) == 0)
+        it.strftime("%H.%M", id(homeassistant_time).now());
+      else
+        it.strftime("%H%M", id(homeassistant_time).now());
+
+globals:
+  - id: intensity
+    type: int
+
+binary_sensor:
+  - platform: gpio
+    id: gpio0_
+    pin: GPIO0
+    filters:
+      - delayed_on: 10ms
+    on_press:
+      - then:
+          lambda: |-
+            id(intensity) += 1;
+            if (id(intensity) == 8)
+              id(intensity) = 0;
+            id(laal).set_intensity(static_cast<uint8_t>(id(intensity)));
+            ESP_LOGD("main", "Intensity %d", id(intensity));
+            auto z = NAN;
+            if (isnan(z))
+              ESP_LOGD("main", "isnan function works");
+            if (z == NAN)
+              ESP_LOGD("main", "== NAN works");
+
+
+
+

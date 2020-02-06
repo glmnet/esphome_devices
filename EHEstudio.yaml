@@ -136,9 +136,6 @@ binary_sensor:
     device_class: window
   - name: "Switch escalera 1" # DI10
   - name: "Switch escalera 2" # DI9
-    on_state:
-      then:
-      - light.toggle: luz_pasillo
   - name: "Switch baño 1" # DI13
     filters:
     - delayed_on: 50ms

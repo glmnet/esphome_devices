@@ -1,0 +1,58 @@
+esphome:
+  name: eh_comedor_ac
+  platform: ESP8266
+  board: nodemcu
+
+wifi:
+  ssid: !secret wifi_ssid
+  password: !secret wifi_pass
+
+api:
+
+ota:
+
+logger:
+  level: VERBOSE
+
+remote_receiver:
+  id: rcvr
+  pin:
+    number: GPIO14
+    inverted: True
+    mode: INPUT_PULLUP
+  tolerance: 45%
+  dump: raw
+
+remote_transmitter:
+  carrier_duty_percent: 50%
+  pin: GPIO12
+
+climate:
+  - platform: whirlpool
+    name: whirlpool ac
+    sensor: temp_comedor
+    receiver_id: rcvr
+
+binary_sensor:
+  - platform: gpio
+    name: whirlpool_on
+    pin:
+      number: GPIO13
+      mode: INPUT_PULLUP
+    filters:
+      - invert:
+      - delayed_off: 200ms
+
+i2c:
+
+sensor:
+  - platform: bmp280
+    temperature:
+      id: temp_comedor
+      name: "Temperatura Comedor"
+      oversampling: 1x
+    pressure:
+      name: "Presion Comedor"
+      oversampling: 1x
+    address: 0x76
+    update_interval: 60s

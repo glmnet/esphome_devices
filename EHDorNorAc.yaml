@@ -1,0 +1,58 @@
+esphome:
+  name: eh_dor_nor_ac
+  platform: ESP8266
+  board: nodemcu
+
+wifi:
+  ssid: !secret wifi_ssid
+  password: !secret wifi_pass
+
+api:
+
+ota:
+
+logger:
+  level: DEBUG
+  baud_rate: 0
+
+remote_receiver:
+  id: rcvr
+  pin:
+    number: GPIO14
+    inverted: True
+    mode: INPUT_PULLUP
+  tolerance: 45%
+  dump: raw
+
+remote_transmitter:
+  carrier_duty_percent: 50%
+  pin: GPIO12
+
+climate:
+  - platform: coolix
+    sensor: temp_norte
+    name: 'AC Dormitorio Norte'
+    supports_heat: True
+    supports_cool: True
+    receiver_id: rcvr
+
+switch:
+  - platform: restart
+    name: "Dormitorio Norte Ac Restart"
+
+i2c:
+  id: i2c_component
+
+
+sensor:
+  - platform: bmp280
+    temperature:
+      id: temp_norte
+      name: "Temperature Dor Norte"
+      oversampling: 1x
+    pressure:
+      name: "Presion Dor Norte"
+      oversampling: 1x
+    address: 0x76
+    update_interval: 60s
+

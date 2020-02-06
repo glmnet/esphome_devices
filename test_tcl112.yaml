@@ -40,7 +40,7 @@ remote_transmitter:
   pin: D6
 
 climate:
-  platform: tcl112
+  platform: coolix
   name: 'New AC No Sensor'
   sensor: dallas_temp
   receiver_id: rcvr

@@ -22,19 +22,15 @@ remote_transmitter:
   carrier_duty_percent: 50%
   pin: D5
 
-sensor:
-  - platform: dht
-    pin: D2
-    model: DHT22
-    temperature:
-      name: "Estudio Test Temperature"
-      id: estudio_test_dht_temp
-    humidity:
-      name: "Estudio Test Humidity"
-    update_interval: 600s
-
-
 climate:
-  - platform: mitsubishi
-    name: mitsubishi ac
-    sensor: estudio_test_dht_temp
+  - platform: whirlpool
+    name: whirlpool ac
+
+binary_sensor:
+  - platform: gpio
+    name: test
+    pin:
+      number: D1
+      mode: INPUT_PULLUP
+    filters:
+      - invert:
