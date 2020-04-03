@@ -19,29 +19,73 @@ api:
 ota:
 
 logger:
-  level: VERBOSE
+  level: VERY_VERBOSE
+
+switch:
+  - platform: template
+    optimistic: true
+    name: "switch in 5s"
+    turn_on_action:
+      - light.turn_on:
+          id: l1
+          transition_length: 5s
+    turn_off_action:
+      - light.turn_off:
+          id: l1
+          transition_length: 5s
+
+
+  - platform: template
+    optimistic: true
+    name: "switch in 0s"
+    turn_on_action:
+      - light.turn_on:
+          id: l1
+          transition_length: 0s
+    turn_off_action:
+      - light.turn_off:
+          id: l1
+          transition_length: 0s
+
 
 output:
   - platform: dimmer
     id: dimmer1
     gate_pin: D7
+    min_power: 12%
+    init_with_half_cycle: false
+    zero_cross_pin:
+      number: D6
+      mode: INPUT
+      inverted: yes
+  - platform: dimmer
+    id: dimmer2
+    gate_pin: D5
+    method: leading
+    zero_cross_pin:
+      number: D6
+      mode: INPUT
+      inverted: yes
+  - platform: dimmer
+    id: dimmer3
+    gate_pin: D4
+    method: trailing
     zero_cross_pin:
       number: D6
       mode: INPUT
       inverted: yes
 
-  # - platform: dimmer
-  #   id: dimmer2
-  #   gate_pin: D8
-  #   zero_cross_pin:
-  #     number: D6
-  #     mode: INPUT
-  #     inverted: yes
-
 light:
   - platform: monochromatic
     output: dimmer1
-    name: Dimmer Light
-  # - platform: monochromatic
-  #   output: dimmer2
-  #   name: Dimmer Light 2
+    name: Dimmer Light Halogen
+    id: l1
+    gamma_correct: 0
+
+  - platform: monochromatic
+    output: dimmer2
+    name: Dimmer Light LED
+
+  - platform: monochromatic
+    output: dimmer3
+    name: Dimmer Light Leading

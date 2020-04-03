@@ -56,3 +56,7 @@ sensor:
       oversampling: 1x
     address: 0x76
     update_interval: 60s
+
+switch:
+  - platform: restart
+    name: "Comedor AC restart"

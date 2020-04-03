@@ -25,4 +25,10 @@ uart:
   rx_pin: RX
   baud_rate: 115200
 
-
+display:
+  - platform: nextion
+    # full_update_every : 30
+    lambda: |-
+      it.set_component_text_printf("t22", "%.2f", 5);
+      // voff = voff + vstep;
+      // it.printf( 0, voff, id(display_font), "Input: %.1f V",    (input_voltage_sensor)       ->state);

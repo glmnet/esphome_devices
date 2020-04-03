@@ -220,6 +220,7 @@ cover:
     stop_action:
       - switch.turn_on: C9_UnLock
     has_built_in_endstop: true
+    assumed_state: false
 
   - platform: time_based
     device_class: shutter

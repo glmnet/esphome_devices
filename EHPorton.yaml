@@ -17,7 +17,6 @@ i2c:
 
 logger:
   level: DEBUG
-  baud_rate: 0
 
 custom_component:
   - id: ape
@@ -51,7 +50,8 @@ binary_sensor:
       return {ape_binary_sensor(ape, 2),
               ape_binary_sensor(ape, 3),
               ape_binary_sensor(ape, 5),
-              ape_binary_sensor(ape, 14)};
+              ape_binary_sensor(ape, 14),
+              ape_binary_sensor(ape, 15)};
     binary_sensors:
       - name: Porton
         device_class: garage_door
@@ -63,13 +63,15 @@ binary_sensor:
         device_class: moving
         filters:
           - invert:
+      - name: Porton Manual
+        device_class: garage_door
 
 # Ribbon:
 # Black: VCC 3.3V
 # White: GND 0V
 # Gray: Arduino A2
 # Violet: Arduino 5 - > Barrera porton garage
-# Blue: Arduino A1
+# Blue: Arduino A1 -> Porton Reed switch lado puerta
 # Green: Arduino 3 -> Movimiento garage
 # Yellow: Arduino A0 -> Porton moviendo
-# Orange: Arduino 2 -> Porton Reed switch
+# Orange: Arduino 2 -> Porton Reed switch lado vecino

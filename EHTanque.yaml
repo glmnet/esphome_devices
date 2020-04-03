@@ -52,6 +52,23 @@ switch:
     name: "Toma Tanque"
     id: toma_tanque
     output: gpio_relay_2
+  - platform: template
+    name: "Reset tanque lleno"
+    turn_on_action:
+      - if:
+          condition:
+            sensor.in_range:
+              id: tank_liters
+              above: 900
+          then:
+            - sensor.template.publish:
+                id: tank_liters
+                state: 0
+          else:
+            - sensor.template.publish:
+                id: tank_liters
+                state: 1000
+
 
 light:
   - platform: binary
@@ -66,11 +83,11 @@ binary_sensor:
       then:
       - switch.turn_off: bomba_tanque
   - platform: gpio
-    id: tanque_abajo_lleno
+    id: tanque_abajo_flotador
     pin:
       number: GPIO14
       mode: INPUT_PULLUP
-    name: Tanque abajo lleno
+    name: Tanque abajo tiene agua
     filters:
       - delayed_on_off: 2s # debounce for some noisy from pump or generator
 
@@ -90,13 +107,24 @@ binary_sensor:
 
   - platform: custom
     lambda: |-
-      return {ape_binary_sensor(ape, 3)};
+      return {ape_binary_sensor(ape, 3),
+              ape_binary_sensor(ape, 2),
+              ape_binary_sensor(ape, 14)};
     binary_sensors:
       - name: "Switch luz tanque"
         internal: true
         on_state:
           then:
             - light.toggle: luz_tanque
+      - name: "Tanque abajo lleno"
+        # this is the hall effect sensor
+        id: tanque_abajo_lleno
+        filters:
+          - invert:
+          - delayed_on_off: 2min # prevent oscilattions of the sensor, we don't need high response time
+      - name: "Tanque abajo desbordado"
+        filters:
+          - invert:
 
 sensor:
   - platform: pulse_counter
@@ -108,9 +136,9 @@ sensor:
           state: !lambda |-
             float new_level = id(tank_liters).state;
             if (isnan(new_level))
-              new_level = id(tanque_abajo_lleno).state ? 900.0 : 50.0;
+              new_level = id(tanque_abajo_flotador).state ? 900.0 : 50.0;
             new_level += x / 450;
-            if (new_level > 900.0 && !id(tanque_abajo_lleno).state)
+            if (new_level > 900.0 && !id(tanque_abajo_flotador).state)
               return 900;
             if (new_level > 1000) return 1000;
             return new_level;
@@ -135,6 +163,14 @@ interval:
     then:
       - if:
           condition:
+            binary_sensor.is_on: tanque_abajo_lleno
+          then:
+            lambda: |-
+              float new_level = id(tank_liters).state;
+              if (isnan(new_level) || new_level < 950)
+                id(tank_liters).publish_state(950);
+      - if:
+          condition:
             switch.is_on: bomba_tanque
           # about 500 liters of water are pumped on 22 minutes so
           # about 0.38 liters every second are pumped out of the tank
@@ -142,11 +178,11 @@ interval:
           - lambda: |-
               float new_level = id(tank_liters).state;
               if (isnan(new_level))
-                new_level = id(tanque_abajo_lleno).state ? 900.0 : 50.0;
+                new_level = id(tanque_abajo_flotador).state ? 900.0 : 50.0;
 
               new_level -= 0.38;
               if (new_level < 0)
                 new_level = 0;
-              if (new_level < 80.0 && id(tanque_abajo_lleno).state)
+              if (new_level < 80.0 && id(tanque_abajo_flotador).state)
                 new_level = 80;
               id(tank_liters).publish_state(new_level);

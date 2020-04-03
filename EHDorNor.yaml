@@ -1,5 +1,5 @@
 esphome:
-  name: eh_dor_nor-test
+  name: eh_dor_nor
   platform: ESP8266
   board: nodemcu
   includes:
@@ -50,11 +50,11 @@ light:
     output: gpio_relay_1
   - platform: binary
     id: cama_pared
-    name: "Dormitorio Cama Pared"
+    name: "Dormitorio Norte Cama Pared"
     output: gpio_relay_2
   - platform: binary
     id: cama_ventana
-    name: "Dormitorio Cama Ventana"
+    name: "Dormitorio Norte Cama Ventana"
     output: gpio_relay_3
 
 binary_sensor:
@@ -80,12 +80,18 @@ binary_sensor:
         internal: true
         on_state:
           then:
-            - light.toggle: cama_pared
-      - name: "Dormitorio norte Switch puerta 2"
-        internal: true
-        on_state:
-          then:
-            - light.toggle: cama_ventana
+            if:
+              condition:
+                or:
+                  - light.is_on: cama_ventana
+                  - light.is_on: cama_pared
+              then:
+                - light.turn_off: cama_ventana
+                - light.turn_off: cama_pared
+              else:
+                - light.turn_on: cama_ventana
+                - light.turn_on: cama_pared
+      - name: "Dormitorio norte Switch puerta"
       - name: "Dormitorio norte Switch cama pared 1"
         internal: true
         on_state:

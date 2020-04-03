@@ -33,19 +33,20 @@ esp32_camera:
   power_down_pin: GPIO32
   # Image settings
 
-  name: Camera ESP32 1
+  name: Camera ESP32 2
   #resolution: 1600x1200
-  max_framerate: 0.5Hz
+  #max_framerate: 0.5Hz
 
+# output:
+#   - platform: gpio
+#     pin: GPIO4
+#     id: gpio_led
 
-output:
-  - platform: gpio
-    pin: GPIO4
-    id: gpio_led
+# light:
+#   - platform: binary
+#     output: gpio_led
+#     name:  Camera ESP32 1 Flash
 
-
-
-light:
-  - platform: binary
-    output: gpio_led
-    name:  Camera ESP32 1 Flash
+# binary_sensor:
+#   - platform: status
+#     name: ESPCam2 Estado

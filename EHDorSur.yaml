@@ -83,12 +83,18 @@ binary_sensor:
         internal: true
         on_state:
           then:
-            - light.toggle: luz_dormitorio_sur_cama_ventana
-      - name: "Switch puerta 3"
-        internal: true
-        on_state:
-          then:
-            - light.toggle: luz_dormitorio_sur_cama_pared
+            if:
+              condition:
+                or:
+                  - light.is_on: luz_dormitorio_sur_cama_ventana
+                  - light.is_on: luz_dormitorio_sur_cama_pared
+              then:
+                - light.turn_off: luz_dormitorio_sur_cama_ventana
+                - light.turn_off: luz_dormitorio_sur_cama_pared
+              else:
+                - light.turn_on: luz_dormitorio_sur_cama_ventana
+                - light.turn_on: luz_dormitorio_sur_cama_pared
+      - name: "Switch puerta sur"
       - name: "Switch Cama Pared 1"
         internal: true
         on_state:

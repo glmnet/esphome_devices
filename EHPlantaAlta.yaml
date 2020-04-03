@@ -76,11 +76,11 @@ text_sensor:
 custom_component:
 - id: ape # bornes verdes
   lambda: |-
-    auto ape_component = new ArduinoPortExtender(i2ccomponent, 0x08);
+    auto ape_component = new ArduinoPortExpander(i2ccomponent, 0x08);
     return {ape_component};
 - id: ape2 # sim 800 side
   lambda: |-
-    auto ape_component = new ArduinoPortExtender(i2ccomponent, 0x09);
+    auto ape_component = new ArduinoPortExpander(i2ccomponent, 0x09);
     return {ape_component};
 
 
@@ -100,7 +100,7 @@ binary_sensor:
                   api.connected:
           then:
           - sim800l.send_sms:
-              recipient: '+5493624207774'
+              recipient: !secret glm_phone_number
               message: 'Conexion a Home Assistant perdida'
 
   - platform: homeassistant
@@ -125,18 +125,15 @@ binary_sensor:
               ape_binary_sensor(ape2, 9),
               ape_binary_sensor(ape2, 5),
               ape_binary_sensor(ape2, 2),
-              ape_binary_sensor(ape2, 11)};
+              ape_binary_sensor(ape2, 11),
+              ape_binary_sensor(ape2, 10)};
     binary_sensors:
       - name: "Switch Escalera 1"
         internal: true
         on_state:
           then:
             - light.toggle: luz_escalera
-      - name: "Switch Escalera 2"
-        internal: true
-        on_state:
-          then:
-            - light.toggle: luz_hall_pa
+      - name: "Switch Escalera Hall"
       - name: "Switch Ante Baño 1"
         internal: true
         on_state:
@@ -158,17 +155,14 @@ binary_sensor:
         device_class: motion
       - name: "Ventana Baño"
         device_class: window
+      - name: "Tanque Agua Arriba Flotador Pide"
+        filters:
+          - invert:
+          - delayed_on_off: 2s
       - name: "Tanque Agua Arriba Lleno"
-        # on_press:
-        #   then:
-        #   - sim800l.send_sms:
-        #       recipient: '+5493624207774'
-        #       message: Tanque alto lleno
-        # on_release:
-        #   then:
-        #   - sim800l.send_sms:
-        #       recipient: '+5493624207774'
-        #       message: Tanque alto vacio
+        filters:
+          - invert:
+          - delayed_on_off: 15s
 
 output:
 - platform: custom
@@ -177,7 +171,7 @@ output:
     return {ape_binary_output(ape, 2), // Baño
             ape_binary_output(ape, 3), // Escalera
             ape_binary_output(ape, 4), // Ante Baño
-            ape_binary_output(ape, 5), // Hall
+            ape_binary_output(ape, 5), //
             ape_binary_output(ape, 10), // Comun Luz Patio
             ape_binary_output(ape, 11), // Luz Patio Este
             ape_binary_output(ape, 12), // Luz Patio Oeste
@@ -255,10 +249,10 @@ switch:
 # APE2 12 Ribbon 3 Brown -
 # APE2 13 Ribbon 3 Orange
 
-# APE2 11 Ribbon 2 White - Tanque 1 - Azul
-# APE2 10 Ribbon 2 Purple - Tanque 2 - Verde
+# APE2 11 Ribbon 2 White - Tanque 1 - Azul - Flotador
+# APE2 10 Ribbon 2 Purple - Tanque 2 - Verde - Reed switch lleno - Normally open
 
-# APE1 07 Ribbon 2 Green - Tanque 3 - Blanco Verde
+# APE1 07 Ribbon 2 Green -
 # APE1 08 Ribbon 2 Orange - Tanque 4 - Naranja
 # APE1 09 Ribbon 2 Brown - Tanque 5 - Blanco Naranja
 

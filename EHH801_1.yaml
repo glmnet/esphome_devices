@@ -1,5 +1,5 @@
 esphome:
-  name: eh_h801light_3
+  name: eh_h801light_1
   platform: ESP8266
   board: esp01_1m
 
@@ -8,15 +8,16 @@ wifi:
   password: !secret wifi_pass
 
 logger:
- level: debug
+  level: debug
 
 api:
 ota:
-sensor:
-  - platform: wifi_signal
-    name: "WiFi Signal h801light"
-    update_interval: 60s
-#RGBWarm
+
+# sensor:
+#   - platform: wifi_signal
+#     name: "WiFi Signal h801light"
+#     update_interval: 60s
+
 output:
   - platform: esp8266_pwm
     pin: 12
@@ -30,40 +31,51 @@ output:
     pin: 15
     frequency: 1000 Hz
     id: pwm_r
-  - platform: esp8266_pwm
-    pin: 14
-    frequency: 1000 Hz
-    id: pwm_w1
-  - platform: esp8266_pwm
-    pin: 4
-    frequency: 1000 Hz
-    id: pwm_w2
-  - platform: esp8266_pwm
-    id: output_pin5
-    frequency: 1000 Hz
-    inverted: true
-    pin: 5
-  - platform: esp8266_pwm
-    id: output_pin1
-    inverted: true
-    frequency: 1000 Hz
-    pin: 1
+  # - platform: esp8266_pwm
+  #   pin: 14
+  #   frequency: 1000 Hz
+  #   id: pwm_w1
+  # - platform: esp8266_pwm
+  #   pin: 4
+  #   frequency: 1000 Hz
+  #   id: pwm_w2
+  # - platform: esp8266_pwm
+  #   id: output_pin5
+  #   frequency: 1000 Hz
+  #   inverted: true
+  #   pin: 5
+  # - platform: esp8266_pwm
+  #   id: output_pin1
+  #   inverted: true
+  #   frequency: 1000 Hz
+  #   pin: 1
 
 light:
-  - platform: rgbw
+  - platform: rgb
     name: "H801 Light"
     red: pwm_r
     green: pwm_g
     blue: pwm_b
-    white: pwm_w1
+    effects:
+      # Use default parameters:
+      - random:
+      # Customize parameters
+      - random:
+          name: "My Slow Random Effect"
+          transition_length: 30s
+          update_interval: 30s
+      - random:
+          name: "My Fast Random Effect"
+          transition_length: 4s
+          update_interval: 5s
 
-  - platform: monochromatic
-    name: "LED Red"
-    output: output_pin5
+  # - platform: monochromatic
+  #   name: "LED Red"
+  #   output: output_pin5
 
-  - platform: monochromatic
-    name: "LED Green"
-    output: output_pin1
+  # - platform: monochromatic
+  #   name: "LED Green"
+  #   output: output_pin1
 
 # status_led:
 #   pin:

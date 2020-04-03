@@ -1,19 +1,8 @@
 esphome:
-  name: test_servo
+  name: test_local2
   platform: ESP8266
   board: nodemcuv2
-  on_boot:
-    priority: 400
-    then:
-      servo.write:
-        id: curtain_test_servo
-        level: -90.0 %
-
-substitutions:
-  static_ip: XXX.XXX.XX.XX
-  status_gpio: '2'
-  btn_up: 'D2'
-  btn_stop: 'D1'
+  esp8266_restore_from_flash: true
 
 wifi:
   ssid: !secret wifi_ssid
@@ -27,16 +16,17 @@ logger:
   level: VERY_VERBOSE
 
 # Enable Home Assistant API
-api:
 
 ota:
 
+api:
 
 servo:
-  - id: curtain_test_servo
+  - id: test_servo
     output: pwm_output
-    restore: false
-
+    min_level: 3%
+    max_level: 12%
+    restore: true
 
 
 # Example output platform
@@ -47,37 +37,53 @@ output:
     pin: D0
     frequency: 50 Hz
 
+globals:
+  - id: servo_level
+    type: float
+
 binary_sensor:
   - platform: gpio
     pin:
-      number: $btn_up
+      number: D1
       mode: INPUT_PULLUP
-    name: "Up"
-    id: "curtain_up"
-    on_press:
-      then:
-      - servo.write:
-          id: curtain_test_servo
-          level: -100.0%
-    on_release:
-      then:
-      - servo.write:
-          id: curtain_test_servo
-          level: 100.0%
+    id: btn_up
+    filters:
+      - invert:
 
   - platform: gpio
     pin:
-      number: $btn_stop
+      number: D2
       mode: INPUT_PULLUP
-    name: "Stop"
-    id: "curtain_stop"
-    on_state:
-      then:
-        lambda: |-
-            id(curtain_test_servo).detach();
+    id: btn_down
+    filters:
+      - invert:
 
-status_led:
-  pin:
-    number: $status_gpio
-    inverted: yes
+  - platform: gpio
+
+    pin:
+      number: D3
+      mode: INPUT_PULLUP
+    name: "DETACH"
+    on_press:
+      - servo.detach: test_servo
+
+interval:
+  - interval: 1s
+    then:
+      - if:
+          condition:
+            binary_sensor.is_on: btn_up
+          then:
+            lambda: |-
+              if (id(servo_level) < 1.0) id(servo_level) += 0.1;
+              id(test_servo).write(id(servo_level));
+
+
+      - if:
+          condition:
+            binary_sensor.is_on: btn_down
+          then:
+            lambda: |-
+              if (id(servo_level) > -1.0) id(servo_level) -= 0.1;
+              id(test_servo).write(id(servo_level));
 
