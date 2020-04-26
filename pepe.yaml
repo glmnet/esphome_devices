@@ -1,0 +1,23 @@
+esphome:
+  name: pepe
+  platform: ESP8266
+  board: nodemcuv2
+
+wifi:
+  ssid: "fasf"
+  password: "fsa"
+
+  # Enable fallback hotspot (captive portal) in case wifi connection fails
+  ap:
+    ssid: "Pepe Fallback Hotspot"
+    password: "gaaKlIPnB4iO"
+
+captive_portal:
+
+# Enable logging
+logger:
+
+# Enable Home Assistant API
+api:
+
+ota:

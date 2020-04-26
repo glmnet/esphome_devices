@@ -1,0 +1,39 @@
+esphome:
+  name: test_local2
+  platform: ESP8266
+  board: nodemcu
+  platformio_options:
+    upload_speed: 921600
+
+logger:
+  level: DEBUG
+
+wifi:
+  ssid: !secret wifi_ssid
+  password: !secret wifi_pass
+
+api:
+
+ota:
+
+remote_transmitter:
+  pin: D7
+  # RF uses a 100% carrier signal
+  carrier_duty_percent: 50%
+
+switch:
+  - platform: template
+    name: Vizio TV Power
+    id: vizio_tv_power
+    optimistic: true
+    restore_state: true
+    turn_on_action:
+     - remote_transmitter.transmit_nec:
+         address: 0x20DF
+         command: 0x10EF
+    turn_off_action:
+     - remote_transmitter.transmit_raw:
+         code: [4088, -1542, 1019, -510, 513, -1019, 510, -509, 511, -510, 1020,
+                -1020, 1022, -1019, 510, -509, 511, -510, 511, -509, 511, -510,
+                1020, -1019, 510, -511, 1020, -510, 512, -508, 510, -1020, 1022]
+         carrier_frequency: 38kHz

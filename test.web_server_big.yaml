@@ -1,0 +1,71 @@
+esphome:
+  name: test_local2
+  platform: ESP8266
+  board: nodemcu
+  platformio_options:
+    upload_speed: 921600
+
+wifi:
+  ssid: !secret wifi_ssid
+  password: !secret wifi_pass
+  fast_connect: true
+
+logger:
+  level: VERY_VERBOSE
+
+api:
+
+ota:
+
+web_server:
+  js_url: "https://deploy-preview-542--esphome.netlify.com/_static/webserver-v1.js"
+
+switch:
+  - platform: template
+    name: Test_SW1
+    optimistic: true
+  - platform: template
+    name: Test_SW2
+    optimistic: true
+  - platform: template
+    name: Test_SW3
+    optimistic: true
+  - platform: template
+    name: Test_SW4
+    optimistic: true
+  - platform: template
+    name: Test_SW5
+    optimistic: true
+  - platform: template
+    name: Test_SW6
+    optimistic: true
+  - platform: template
+    name: Test_SW7
+    optimistic: true
+  - platform: template
+    name: Test_SW8
+    optimistic: true
+
+  - platform: template
+    name: Test_SW9
+    optimistic: true
+
+  - platform: template
+    name: Test_SW10
+    optimistic: true
+
+  - platform: template
+    name: Test_SW11
+    optimistic: true
+
+  - platform: template
+    name: Test_SW12
+    optimistic: true
+
+  - platform: template
+    name: Test_SW13
+    optimistic: true
+
+  - platform: template
+    name: Test_SW14
+    optimistic: true

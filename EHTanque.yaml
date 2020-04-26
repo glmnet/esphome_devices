@@ -121,7 +121,7 @@ binary_sensor:
         id: tanque_abajo_lleno
         filters:
           - invert:
-          - delayed_on_off: 2min # prevent oscilattions of the sensor, we don't need high response time
+          - delayed_on_off: 2s # prevent oscilattions of the sensor, we don't need high response time
       - name: "Tanque abajo desbordado"
         filters:
           - invert:

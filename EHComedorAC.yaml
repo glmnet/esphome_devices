@@ -32,6 +32,7 @@ climate:
     name: whirlpool ac
     sensor: temp_comedor
     receiver_id: rcvr
+    model: DG11J1-91
 
 binary_sensor:
   - platform: gpio

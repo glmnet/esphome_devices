@@ -1,5 +1,5 @@
 esphome:
-  name: eh_h801light_1
+  name: $devicename
   platform: ESP8266
   board: esp01_1m
 

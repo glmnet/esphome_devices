@@ -24,8 +24,8 @@ api:
 servo:
   - id: test_servo
     output: pwm_output
-    min_level: 3%
-    max_level: 12%
+    min_level: 5%
+    max_level: 10%
     restore: true
 
 

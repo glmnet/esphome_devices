@@ -7,6 +7,7 @@ esphome:
   board: nodemcuv2
   platformio_options:
     upload_speed: 921600
+  arduino_version: dev
 
 logger:
   level: VERY_VERBOSE
@@ -23,6 +24,7 @@ output:
   - platform: gpio
     pin: GPIO2
     id: esp_led
+    inverted: true
   - platform: gpio
     pin: GPIO16
     id: esp_led2
@@ -31,6 +33,15 @@ light:
   - platform: binary
     output: esp_led
     id: esp_led_light
+
+    on_turn_on:
+      - logger.log: 'light is on!'
+    on_turn_off:
+      - logger.log: 'light gone -- dark comming!'
+
   - platform: binary
     output: esp_led2
     id: esp_led_light2
+
+
+

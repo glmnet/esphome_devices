@@ -1,5 +1,5 @@
 esphome:
-  name: test_local
+  name: test_local2
   platform: ESP8266
   board: nodemcu
   platformio_options:
@@ -18,14 +18,6 @@ ota:
 logger:
   level: VERBOSE
 
-remote_transmitter:
-  carrier_duty_percent: 50%
-  pin: D5
-
-climate:
-  - platform: whirlpool
-    name: whirlpool ac
-
 binary_sensor:
   - platform: gpio
     name: test
@@ -34,3 +26,9 @@ binary_sensor:
       mode: INPUT_PULLUP
     filters:
       - invert:
+
+
+output:
+  - platform: gpio
+    id: output1
+    pin: GPIO0

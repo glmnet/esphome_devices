@@ -1,11 +1,9 @@
 esphome:
-  name: test_local
+  name: test_local2
   platform: ESP8266
   board: nodemcu
   platformio_options:
     upload_speed: 921600
-  includes:
-    - arduino_port_expander.h
 
 wifi:
   ssid: !secret wifi_ssid
@@ -24,12 +22,32 @@ i2c:
 logger:
   level: DEBUG
 
+dallas:
+  pin: D5
+
 sensor:
   - platform: bmp280
     temperature:
-      name: "Outside Temperature"
-      oversampling: 16x
+      name: bmp280_1_temperature
+      oversampling: 16X
     pressure:
-      name: "Outside Pressure"
-    address: 0x76
-    update_interval: 60s
+      name: bmp280_1_pressure
+    address: 0x76 # pull down 10k to set address 0x66 (installed in board)
+
+  - platform: bmp280
+    temperature:
+      name: bmp280_2_temperature
+      oversampling: 16X
+    pressure:
+      name: bmp280_2_pressure
+    address: 0x77 # pull up 3.3k to set address 0x77
+
+  - platform: dht
+    pin: D0
+    model: am2302
+    temperature:
+      name: dht22_temperature
+
+  - platform: dallas
+    index: 0
+    name: dallas_temperature

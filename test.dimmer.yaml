@@ -49,7 +49,7 @@ switch:
 
 
 output:
-  - platform: dimmer
+  - platform: ac_dimmer
     id: dimmer1
     gate_pin: D7
     min_power: 12%
@@ -58,7 +58,7 @@ output:
       number: D6
       mode: INPUT
       inverted: yes
-  - platform: dimmer
+  - platform: ac_dimmer
     id: dimmer2
     gate_pin: D5
     method: leading
@@ -66,7 +66,7 @@ output:
       number: D6
       mode: INPUT
       inverted: yes
-  - platform: dimmer
+  - platform: ac_dimmer
     id: dimmer3
     gate_pin: D4
     method: trailing
