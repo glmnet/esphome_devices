@@ -1,0 +1,30 @@
+esphome:
+  name: test_esp32
+  platform: ESP32
+  board: nodemcu-32s
+
+wifi:
+  ssid: !secret wifi_ssid
+  password: !secret wifi_pass
+
+# Enable logging
+logger:
+
+# Enable Home Assistant API
+api:
+
+ota:
+
+globals:
+  - id: ch1s
+    type: float
+    restore_value: false
+    initial_value: "5.6"
+
+sensor:
+  - platform: template
+    name: x
+    id: x
+    lambda: |-
+      return id(ch1s);
+    update_interval: 60s

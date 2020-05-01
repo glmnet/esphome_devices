@@ -1,0 +1,137 @@
+esphome:
+  name: test_local2
+  platform: ESP8266
+  board: nodemcuv2
+
+wifi:
+  ssid: !secret wifi_ssid
+  password: !secret wifi_pass
+  fast_connect: true
+
+logger:
+  level: VERBOSE
+  baud_rate: 0
+
+ota:
+
+api:
+
+substitutions:
+  node_id: switch_tuya2_1
+  blinking_interval: 500ms
+  interlock_time: 200ms
+
+cover:
+  - platform: time_based
+    name: "Volet salon"
+    id: ${node_id}_cover
+    device_class: shade
+    open_action:
+      - switch.turn_off: go_close
+      - delay: ${interlock_time}
+      - switch.turn_on: go_open
+    open_duration: 27s
+    close_action:
+      - switch.turn_off: go_open
+      - delay: ${interlock_time}
+      - switch.turn_on: go_close
+    close_duration: 25s
+    stop_action:
+      - switch.turn_off: go_close
+      - switch.turn_off: go_open
+
+binary_sensor:
+  - platform: gpio
+    id: btnL
+    internal: yes
+    pin:
+      number: 3
+      inverted: yes
+    on_release:
+      then:
+        - if:
+            condition:
+              lambda: 'return id(switch_tuya2_1_cover).current_operation == COVER_OPERATION_IDLE;'
+            then:
+              - cover.open: ${node_id}_cover
+            else:
+              - cover.stop: ${node_id}_cover
+
+  - platform: gpio
+    id: btnR
+    internal: yes
+    pin:
+      number: 5
+      inverted: yes
+    on_release:
+      then:
+        - if:
+            condition:
+              lambda: 'return id(switch_tuya2_1_cover).current_operation == COVER_OPERATION_IDLE;'
+            then:
+              - cover.close: ${node_id}_cover
+            else:
+              - cover.stop: ${node_id}_cover
+
+switch:
+  - platform: template
+    id: go_close
+    turn_on_action:
+      - switch.turn_on: relayL1
+      - while:
+          condition:
+            lambda: 'return true;'
+          then:
+            - switch.turn_on: ledR
+            - delay: ${blinking_interval}
+            - switch.turn_off: ledR
+            - delay: ${blinking_interval}
+    turn_off_action:
+      - switch.turn_off: relayL1
+      - switch.turn_off: ledR
+  - platform: template
+    id: go_open
+    internal: yes
+    turn_on_action:
+      - switch.turn_on: relayL2
+      - while:
+          condition:
+            lambda: 'return true;'
+          then:
+            - switch.turn_on: ledL
+            - delay: ${blinking_interval}
+            - switch.turn_off: ledL
+            - delay: ${blinking_interval}
+    turn_off_action:
+      - switch.turn_off: relayL2
+      - switch.turn_off: ledL
+
+  - platform: gpio
+    id: relayL1
+    internal: yes
+    pin: 13
+    interlock: relayL2
+    interlock_wait_time: ${interlock_time}
+  - platform: gpio
+    id: relayL2
+    internal: yes
+    pin: 4
+    interlock: relayL1
+    interlock_wait_time: ${interlock_time}
+  - platform: gpio
+    id: ledL
+    internal: yes
+    pin:
+      number: 14
+      inverted: yes
+  - platform: gpio
+    id: ledR
+    internal: yes
+    pin:
+      number: 1
+      inverted: yes
+
+status_led:
+  pin:
+    number: 0
+    inverted: yes

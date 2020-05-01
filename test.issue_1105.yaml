@@ -1,0 +1,71 @@
+esphome:
+  name: test_local2
+  platform: ESP8266
+  board: nodemcuv2
+
+wifi:
+  ssid: !secret wifi_ssid
+  password: !secret wifi_pass
+  fast_connect: true
+
+logger:
+  level: VERBOSE
+  baud_rate: 0
+
+ota:
+
+api:
+
+output:
+  - platform: gpio
+    id: motor_close
+    pin: D0
+  - platform: gpio
+    id: motor_open
+    pin: D1
+
+script:
+  - id: monitor_current
+    then:
+      - while:
+          condition:
+            lambda: 'return true;'
+          then:
+            - component.update: motor_current
+            - delay: 50ms
+
+sensor:
+  - name: "Lock motor current"
+    id: motor_current
+    update_interval: never
+    internal: true
+    platform: adc
+    pin: A0
+
+    on_value_range:
+      above: 0.5
+      then:
+        - cover.stop: door_lock
+
+cover:
+  - id: door_lock
+    name: "Door lock"
+    device_class: door
+    platform: time_based
+    open_duration: 4s
+    open_action:
+      #- script.stop: close_later
+      - output.turn_off: motor_close
+      - output.turn_on: motor_open
+      - script.execute: monitor_current
+      #- script.execute: close_later
+    close_duration: 6s
+    close_action:
+      #- script.stop: close_later
+      - output.turn_off: motor_open
+      - output.turn_on: motor_close
+      - script.execute: monitor_current
+    stop_action:
+      - output.turn_off: motor_open
+      - output.turn_off: motor_close
+      - script.stop: monitor_current

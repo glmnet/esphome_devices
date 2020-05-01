@@ -1,0 +1,18 @@
+esphome:
+  name: test_local2
+  platform: ESP8266
+  board: nodemcuv2
+  esp8266_restore_from_flash: true
+
+wifi:
+  ssid: !secret wifi_ssid
+  password: !secret wifi_pass
+  fast_connect: true
+
+logger:
+  level: VERY_VERBOSE
+
+ota:
+
+api:
+

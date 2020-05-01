@@ -2,52 +2,16 @@ esphome:
   name: test_esp32
   platform: ESP32
   board: nodemcu-32s
+  platformio_options:
+    upload_speed: 921600
 
 wifi:
   ssid: !secret wifi_ssid
   password: !secret wifi_pass
 
-  # Enable fallback hotspot (captive portal) in case wifi connection fails
-  # ap:
-  #   ssid: "Test Esp32 Fallback Hotspot"
-  #   password: "HBPaN3WZOE38"
-
-# captive_portal:
-
-# Enable logging
 logger:
 
-# Enable Home Assistant API
 api:
 
 ota:
 
-output:
-  - platform: ledc
-    pin: GPIO2
-    id: led_output
-
-light:
-  - platform: monochromatic
-    name: luz
-    output: led_output
-    id: luz_
-
-web_server:
-
-
-sensor:
-- platform: esp32_hall
-  name: "ESP32 Hall Sensor"
-  update_interval: 1s
-  id: hall
-  on_value:
-    if:
-      condition:
-        sensor.in_range:
-          id: hall
-          above: 50.0
-      then:
-      - light.turn_on: luz_
-      else:
-      - light.turn_off: luz_
