@@ -1,0 +1,320 @@
+esphome:
+  name: eh_magic_home_1
+  platform: ESP8266
+  board: esp8285
+  libraries:
+    - FastLED
+  includes:
+    - light_effects.h
+
+
+wifi:
+  ssid: !secret wifi_ssid
+  password: !secret wifi_pass
+
+# Enable logging
+logger:
+  baud_rate: 0
+
+# Enable Home Assistant API
+api:
+ota:
+
+light:
+  - platform: rgb
+    id: light_1
+    name: Nice Friendly Name
+    red: pwm_r
+    green: pwm_g
+    blue: pwm_b
+
+    effects:
+      - lambda:
+          name: RedGreenColorWheel
+          update_interval: 15ms
+          lambda: color_wheel(id(light_1));
+
+      - lambda:
+          name: RedGreenFade
+          update_interval: 4s
+          lambda: |-
+            static int state = 0;
+            auto call = id(light_1).turn_on();
+            // Transtion of 1000ms = 1s
+            call.set_transition_length(4000);
+            if (state == 0) {
+              call.set_rgb(1.0, 0.0, 0.0);
+            } else if (state == 1) {
+              call.set_rgb(0.0, 1.0, 0.0);
+            } else if (state == 2) {
+              call.set_rgb(0.0, 0.0, 1.0);
+            } else {
+              call.set_rgb(1.0, 0.0, 0.0);
+            }
+            call.perform();
+            state += 1;
+            if (state == 2) // repeat only the red and green from christmas
+              state = 0;
+
+output:
+  - platform: esp8266_pwm
+    pin: GPIO12
+    frequency: 1000 Hz
+    id: pwm_g
+
+  - platform: esp8266_pwm
+    pin: GPIO5
+    frequency: 1000 Hz
+    id: pwm_r
+
+  - platform: esp8266_pwm
+    pin: GPIO13
+    frequency: 1000 Hz
+    id: pwm_b
+
+  # - platform: esp8266_pwm
+  #   pin: GPIO15
+  #   frequency: 1000 Hz
+  #   id: pwm_w
+
+
+remote_receiver:
+  pin:
+    number: GPIO4
+    inverted: true
+  dump: nec
+
+binary_sensor:
+  - platform: remote_receiver
+    id: "on"
+    nec:
+      address: 0x00FF
+      command: 0xB04F
+    on_press:
+      then:
+        - light.turn_on:
+            id: light_1
+  - platform: remote_receiver
+    id: "off"
+    nec:
+      address: 0x00FF
+      command: 0xF807
+    on_press:
+      then:
+        - light.turn_off:
+            id: light_1
+  - platform: remote_receiver
+    id: brightness_up
+    nec:
+      address: 0x00FF
+      command: 0x906F
+    on_press:
+      then:
+        - light.dim_relative:
+            id: light_1
+            relative_brightness: 20%
+  - platform: remote_receiver
+    id: brightness_down
+    nec:
+      address: 0x00FF
+      command: 0xB847
+    on_press:
+      then:
+        - light.dim_relative:
+            id: light_1
+            relative_brightness: -20%
+  - platform: remote_receiver
+    id: red
+    nec:
+      address: 0x00FF
+      command: 0x9867
+    on_press:
+      then:
+        - light.turn_on:
+            id: light_1
+            red: 100%
+            green: 0
+            blue: 0
+  - platform: remote_receiver
+    id: green
+    nec:
+      address: 0x00FF
+      command: 0xD827
+    on_press:
+      then:
+        - light.turn_on:
+            id: light_1
+            red: 0
+            green: 100%
+            blue: 0
+  - platform: remote_receiver
+    id: blue
+    nec:
+      address: 0x00FF
+      command: 0x8877
+    on_press:
+      then:
+        - light.turn_on:
+            id: light_1
+            red: 0
+            green: 0
+            blue: 100%
+  - platform: remote_receiver
+    id: white
+    nec:
+      address: 0x00FF
+      command: 0xA857
+    on_press:
+      then:
+        - light.turn_on:
+            id: light_1
+            red: 100%
+            green: 100%
+            blue: 100%
+  - platform: remote_receiver
+    id: R2
+    nec:
+      address: 0x00FF
+      command: 0xE817
+    on_press:
+      then:
+        - light.turn_on:
+            id: light_1
+            red: 100%
+            green: 35%
+            blue: 14%
+  - platform: remote_receiver
+    id: R3
+    nec:
+      address: 0x00FF
+      command: 0x02FD
+    on_press:
+      then:
+        - light.turn_on:
+            id: light_1
+            red: 100%
+            green: 57%
+            blue: 14%
+  - platform: remote_receiver
+    id: R4
+    nec:
+      address: 0x00FF
+      command: 0x50AF
+    on_press:
+      then:
+        - light.turn_on:
+            id: light_1
+            red: 100%
+            green: 78%
+            blue: 28%
+  - platform: remote_receiver
+    id: R5
+    nec:
+      address: 0x00FF
+      command: 0x38C7
+    on_press:
+      then:
+        - light.turn_on:
+            id: light_1
+            red: 100%
+            green: 100%
+            blue: 0%
+  #Greens
+  - platform: remote_receiver
+    id: G2
+    nec:
+      address: 0x00FF
+      command: 0x48B7
+    on_press:
+      then:
+        - light.turn_on:
+            id: light_1
+            red: 28%
+            green: 100%
+            blue: 28%
+  - platform: remote_receiver
+    id: G3
+    nec:
+      address: 0x00FF
+      command: 0x32CD
+    on_press:
+      then:
+        - light.turn_on:
+            id: light_1
+            red: 28%
+            green: 100%
+            blue: 64%
+  - platform: remote_receiver
+    id: G4
+    nec:
+      address: 0x00FF
+      command: 0x7887
+    on_press:
+      then:
+        - light.turn_on:
+            id: light_1
+            red: 28%
+            green: 64%
+            blue: 100%
+  - platform: remote_receiver
+    id: G5
+    nec:
+      address: 0x00FF
+      command: 0x28D7
+    on_press:
+      then:
+        - light.turn_on:
+            id: light_1
+            red: 14%
+            green: 35%
+            blue: 100%
+  #Blues
+  - platform: remote_receiver
+    id: B2
+    nec:
+      address: 0x00FF
+      command: 0x6897
+    on_press:
+      then:
+        - light.turn_on:
+            id: light_1
+            red: 14%
+            green: 14%
+            blue: 100%
+  - platform: remote_receiver
+    id: B3
+    nec:
+      address: 0x00FF
+      command: 0x20DF
+    on_press:
+      then:
+        - light.turn_on:
+            id: light_1
+            red: 46%
+            green: 28%
+            blue: 100%
+  - platform: remote_receiver
+    id: B4
+    nec:
+      address: 0x00FF
+      command: 0x708F
+    on_press:
+      then:
+        - light.turn_on:
+            id: light_1
+            red: 81%
+            green: 28%
+            blue: 100%
+  - platform: remote_receiver
+    id: B5
+    nec:
+      address: 0x00FF
+      command: 0xF00F
+    on_press:
+      then:
+        - light.turn_on:
+            id: light_1
+            red: 100%
+            green: 14%
+            blue: 78%
+
