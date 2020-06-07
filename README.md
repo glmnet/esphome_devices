@@ -1,5 +1,7 @@
 # esphome_devices
 
+![CI](https://github.com/glmnet/esphome_devices/workflows/CI/badge.svg)
+
 This is my house full of ESPHome devices... I really don't know how many are there already, but around 15.
 
 There are 4 outside, two in the living room, 1 in the kitchen, upstairs there is 1 on the hall and 1 on each room + 1 for every AC unit.

@@ -23,7 +23,7 @@ logger:
 custom_component:
 - id: ape
   lambda: |-
-    auto ape_component = new ArduinoPortExtender(i2ccomponent, 0x08);
+    auto ape_component = new ArduinoPortExpander(i2ccomponent, 0x08);
     return {ape_component};
 
 output:
