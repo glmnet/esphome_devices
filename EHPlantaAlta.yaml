@@ -55,6 +55,9 @@ uart:
   baud_rate: 9600
   tx_pin: TX
   rx_pin: RX
+  data_bits: 8
+  parity: NONE
+  stop_bits: 1
 
 sim800l:
   on_sms_received:
@@ -130,31 +133,45 @@ binary_sensor:
     binary_sensors:
       - name: "Switch Escalera 1"
         internal: true
+        filters:
+          - delayed_on_off: 100ms
         on_state:
           then:
             - light.toggle: luz_escalera
       - name: "Switch Escalera Hall"
       - name: "Switch Ante Baño 1"
         internal: true
+        filters:
+          - delayed_on_off: 100ms
         on_state:
           then:
             - light.toggle: luz_ante_banio_pa
       - name: "Switch Ante Baño 2"
         internal: true
+        filters:
+          - delayed_on_off: 100ms
         on_state:
           then:
             - light.toggle: luz_ante_banio_pa
       - name: "Switch Baño"
+        filters:
+          - delayed_on_off: 100ms
         internal: true
         on_state:
           then:
             - light.toggle: luz_banio_pa
       - name: "Movimiento Baño"
         device_class: motion
+        filters:
+          - delayed_on_off: 100ms
       - name: "Movimiento Hall"
         device_class: motion
+        filters:
+          - delayed_on_off: 100ms
       - name: "Ventana Baño"
         device_class: window
+        filters:
+          - delayed_on_off: 100ms
       - name: "Tanque Agua Arriba Flotador Pide"
         filters:
           - invert:

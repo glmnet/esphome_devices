@@ -1,0 +1,52 @@
+esphome:
+  name: test_local2
+  platform: ESP8266
+  board: nodemcu
+  platformio_options:
+    upload_speed: 921600
+
+wifi:
+  ssid: !secret wifi_ssid
+  password: !secret wifi_pass
+
+api:
+
+ota:
+
+# define i2c device
+# for an ESP8266 SDA is D2 and goes to Arduino's A4
+#                SCL is D1 and goes to Arduino's A5
+i2c:
+  id: i2c_component
+
+logger:
+  level: DEBUG
+
+dallas:
+  pin: D5
+  auto_setup_sensors: true
+  sensor_name_template: '%s.Temperature %s'
+  resolution: 9
+
+sensor:
+  - platform: bmp280
+    temperature:
+      name: bmp280_1_temperature
+      oversampling: 16X
+    pressure:
+      name: bmp280_1_pressure
+    address: 0x76 # pull down 10k to set address 0x66 (installed in board)
+
+  - platform: bmp280
+    temperature:
+      name: bmp280_2_temperature
+      oversampling: 16X
+    pressure:
+      name: bmp280_2_pressure
+    address: 0x77 # pull up 3.3k to set address 0x77
+
+  - platform: dht
+    pin: D0
+    model: am2302
+    temperature:
+      name: dht22_temperature

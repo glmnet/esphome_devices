@@ -1,0 +1,24 @@
+esphome:
+  name: test_local2
+  platform: ESP8266
+  board: nodemcu
+  platformio_options:
+    upload_speed: 921600
+
+spi:
+  clk_pin: D0
+  mosi_pin: D1
+
+display:
+  - platform: max7219digit
+    cs_pin: D2
+    num_chips: 4
+    #offset: 2
+    intensity: 7
+    lambda: |-
+      it.print(0, 0, id(digit_font), "HELLO!");
+
+font:
+  - file: "pixelmix.ttf"
+    id: digit_font
+    size: 6
