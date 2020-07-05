@@ -1,0 +1,36 @@
+esphome:
+  name: test_local2
+  platform: ESP8266
+  board: nodemcu
+  platformio_options:
+    upload_speed: 921600
+
+wifi:
+  ssid: !secret wifi_ssid
+  password: !secret wifi_pass
+
+api:
+
+ota:
+
+logger:
+  level: DEBUG
+
+spi:
+  clk_pin: D0
+  mosi_pin: D1
+  miso_pin: D2
+
+pn532:
+  - id: pn532_1
+    cs_pin: D3
+    update_interval: 1s
+  - id: pn532_2
+    cs_pin: D3
+    update_interval: 1s
+
+binary_sensor:
+  - platform: pn532
+    pn532_id: pn532_1
+    uid: 74-10-37-94
+    name: "PN532 NFC Tag"

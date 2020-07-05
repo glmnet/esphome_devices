@@ -1,0 +1,29 @@
+esphome:
+  name: test_esp8266
+  platform: ESP8266
+  board: nodemcu
+  platformio_options:
+    upload_speed: 921600
+
+wifi:
+  ssid: !secret wifi_ssid
+  password: !secret wifi_pass
+
+api:
+
+ota:
+
+logger:
+  level: DEBUG
+
+spi:
+  clk_pin: D0
+  mosi_pin: D1
+  miso_pin: D2
+
+
+canbus:
+  - platform: mcp2515
+    cs_pin: D5
+    sender_id: 4
+    bit_rate: 50kbps

@@ -3,8 +3,6 @@ esphome:
   name: eh_tanque
   platform: ESP8266
   board: nodemcu
-  includes:
-    - arduino_port_expander.h
 
 <<: !include common/wifi.yaml
 
@@ -12,71 +10,48 @@ api:
 
 ota:
 
-i2c:
-  id: i2ccomponent
-
 logger:
   level: DEBUG
-  baud_rate: 0
-
-custom_component:
-  - id: ape
-    lambda: |-
-      auto ape_component = new ArduinoPortExpander(i2ccomponent, 0x08);
-      return {ape_component};
+  baud_rate: 0 # use UART pins for IO
 
 output:
-- platform: custom
-  type: binary
-  lambda: |-
-    return {ape_binary_output(ape, 7),
-            ape_binary_output(ape, 6),
-            ape_binary_output(ape, 5),
-            ape_binary_output(ape, 4)};
-  outputs:
-    - id: gpio_relay_1
+  - platform: gpio
+    id: rly1_pump
+    pin:
+      number: GPIO3
       inverted: true
-    - id: gpio_relay_2
+  - platform: gpio
+    id: rly2_outlet
+    pin:
+      number: GPIO2
       inverted: true
-    - id: gpio_relay_3
+  - platform: gpio
+    id: rly3_light
+    pin:
+      number: GPIO16
       inverted: true
-    - id: gpio_relay_4
+  - platform: gpio
+    id: RLY4
+    pin:
+      number: GPIO0
       inverted: true
 
 switch:
   - platform: restart
-    name: Restart Tanque
+    name: "Restart Tanque"
   - platform: output
     name: "Bomba Tanque"
     id: bomba_tanque
-    output: gpio_relay_1
+    output: rly1_pump
   - platform: output
     name: "Toma Tanque"
-    id: toma_tanque
-    output: gpio_relay_2
-  - platform: template
-    name: "Reset tanque lleno"
-    turn_on_action:
-      - if:
-          condition:
-            sensor.in_range:
-              id: tank_liters
-              above: 900
-          then:
-            - sensor.template.publish:
-                id: tank_liters
-                state: 0
-          else:
-            - sensor.template.publish:
-                id: tank_liters
-                state: 1000
-
+    output: rly2_outlet
 
 light:
   - platform: binary
     id: luz_tanque
     name: "Luz tanque"
-    output: gpio_relay_3
+    output: rly3_light
 
 binary_sensor:
   - platform: status
@@ -87,12 +62,13 @@ binary_sensor:
   - platform: gpio
     id: tanque_abajo_flotador
     pin:
-      number: GPIO14
+      number: GPIO13
       mode: INPUT_PULLUP
-    name: Tanque abajo tiene agua
+    name: Tanque abajo vacio
+    device_class: problem
     filters:
+      - invert:
       - delayed_on_off: 2s # debounce for some noisy from pump or generator
-
     on_press:
       # tank almost full
       - sensor.template.publish:
@@ -106,28 +82,41 @@ binary_sensor:
       # prevent pump run without water
       - delay: 50s
       - switch.turn_off: bomba_tanque
-
-  - platform: custom
-    lambda: |-
-      return {ape_binary_sensor(ape, 3),
-              ape_binary_sensor(ape, 2),
-              ape_binary_sensor(ape, 14)};
-    binary_sensors:
-      - name: "Switch luz tanque"
-        internal: true
-        on_state:
-          then:
-            - light.toggle: luz_tanque
-      - name: "Tanque abajo desbordado"
-        filters:
-          - invert:
-          - delayed_on_off: 2s # prevent oscilattions of the sensor, we don't need high response time
-      - name: "Tanque abajo lleno"
-        id: tanque_abajo_lleno
-        filters:
-          - invert:
-          - delayed_on_off: 2s # prevent oscilattions of the sensor, we don't need high response time
-
+  - platform: gpio
+    pin:
+      number: GPIO14
+      mode: INPUT_PULLUP
+    name: "Switch luz tanque"
+    internal: true
+    on_state:
+      then:
+        - light.toggle: luz_tanque
+  - platform: gpio
+    pin:
+      number: GPIO5
+      mode: INPUT_PULLUP
+    name: "Tanque abajo desbordado"
+    device_class: problem
+    filters:
+      - invert:
+      - delayed_on_off: 2s # prevent oscilattions of the sensor, we don't need high response time
+  - platform: gpio
+    pin:
+      number: GPIO4
+      mode: INPUT_PULLUP
+    name: "Tanque abajo lleno"
+    id: tanque_abajo_lleno
+    filters:
+      - invert:
+      - delayed_on_off: 2s # prevent oscilattions of the sensor, we don't need high response time
+  - platform: gpio
+    pin:
+      number: GPIO1
+      mode: INPUT_PULLUP
+    name: Puerta Tanque
+    filters:
+      - invert:
+      - delayed_on_off: 2s
 
 sensor:
   - platform: pulse_counter
@@ -139,9 +128,9 @@ sensor:
           state: !lambda |-
             float new_level = id(tank_liters).state;
             if (isnan(new_level))
-              new_level = id(tanque_abajo_flotador).state ? 900.0 : 50.0;
+              new_level = id(tanque_abajo_flotador).state ? 50.0 : 900.0;
             new_level += x / 450;
-            if (new_level > 900.0 && !id(tanque_abajo_flotador).state)
+            if (new_level > 900.0 && id(tanque_abajo_flotador).state)
               return 900;
             if (new_level > 1000) return 1000;
             return new_level;
@@ -159,7 +148,6 @@ sensor:
     name: Nivel Tanque Abajo
     id: tank_level
     unit_of_measurement: '%'
-
 
 interval:
   - interval: 1s
@@ -181,11 +169,26 @@ interval:
           - lambda: |-
               float new_level = id(tank_liters).state;
               if (isnan(new_level))
-                new_level = id(tanque_abajo_flotador).state ? 900.0 : 50.0;
+                new_level = id(tanque_abajo_flotador).state ? 50.0 : 900.0;
 
               new_level -= 0.38;
               if (new_level < 0)
                 new_level = 0;
-              if (new_level < 80.0 && id(tanque_abajo_flotador).state)
+              if (new_level < 80.0 && !id(tanque_abajo_flotador).state)
                 new_level = 80;
               id(tank_liters).publish_state(new_level);
+
+# IO Table
+# q GPIO3  RX         Relay Pump
+# q GPIO2             Relay Outlet
+# q GPIO16            Relay Light
+# q GPIO0             Relay spare
+# i GPIO5     Green   Tank Overflow
+# i GPIO4     Brown   Tank Full
+# i GPIO13    Orange  Tank Has water (float switch)
+# i GPIO12    Gray    Water Flow
+# i GPIO14    White   Light SW
+# i GPIO1  TX Purple  Door Reed switch
+#   GND       Black
+#   VCC 3.3V  Yellow
+#   5V        Red

@@ -1,0 +1,58 @@
+esphome:
+  name: test_esp32
+  platform: ESP32
+  board: nodemcu-32s
+  platformio_options:
+    upload_speed: 921600
+
+wifi:
+  ssid: !secret wifi_ssid
+  password: !secret wifi_pass
+
+captive_portal:
+
+# Enable logging
+logger:
+
+# Enable Home Assistant API
+api:
+  # services:
+  #   - service: control_servo
+  #     variables:
+  #       level: float
+  #     then:
+  #       - servo.write:
+  #           id: my_servo
+  #           level: !lambda 'return level / 100.0;'
+
+ota:
+
+substitutions:
+  float_value: GPIO13
+
+sensor:
+  - platform: pulse_counter
+    name: 'Solar Power'
+    id: solar_power
+    update_interval: 5s
+    pin:
+      number: GPIO13
+      mode: INPUT_PULLDOWN
+    count_mode:
+      rising_edge: DISABLE
+      falling_edge: INCREMENT
+    filters:
+      - multiply: 0.06
+
+# binary_sensor:
+#   - platform: gpio
+#     name: pulse
+#     id: pulse
+#     pin:
+#       number: GPIO13
+#       mode: INPUT_PULLDOWN
+#     on_press:
+#     - lambda: |-
+#         static int num_executions = 0;
+#         ESP_LOGD("main", "I am at execution number %d", num_executions);
+#         num_executions += 1;

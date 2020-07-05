@@ -49,3 +49,7 @@ sensor:
     humidity:
       name: Humedad Dormitorio Sur
     update_interval: 60s
+
+binary_sensor:
+  - platform: status
+    name: "Dormitorio Sur AC Status"

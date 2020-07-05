@@ -1,0 +1,50 @@
+esphome:
+  name: test_esp32
+  platform: ESP32
+  board: nodemcu-32s
+  platformio_options:
+    upload_speed: 921600
+
+wifi:
+  ssid: !secret wifi_ssid
+  password: !secret wifi_pass
+
+captive_portal:
+
+# Enable logging
+logger:
+
+# Enable Home Assistant API
+api:
+  # services:
+  #   - service: control_servo
+  #     variables:
+  #       level: float
+  #     then:
+  #       - servo.write:
+  #           id: my_servo
+  #           level: !lambda 'return level / 100.0;'
+
+ota:
+output:
+  - platform: ledc
+    id: pwm_output
+    pin: GPIO12
+    frequency: 100 Hz
+
+  - platform: gpio
+    id: servo_power
+    pin: GPIO12
+
+
+light:
+  - platform: monochromatic
+    id: l1
+    output: pwm_output
+
+interval:
+  - interval: 5s
+    then:
+      - light.turn_on: l1
+      - delay: 2s
+      - light.turn_off: l1

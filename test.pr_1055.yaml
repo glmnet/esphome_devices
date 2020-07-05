@@ -1,0 +1,31 @@
+esphome:
+  name: test_esp8266
+  platform: ESP8266
+  board: nodemcu
+  platformio_options:
+    upload_speed: 921600
+
+wifi:
+  ssid: !secret wifi_ssid
+  password: !secret wifi_pass
+  fast_connect: true
+
+logger:
+
+spi:
+  clk_pin: D0
+  mosi_pin: D1
+
+api:
+
+ota:
+
+i2c:
+
+sensor:
+  - platform: vl53l0x
+    name: "VL53L0x Distance"
+    address: 0x29
+    update_interval: 60s
+    signal_rate_limit: 0.25
+    long_range: true

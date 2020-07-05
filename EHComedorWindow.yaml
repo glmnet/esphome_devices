@@ -43,3 +43,7 @@ cover:
           id(tilt_pos) = tilt;
       - delay: 2s
       - servo.detach: ob_tilt
+
+binary_sensor:
+  - platform: status
+    name: "Comedor Ventana Status"

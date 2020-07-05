@@ -56,3 +56,7 @@ sensor:
     address: 0x76
     update_interval: 60s
 
+
+binary_sensor:
+  - platform: status
+    name: "Dormitorio Norte AC Status"

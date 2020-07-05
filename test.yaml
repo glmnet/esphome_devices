@@ -1,48 +1,149 @@
 esphome:
-  name: lalaa
+  name: test_esp8266
   platform: ESP8266
   board: d1_mini
+  #board: esp32dev
+  #esp8266_restore_from_flash: true
   build_path: lalaa
+  platformio_options:
+    upload_speed: 921600
 
 wifi:
   ssid: !secret wifi_ssid
   password: !secret wifi_pass
 
-globals:
-  - id: samsung_data
-    type: uint32_t
+ota:
+
+logger:
+ level: VERY_VERBOSE
+
+api:
+
+# output:
+#   - platform: esp8266_pwm
+#     id: my_output_1
+#     pin: D4
+#   - platform: gpio
+#     id: x
+#     pin: D5
+
+# switch:
+#   - platform: gpio
+#     pin: D4
+#     name: XX
+#     retain: YES
+#     initial_value: True
 
 remote_transmitter:
   pin: D4
   carrier_duty_percent: 50%
 
+climate:
+  platform: toshiba
+  name: lala
+  #retain: NO
+  initial_value:
+    mode: 'OFF'
 
-mqtt:
-  broker: 10.0.1.222
+# light:
+#   - platform: binary
+#     name: lala
+#     output: x
+#     initial_value:
+#       state: false
+#       brightness: .93
+#     retain: YES
 
-  on_json_message:
-    - topic: irsend/samsung
-      qos: 0
-      then:
-        - lambda: |-
-            if (x.containsKey("data")) {
-              id(samsung_data) = x["data"];
-              ESP_LOGD("IR", "Samsung code: %lu", id(samsung_data));
-            }
+#   - platform: binary
+#     name: lala2
+#     output: x
+#     retain: no
+#     initial_value: false
 
-        - remote_transmitter.transmit_samsung:
-            data: !lambda 'return id(samsung_data);'
+# binary_sensor:
+#   - platform: gpio
+#     pin: D4
+#     name: lalax
+#     on_multi_click:
+#     - timing:
+#         - ON for at most 1s
+#         - OFF for at most 1s
+#         - ON for 0.5s to 1s
+#         - OFF for at least 0.2s
+#       then:
+#         - logger.log: "Double-Clicked"
 
-sensor:
-  - platform: template
-    name: "bed_stevo"
-    lambda: |-
-      if  (1 == 2 )
-      {
-        // Stevo in bed
-        return true;
-      }
-      else
-      {
-        return false;
-      }
+# switch:
+#   - platform: gpio
+#     pin: D0
+#     id: open_cover_switch
+#   - platform: gpio
+#     pin: D0
+#     id: close_cover_switch
+#   - platform: gpio
+#     pin: D0
+#     id: stop_cover_switch
+
+# cover:
+#   - platform: time_based
+#     name: tb
+#     open_action:
+#       - switch.turn_on: open_cover_switch
+#     open_duration: 2.1min
+
+#     close_action:
+#       - switch.turn_on: close_cover_switch
+#     close_duration: 2min
+
+#     stop_action:
+#       - switch.turn_off: open_cover_switch
+#       - switch.turn_off: close_cover_switch
+#     initial_value: CLOSED
+
+globals:
+  - id: x1
+    type: int
+
+  - id: glob_int
+    type: int
+    retain: yes
+    initial_value: '0'
+
+interval:
+  - interval: 2s
+    then:
+      - lambda: |-
+          if (id(x1) > 30)
+            id(x1) = 0;
+          else
+            id(x1) = id(x1) + 1;
+      - logger.log:
+          format: "The global variable value: %d"
+          args: [ 'id(x1)' ]
+
+# binary_sensor:
+#   - platform: gpio
+#     pin: D0
+#     id: top_end_stop
+
+# cover:
+#   - platform: template
+#     name: "Template Cover"
+#     lambda: |-
+#       if (id(top_end_stop).state) {
+#         return COVER_OPEN;
+#       } else {
+#         return COVER_CLOSED;
+#       }
+#     open_action:
+#       - switch.turn_on: open_cover_switch
+#     close_action:
+#       - switch.turn_on: close_cover_switch
+#     stop_action:
+#       - switch.turn_on: stop_cover_switch
+#     optimistic: true
+
+# fan:
+#   - platform: speed
+#     output: my_output_1
+#     name: "Living Room Fan"

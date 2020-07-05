@@ -35,6 +35,8 @@ climate:
     model: DG11J1-91
 
 binary_sensor:
+  - platform: status
+    name: "Comedor AC Status"
   - platform: gpio
     name: whirlpool_on
     pin:
