@@ -3,6 +3,7 @@ esphome:
   platform: ESP8266
   board: nodemcu
 
+
 wifi:
   ssid: !secret wifi_ssid
   password: !secret wifi_pass
@@ -12,7 +13,7 @@ api:
 ota:
 
 logger:
-  level: VERBOSE
+  level: DEBUG
 
 remote_receiver:
   id: rcvr
@@ -30,6 +31,7 @@ remote_transmitter:
 climate:
   - platform: whirlpool
     name: whirlpool ac
+    id: whirlpool_ac
     sensor: temp_comedor
     receiver_id: rcvr
     model: DG11J1-91
@@ -38,13 +40,33 @@ binary_sensor:
   - platform: status
     name: "Comedor AC Status"
   - platform: gpio
-    name: whirlpool_on
+    id: whirlpool_on
+    name: Whirlpool on
     pin:
       number: GPIO13
       mode: INPUT_PULLUP
     filters:
       - invert:
       - delayed_off: 200ms
+    # on_press:
+    #   - logger.log: 'Detected AC is on'
+    #   - lambda: |-
+    #       auto mode = id(whirlpool_ac)->mode;
+    #       if (mode == climate::ClimateMode::CLIMATE_MODE_OFF)
+    #       {
+    #         id(whirlpool_ac).mode = static_cast<climate::ClimateMode>(id(ac_mode_global));
+    #         id(whirlpool_ac).publish_state();
+    #       }
+    # on_release:
+    #   - logger.log: 'Detected AC is off'
+    #   - lambda: |-
+    #       auto mode = id(whirlpool_ac)->mode;
+    #       if (mode != climate::ClimateMode::CLIMATE_MODE_OFF
+    #         && mode != climate::ClimateMode::CLIMATE_MODE_FAN_ONLY)
+    #       {
+    #         id(whirlpool_ac).mode = climate::ClimateMode::CLIMATE_MODE_OFF;
+    #         id(whirlpool_ac).publish_state();
+    #       }
 
 i2c:
 
@@ -63,3 +85,49 @@ sensor:
 switch:
   - platform: restart
     name: "Comedor AC restart"
+
+globals:
+  - id: ac_mode_global
+    type: int
+    initial_value: 'climate::ClimateMode::CLIMATE_MODE_COOL'
+    restore_value: yes
+
+interval:
+  # - interval: 10s
+  #   then:
+  #     # keep active non off known state
+  #     - lambda: |-
+  #         static int number = 12;
+  #         ESP_LOGD("main", "mode: %d", number++);
+
+  - interval: 10s
+    then:
+      # keep active non off known state
+      - lambda: |-
+          auto ac_mode = id(whirlpool_ac)->mode;
+          if (ac_mode != climate::ClimateMode::CLIMATE_MODE_OFF)
+            id(ac_mode_global) = ac_mode;
+          bool is_on = id(whirlpool_on).state;
+          id(whirlpool_ac).powered_on_assumed = is_on;
+          ESP_LOGD("main", "Stored ac mode: %d current: %d whirlpool on: %d", id(ac_mode_global), ac_mode, is_on);
+          if (is_on &&
+              (ac_mode == climate::ClimateMode::CLIMATE_MODE_OFF
+              || ac_mode == climate::ClimateMode::CLIMATE_MODE_FAN_ONLY))
+              {
+                ac_mode = static_cast<climate::ClimateMode>(id(ac_mode_global));
+                if (ac_mode == climate::ClimateMode::CLIMATE_MODE_OFF
+                    || ac_mode == climate::ClimateMode::CLIMATE_MODE_FAN_ONLY)
+                    {
+                      // Can't be assume auto
+                      ac_mode = climate::ClimateMode::CLIMATE_MODE_AUTO;
+                    }
+                ESP_LOGD("main", "Ac is on but reporting something else...");
+                id(whirlpool_ac).mode = ac_mode;
+              }
+          if (!is_on &&
+              (ac_mode != climate::ClimateMode::CLIMATE_MODE_OFF
+              && ac_mode != climate::ClimateMode::CLIMATE_MODE_FAN_ONLY))
+              {
+                ESP_LOGD("main", "Ac is off but reporting something else...");
+                id(whirlpool_ac).mode = climate::ClimateMode::CLIMATE_MODE_OFF;
+              }

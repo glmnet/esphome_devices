@@ -22,15 +22,6 @@ i2c:
 logger:
   level: VERBOSE
 
-remote_transmitter:
-  carrier_duty_percent: 50%
-  pin: D5
-
-# climate:
-#   platform: coolix
-#   name: 'AC Estudio'
-#   supports_heat: false
-
 custom_component:
 - id: ape
   lambda: |-
@@ -79,25 +70,6 @@ switch:
 - platform: restart
   name: "Estudio Restart"
 
-- platform: template
-  name: 'Edifier Mute'
-  turn_on_action:
-    - remote_transmitter.transmit_nec:
-        address: 0x00FF
-        command: 0x827D
-- platform: template
-  name: 'Hyundai Netflix'
-  turn_on_action:
-    - remote_transmitter.transmit_nec:
-        address: 0xFD
-        command: 0xC23D # 0x43
-- platform: template
-  name: 'Soundbar power'
-  turn_on_action:
-    - remote_transmitter.transmit_nec:
-        address: 0xFF
-        command: 0xA25D
-
 binary_sensor:
 - platform: status
   name: "Estudio Status"
@@ -143,14 +115,10 @@ binary_sensor:
     on_state:
       then:
       - light.toggle: luz_banio
-      - script.stop: keep_banio_light
       - script.execute: keep_banio_light
   - name: "Switch baño 2" # DI11
     on_state:
       then:
-      - fan.toggle: extractor_banio
-      - delay: 600s
-      - script.stop: auto_off_extractor
       - if:
           condition:
             lambda: return id(extractor_banio).state;
@@ -164,41 +132,50 @@ binary_sensor:
     filters:
     - delayed_on: 100ms
     - delayed_off: 100ms
-    on_state:
+    on_state: # Open or close door
       then:
-      - fan.turn_on: extractor_banio
-      - delay: 600s
-      - script.stop: auto_off_extractor
       - script.execute: auto_off_extractor
-    on_press:
+      - if:
+          condition:
+            light.is_on: luz_banio
+          then:
+            script.execute: auto_off_luz_banio
+
+    on_press: # Open door
       then:
       - if:
           condition:
             not:
-              - script.is_running: keep_banio_light
+              script.is_running: keep_banio_light
           then:
-            - script.stop: auto_off_luz_banio
             - script.execute: auto_off_luz_banio
+
 
 script:
   - id: keep_banio_light
+    mode: restart
     then:
-      - delay: 10s
+      - delay: 5s
+
   - id: auto_off_luz_banio
+    mode: restart
     then:
       - light.turn_on: luz_banio
       - if:
           condition:
             binary_sensor.is_on: puerta_banio # open
           then:
-            - delay: 300s
+            - delay: 5 min
           else:
-            - delay: 600s
+            - delay: 10 min
       - light.turn_off: luz_banio
+
   - id: auto_off_extractor
+    mode: restart
     then:
-      - logger.log: Stopping fan in 5 minutes
-      - delay: 600s
+      - fan.turn_on: extractor_banio
+      - logger.log: Stopping fan in 10 minutes
+      - delay: 10 min
       - fan.turn_off: extractor_banio
 
 

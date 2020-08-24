@@ -47,3 +47,11 @@ cover:
 binary_sensor:
   - platform: status
     name: "Comedor Ventana Status"
+
+interval:
+  - interval: 10s
+    then:
+      # keep active non off known state
+      - lambda: |-
+          static int number = 12;
+          ESP_LOGD("main", "mode: %d", number++);

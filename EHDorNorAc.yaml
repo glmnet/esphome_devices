@@ -11,6 +11,12 @@ api:
 
 ota:
 
+substitutions:
+  rgb_receiver_light_entity: light.h801_light_2
+
+packages:
+  rgb_receiver: !include rgb_receiver.package.yaml
+
 logger:
   level: DEBUG
   baud_rate: 0
@@ -22,7 +28,6 @@ remote_receiver:
     inverted: True
     mode: INPUT_PULLUP
   tolerance: 45%
-  dump: raw
 
 remote_transmitter:
   carrier_duty_percent: 50%
@@ -39,6 +44,19 @@ climate:
 switch:
   - platform: restart
     name: "Dormitorio Norte Ac Restart"
+
+  - platform: template
+    name: Dor Nor Netflix
+    turn_on_action:
+      - remote_transmitter.transmit_nec:
+          address: 0xFD
+          command: 0xC23D # 0x43
+  - platform: template
+    name: Dor Nor TV Power
+    turn_on_action:
+      - remote_transmitter.transmit_nec:
+          address: 0x00FD
+          command: 0xC03F
 
 i2c:
   id: i2c_component

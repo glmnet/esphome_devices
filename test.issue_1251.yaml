@@ -5,6 +5,9 @@ esphome:
   platformio_options:
     upload_speed: 921600
 
+substitutions:
+  float_value: GPIO13
+
 wifi:
   ssid: !secret wifi_ssid
   password: !secret wifi_pass
@@ -27,8 +30,6 @@ api:
 
 ota:
 
-substitutions:
-  float_value: GPIO13
 
 sensor:
   - platform: pulse_counter

@@ -5,13 +5,34 @@ esphome:
   platformio_options:
     upload_speed: 921600
 
+ota:
+
+logger:
+
+  level: VERY_VERBOSE
+  logs:
+    api.service: DEBUG
+
 wifi:
   ssid: !secret wifi_ssid
   password: !secret wifi_pass
 
-logger:
+#substitutions:
 
-api:
+output:
+  - platform: gpio
+    pin: GPIO2
+    id: led_output
 
-ota:
+light:
+  platform: binary
+  output: led_output
+  id: led
 
+
+binary_sensor:
+  - platform: gpio
+    id: flash_btn
+    pin: GPIO0
+    on_press:
+      - light.toggle: led

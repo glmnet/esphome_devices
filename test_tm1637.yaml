@@ -1,5 +1,5 @@
 esphome:
-  name: test_local
+  name: test_esp8266
   platform: ESP8266
   board: nodemcuv2
   platformio_options:
@@ -26,12 +26,15 @@ display:
   update_interval: 500ms
   intensity: 3
   lambda: |-
-      static int i = 0;
-      i++;
-      if ((i % 2) == 0)
-        it.strftime("%H.%M", id(homeassistant_time).now());
-      else
-        it.strftime("%H%M", id(homeassistant_time).now());
+      it.print("13.3~");
+
+
+  # static int i = 0;
+  # i++;
+  # if ((i % 2) == 0)
+  #   it.strftime("%H.%M", id(homeassistant_time).now());
+  # else
+  #   it.strftime("%H%M", id(homeassistant_time).now());
 
 globals:
   - id: intensity

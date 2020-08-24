@@ -69,6 +69,7 @@ api:
       folder: int
     then:
       - dfplayer.play_folder:
+          id: my_df_player
           folder: !lambda 'return folder;'
           loop: True
 

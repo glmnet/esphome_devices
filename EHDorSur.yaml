@@ -5,16 +5,13 @@ esphome:
   # Use a local copy of ESPHome
   includes:
     - arduino_port_expander.h
-  on_boot:
-    priority: -10
-    then:
-      - switch.turn_on: enable_ventana_switch
 
 wifi:
   ssid: !secret wifi_ssid
   password: !secret wifi_pass
 
 api:
+
 
 ota:
 
@@ -63,6 +60,10 @@ light:
 binary_sensor:
   - platform: status
     name: "Dormitorio Sur Status"
+  - platform: homeassistant
+    id: colors_led_feedback
+    entity_id: light.dormitorio_sur_rgb
+
   - platform: custom
     lambda: |-
       return {ape_binary_sensor(ape, 2), // ribbon purple
@@ -70,8 +71,8 @@ binary_sensor:
               ape_binary_sensor(ape, 8), // ribbon verde
               ape_binary_sensor(ape, 1),
               ape_binary_sensor(ape, 0),
-              ape_binary_sensor(ape, 9), //  "Cama Derecha, estaba en A4/A5"
-              ape_binary_sensor(ape, 10), // "Cama Derecha"
+              ape_binary_sensor(ape, 10), //  "Cama Ventana Arriba"
+              ape_binary_sensor(ape, 9), // "Cama Ventana Abajo"
               ape_binary_sensor(ape, 14)}; // ribbon red
     binary_sensors:
       - name: "Switch Puerta 1"
@@ -95,39 +96,120 @@ binary_sensor:
                 - light.turn_on: luz_dormitorio_sur_cama_ventana
                 - light.turn_on: luz_dormitorio_sur_cama_pared
       - name: "Switch puerta sur"
-      - name: "Switch Cama Pared 1"
+      - name: "Switch Cama Pared 1" # Enciende luces
         internal: true
         on_state:
             then:
-              - light.toggle: luz_dormitorio_sur_cama_pared
-      - name: "Switch Cama Pared 2"
+              - if:
+                  condition:
+                    binary_sensor.is_off: colors_led_feedback
+                  then:
+                    script.execute: color_leds_lights_on
+                  else:
+                    if:
+                      condition:
+                        light.is_off: luz_dormitorio_sur_cama_pared
+                      then:
+                        light.turn_on: luz_dormitorio_sur_cama_pared
+                      else:
+                        if:
+                          condition:
+                            light.is_off: luz_dormitorio_sur
+                          then:
+                            light.turn_on: luz_dormitorio_sur
+                          else:
+                            light.turn_on: luz_dormitorio_sur_cama_ventana
+
+      - name: "Switch Cama Pared 2" # Apaga luces
         internal: true
         on_state:
-          then:
-            - light.toggle: luz_dormitorio_sur
-      - name: "Switch Cama Ventana 1"
-        internal: true
-        on_state:
-          if:
-            condition:
-              lambda: 'return id(enable_ventana_switch).state;'
             then:
-              light.toggle: luz_dormitorio_sur_cama_ventana
+              - if:
+                  condition:
+                    light.is_on: luz_dormitorio_sur
+                  then:
+                    light.turn_off: luz_dormitorio_sur
+                  else:
+                    if:
+                      condition:
+                        light.is_on: luz_dormitorio_sur_cama_pared
+                      then:
+                        light.turn_off: luz_dormitorio_sur_cama_pared
+                      else:
+                        if:
+                          condition:
+                            binary_sensor.is_on: colors_led_feedback
+                          then:
+                            script.execute: color_leds_lights_off
+                          else:
+                            light.turn_off: luz_dormitorio_sur_cama_ventana
+      - name: "Switch Cama Ventana 1" # Enciende luces
+        internal: true
+        on_state:
+            then:
+              - if:
+                  condition:
+                    binary_sensor.is_off: colors_led_feedback
+                  then:
+                    script.execute: color_leds_lights_on
+                  else:
+                    if:
+                      condition:
+                        light.is_off: luz_dormitorio_sur_cama_ventana
+                      then:
+                        light.turn_on: luz_dormitorio_sur_cama_ventana
+                      else:
+                        if:
+                          condition:
+                            light.is_off: luz_dormitorio_sur
+                          then:
+                            light.turn_on: luz_dormitorio_sur
+                          else:
+                            light.turn_on: luz_dormitorio_sur_cama_pared
+
       - name: "Switch Cama Ventana 2"
         internal: true
         on_state:
-          if:
-            condition:
-              lambda: 'return id(enable_ventana_switch).state;'
             then:
-              light.toggle: luz_dormitorio_sur
+              - if:
+                  condition:
+                    light.is_on: luz_dormitorio_sur
+                  then:
+                    light.turn_off: luz_dormitorio_sur
+                  else:
+                    if:
+                      condition:
+                        light.is_on: luz_dormitorio_sur_cama_ventana
+                      then:
+                        light.turn_off: luz_dormitorio_sur_cama_ventana
+                      else:
+                        if:
+                          condition:
+                            binary_sensor.is_on: colors_led_feedback
+                          then:
+                            script.execute: color_leds_lights_off
+                          else:
+                            light.turn_off: luz_dormitorio_sur_cama_pared
+
       - name: "Ventana Dormitorio Sur"
         device_class: window
 
 switch:
   - platform: restart
     name: "Dormitorio Sur Restart"
-  - platform: template
-    id: enable_ventana_switch
-    name: "Habilitar Switch Ventana Dormitorio Sur"
-    optimistic: true
+
+script:
+  - id: color_leds_lights_on
+    then:
+      homeassistant.service:
+        service: light.turn_on
+        data:
+          entity_id: light.dormitorio_sur_rgb
+
+  - id: color_leds_lights_off
+    then:
+      homeassistant.service:
+        service: light.turn_off
+        data:
+          entity_id: light.dormitorio_sur_rgb
+

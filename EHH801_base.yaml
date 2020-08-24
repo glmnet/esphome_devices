@@ -52,7 +52,7 @@ output:
 
 light:
   - platform: rgb
-    name: "H801 Light"
+    name: $light_name
     red: pwm_r
     green: pwm_g
     blue: pwm_b

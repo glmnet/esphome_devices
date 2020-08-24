@@ -1,0 +1,86 @@
+esphome:
+  name: test_esp32
+  platform: ESP32
+  board: nodemcu-32s
+  platformio_options:
+    upload_speed: 921600
+
+wifi:
+  ssid: !secret wifi_ssid
+  password: !secret wifi_pass
+  fast_connect: true
+
+logger:
+
+
+api:
+
+ota:
+
+i2c:
+  sda: GPIO21
+  scl: GPIO22
+
+font:
+  - file: "Roboto-Regular.ttf"
+    id: my_font
+    size: 16
+
+################################################################################
+
+
+sensor:
+  #-----------------------------------------------------------------------------
+  # Wi-Fi Signal Sensor
+  - platform: wifi_signal
+    id: wifi_sgnl
+    name: "WiFi Signal Sensor"
+    update_interval: 5s
+    accuracy_decimals: 0
+    filters:
+      - sliding_window_moving_average:
+          window_size: 60
+          send_every: 60
+          send_first_at: 2
+
+spi:
+  clk_pin: GPIO25
+  mosi_pin: GPIO26
+  miso_pin: GPIO32
+
+image:
+  - id: logo_1
+    file: logo.png
+    resize: 240x42
+    type: BINARY
+
+color:
+  - id: color_red
+    red: 1
+    green: 0
+    blue: 0
+
+display:
+  - platform: ili9341
+    model: TFT_2.4
+    cs_pin: GPIO14
+    dc_pin: GPIO27
+    #led_pin: 32
+    #reset_pin: GPIO33
+    rotation: 180
+    lambda: |-
+      // Draw a circle in the middle of the display
+      Color WHITE(1,1,1);
+      Color BLUE(0,0,1);
+      Color GREEN(0,1,0);
+      Color BLACK(0,0,0);
+
+      it.fill(WHITE);
+      it.image(0, 0, id(logo_1));
+
+      it.image(0, 50, id(logo_1), BLACK, WHITE);
+      it.image(0, 100, id(logo_1), COLOR_OFF, COLOR_ON);
+      it.image(0, 150, id(logo_1), GREEN, BLUE);
+      //it.filled_circle(it.get_width() / 2, 280, 30, RED);
+      //it.rectangle(5,90,235,110,BLUE);
+      //it.print(10, 100, id(my_font), GREEN,"Hello World!");

@@ -1,0 +1,32 @@
+esphome:
+  name: test_esp8266
+  platform: ESP8266
+  board: nodemcuv2
+  platformio_options:
+    upload_speed: 921600
+
+  on_boot:
+    priority: -100
+    then:
+      - delay: 5s
+      - logger.log: "Executing Script"
+      - script.execute: wait_example
+      - logger.log: "Waiting for script"
+      - script.wait: wait_example
+      - logger.log: "Finished Waiting"
+
+logger:
+  level: VERBOSE
+
+script:
+- id: wait_example
+  then:
+  - logger.log: "Running script"
+  - delay: 10s
+  - logger.log: "Finished Script"
+
+binary_sensor:
+  - platform: template
+    name: "Script Running"
+    lambda: |-
+      return id(wait_example).script_is_running();

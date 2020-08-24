@@ -1,0 +1,69 @@
+# single test esp12f led (GPIO2) and some boards (GPIO16 led)
+# leds are toggled with GPIO0 (usually built in flash button)
+
+esphome:
+  name: test_esp8266
+  platform: ESP8266
+  board: nodemcuv2
+  platformio_options:
+    upload_speed: 921600
+
+logger:
+  level: INFO
+  # logs:
+  #   api.service: DEBUG
+
+packages:
+  wifi: !include package.wifi.yaml
+
+api:
+
+web_server_spa:
+  app_path: '../esphome-react/esphome-react/build/'
+
+
+# web_server:
+
+switch:
+  - platform: template
+    name: sw1
+    id: sw1
+    on_turn_on:
+      - logger.log: 'sw1 on turn on'
+    on_turn_off:
+      - logger.log: 'sw1 on turn off'
+    optimistic: true
+
+binary_sensor:
+  - platform: gpio
+    pin: GPIO0
+    id: flash_btn
+    on_press:
+      - switch.toggle: sw1
+      - globals.set:
+          id: counter_global
+          value: !lambda 'return id(counter_global) + 1;'
+      - sensor.template.publish:
+          id: count
+          state: !lambda 'return id(counter_global);'
+
+globals:
+  - id: counter_global
+    type: int
+    restore_value: no
+    initial_value: '0'
+
+sensor:
+  - platform: template
+    name: count
+    id: count
+    lambda: 'return id(counter_global);'
+
+display:
+  platform: tm1637
+  id: tm1637_display
+  clk_pin: D6
+  dio_pin: D7
+  update_interval: 100ms
+  lambda: |-
+    it.printf("%4d", id(counter_global));
