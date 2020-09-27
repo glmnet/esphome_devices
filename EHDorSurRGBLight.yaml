@@ -1,5 +1,0 @@
-substitutions:
-  devicename: eh_dor_sur_rgb
-  light_name: Dormitorio Sur RGB
-
-<<: !include EHH801_base.yaml
