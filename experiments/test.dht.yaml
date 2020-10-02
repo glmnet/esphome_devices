@@ -1,0 +1,39 @@
+esphome:
+  name: test_local2
+  platform: esp8266
+  board: nodemcuv2
+  platformio_options:
+    upload_speed: 921600
+
+api:
+
+ota:
+
+logger:
+  level: VERBOSE
+
+wifi:
+  ssid: !secret wifi_ssid
+  password: !secret wifi_pass
+  output_power: 20.5dB
+  manual_ip:
+    static_ip: 10.0.1.199
+    gateway: 10.0.1.1
+    subnet: 255.0.0.0
+
+sensor:
+  - platform: dht
+    model: AM2302
+    pin: D5
+    update_interval: 60s
+    temperature:
+      name: "Living Room Temperature"
+    humidity:
+      name: "Living Room Humidity"
+
+
+web_server:
+  css_url: ""
+  css_include: "../esphome-docs/_static/webserver-v1.min.css"
+  js_url: ""
+  js_include: "../esphome-docs/_static/webserver-v1.min.js"

@@ -1,0 +1,117 @@
+# single test esp12f led (GPIO2) and some boards (GPIO16 led)
+# leds are toggled with GPIO0 (usually built in flash button)
+
+esphome:
+  name: test_esp8266
+  platform: ESP8266
+  board: nodemcuv2
+  platformio_options:
+    upload_speed: 921600
+
+logger:
+  level: VERBOSE
+  logs:
+    api.service: DEBUG
+    display.tm1637: DEBUG
+
+packages:
+  wifi: !include ../package.wifi.yaml
+
+api:
+
+ota:
+
+web_server_spa:
+  app_path: '../../esphome-react/esphome-react/build'
+
+
+# web_server:
+
+switch:
+  - platform: template
+    name: sw1
+    id: sw1
+    turn_on_action:
+      - logger.log: 'sw1 on turn on'
+
+      - globals.set:
+          id: counter_global
+          value: '0'
+      - sensor.template.publish:
+          id: count
+          state: '0'
+      - globals.set:
+          id: counter_long
+          value: '0'
+      - sensor.template.publish:
+          id: count_long
+          state: '0'
+
+
+
+binary_sensor:
+  - platform: gpio
+    name: barrera
+    pin:
+      number: GPIO14
+      mode: input_pullup
+    id: ir_barrier
+    filters:
+      # minimum time needed to count
+      - delayed_off: 500ms
+      # minimum time wait between count
+      - delayed_on: 1500ms
+
+    on_release:
+      - globals.set:
+          id: counter_global
+          value: !lambda 'return id(counter_global) + 1;'
+      - sensor.template.publish:
+          id: count
+          state: !lambda 'return id(counter_global);'
+      - script.execute: script_count_long
+    on_press:
+      - script.stop: script_count_long
+
+script:
+  - id: script_count_long
+    mode: restart
+    then:
+      - delay: 4500ms
+      - globals.set:
+          id: counter_long
+          value: !lambda 'return id(counter_long) + 1;'
+      - sensor.template.publish:
+          id: count_long
+          state: !lambda 'return id(counter_long);'
+
+
+globals:
+  - id: counter_global
+    type: int
+    restore_value: no
+    initial_value: '0'
+
+  - id: counter_long
+    type: int
+    restore_value: no
+    initial_value: '0'
+
+sensor:
+  - platform: template
+    name: count
+    id: count
+    lambda: 'return id(counter_global);'
+  - platform: template
+    name: count_long
+    id: count_long
+    lambda: 'return id(counter_long);'
+
+display:
+  platform: tm1637
+  id: tm1637_display
+  clk_pin: D6
+  dio_pin: D7
+  update_interval: 100ms
+  lambda: |-
+    it.printf("%4d", id(counter_global));

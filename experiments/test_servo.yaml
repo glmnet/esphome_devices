@@ -1,0 +1,89 @@
+esphome:
+  name: test_local2
+  platform: ESP8266
+  board: nodemcuv2
+  esp8266_restore_from_flash: true
+
+wifi:
+  ssid: !secret wifi_ssid
+  password: !secret wifi_pass
+  fast_connect: true
+
+# Enable logging
+
+# Enable logging
+logger:
+  level: VERY_VERBOSE
+
+# Enable Home Assistant API
+
+ota:
+
+api:
+
+servo:
+  - id: test_servo
+    output: pwm_output
+    min_level: 5%
+    max_level: 10%
+    restore: true
+
+
+# Example output platform
+# On ESP32, use ledc output
+output:
+  - platform: esp8266_pwm
+    id: pwm_output
+    pin: D0
+    frequency: 50 Hz
+
+globals:
+  - id: servo_level
+    type: float
+
+binary_sensor:
+  - platform: gpio
+    pin:
+      number: D1
+      mode: INPUT_PULLUP
+    id: btn_up
+    filters:
+      - invert:
+
+  - platform: gpio
+    pin:
+      number: D2
+      mode: INPUT_PULLUP
+    id: btn_down
+    filters:
+      - invert:
+
+  - platform: gpio
+
+    pin:
+      number: D3
+      mode: INPUT_PULLUP
+    name: "DETACH"
+    on_press:
+      - servo.detach: test_servo
+
+interval:
+  - interval: 1s
+    then:
+      - if:
+          condition:
+            binary_sensor.is_on: btn_up
+          then:
+            lambda: |-
+              if (id(servo_level) < 1.0) id(servo_level) += 0.1;
+              id(test_servo).write(id(servo_level));
+
+
+      - if:
+          condition:
+            binary_sensor.is_on: btn_down
+          then:
+            lambda: |-
+              if (id(servo_level) > -1.0) id(servo_level) -= 0.1;
+              id(test_servo).write(id(servo_level));
+

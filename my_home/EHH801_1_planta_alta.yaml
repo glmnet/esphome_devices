@@ -1,0 +1,4 @@
+substitutions:
+  devicename: eh_h801light_1
+
+<<: !include EHH801_base.yaml

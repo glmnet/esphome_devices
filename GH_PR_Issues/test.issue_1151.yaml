@@ -1,0 +1,58 @@
+esphome:
+  name: test_esp32
+  platform: ESP32
+  board: nodemcu-32s
+  platformio_options:
+    upload_speed: 921600
+
+wifi:
+  ssid: !secret wifi_ssid
+  password: !secret wifi_pass
+
+logger:
+
+api:
+
+ota:
+
+esp32_touch:
+  setup_mode: True
+  iir_filter: 10ms
+
+binary_sensor:
+  - platform: esp32_touch
+    name: "ESP32 Touch Pad GPIO4"
+    pin: GPIO4
+    threshold: 1000
+#  - platform: esp32_touch
+#    name: "ESP32 Touch Pad GPIO2"
+#    pin: GPIO2
+#    threshold: 1000
+  - platform: esp32_touch
+    name: "ESP32 Touch Pad GPIO15"
+    pin: GPIO15
+    threshold: 1000
+#  - platform: esp32_touch
+#    name: "ESP32 Touch Pad GPIO13"
+#    pin: GPIO13
+#    threshold: 1000
+#  - platform: esp32_touch
+#    name: "ESP32 Touch Pad GPIO12"
+#    pin: GPIO12
+#    threshold: 1000
+#  - platform: esp32_touch
+#    name: "ESP32 Touch Pad GPIO14"
+#    pin: GPIO14
+#    threshold: 1000
+#  - platform: esp32_touch
+#    name: "ESP32 Touch Pad GPI27"
+#    pin: GPIO27
+#    threshold: 1000
+#  - platform: esp32_touch
+#    name: "ESP32 Touch Pad GPIO33"
+#    pin: GPIO33
+#    threshold: 1000
+#  - platform: esp32_touch
+#    name: "ESP32 Touch Pad GPIO32"
+#    pin: GPIO32
+#    threshold: 1000

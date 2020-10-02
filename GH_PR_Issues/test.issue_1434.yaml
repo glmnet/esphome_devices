@@ -1,0 +1,38 @@
+esphome:
+  name: test_esp8266
+  platform: ESP8266
+  board: nodemcuv2
+  arduino_version: 2.7.0
+
+wifi:
+  ssid: !secret wifi_ssid
+  password: !secret wifi_pass
+  fast_connect: true
+
+logger:
+  level: VERY_VERBOSE
+
+ota:
+
+api:
+
+time:
+  - platform: sntp
+    id: sntp_time
+    timezone: 'America/Argentina/Buenos_Aires' # -3
+
+display:
+  platform: tm1637
+  id: tm1637_display
+  dio_pin: D7
+  clk_pin: D6
+  lambda: |-
+    auto time = id(sntp_time).now();
+    it.strftime("%H.%M", time);
+
+# interval:
+#   - interval: 10s
+#     then:
+#       - logger.log:
+#           format: "The temperature sensor reports value %.1f and humidity %.1f"
+#           args: [ 'id(temperature_sensor).state', 'id(humidity_sensor).state' ]

@@ -1,0 +1,31 @@
+esphome:
+  name: test_local2
+  platform: ESP8266
+  board: nodemcuv2
+  platformio_options:
+    upload_speed: 921600
+
+wifi:
+  ssid: !secret wifi_ssid
+  password: !secret wifi_pass
+
+api:
+
+ota:
+
+logger:
+  level: VERY_VERBOSE
+
+remote:
+  id: remote_esp1
+  endpoint: 10.0.1.1
+
+binary_sensor:
+  - platform: remote
+    id: remote_binary_sensor1
+    remote_id: remote_esp1
+    remote_binary_sensor_id: binary_sensor1
+    on_press:
+      - logger.log: 'Remote binary sensor press'
+      - logger.log: 'Remote binary sensor released'
+

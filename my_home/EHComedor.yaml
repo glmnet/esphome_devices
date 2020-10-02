@@ -1,0 +1,121 @@
+esphome:
+  name: eh_comedor
+  platform: ESP8266
+  board: nodemcu
+  # Use a local copy of ESPHome
+  includes:
+    - arduino_port_expander.h
+
+wifi:
+  ssid: !secret wifi_ssid
+  password: !secret wifi_pass
+
+api:
+
+ota:
+
+i2c:
+  id: i2ccomponent
+
+logger:
+  level: VERBOSE
+
+custom_component:
+- id: ape
+  lambda: |-
+    auto ape_component = new ArduinoPortExpander(i2ccomponent, 0x08);
+    return {ape_component};
+
+output:
+- platform: custom
+  type: binary
+  lambda: |-
+    return {ape_binary_output(ape, 7),
+            ape_binary_output(ape, 6),
+            ape_binary_output(ape, 5),
+            ape_binary_output(ape, 4)};
+  outputs:
+    - id: gpio_relay_1
+      inverted: true
+    - id: gpio_relay_2
+      inverted: true
+    - id: gpio_relay_3
+      inverted: true
+    - id: gpio_relay_4
+      inverted: true
+
+light:
+  - platform: binary
+    id: spot_puerta
+    name: "Spot Puerta"
+    output: gpio_relay_1
+  - platform: binary
+    id: spots_living
+    name: "Spots Living"
+    output: gpio_relay_2
+  - platform: binary
+    id: comedor
+    name: "Luz Comedor"
+    output: gpio_relay_3
+  - platform: binary
+    id: garage
+    name: "Garage"
+    output: gpio_relay_4
+
+binary_sensor:
+  - platform: status
+    name: "Comedor Status"
+  - platform: custom
+    lambda: |-
+      return {ape_binary_sensor(ape, 2), // ribbon purple / amarillo
+              ape_binary_sensor(ape, 3), // ribbon white / marron
+              ape_binary_sensor(ape, 10), // pin debajo de 3.3
+              ape_binary_sensor(ape, 8), // ribbon verde / rojo
+              ape_binary_sensor(ape, 14), // ribbon red / azul (con cinta)
+              ape_binary_sensor(ape, 15), // A1
+              ape_binary_sensor(ape, 0),
+              ape_binary_sensor(ape, 1),
+              ape_binary_sensor(ape, 9)}; // pin debajo de ground
+    binary_sensors:
+      - name: "Switch Comedor Puerta 1"
+        internal: true
+        on_state:
+          then:
+            - switch.toggle: spots
+      - name: "Switch Comedor Puerta 2"
+        internal: true
+        on_state:
+          then:
+            - light.toggle: comedor
+      - name: "Switch Comedor Puerta 3"
+        internal: true
+        on_state:
+          then:
+            - light.toggle: garage
+      - name: "Switch Garage 1"
+        internal: true
+        on_state:
+          then:
+            - light.toggle: garage
+      - name: "Switch Garage 2"
+      - name: "Switch Garage 3"
+      - name: "Ventana Comedor Oeste"
+        device_class: window
+      - name: "Ventana Comedor Sur"
+        device_class: window
+      - name: "Movimiento Comedor"
+        device_class: motion
+
+switch:
+  - platform: template
+    id: spots
+    optimistic: true
+    internal: true
+    turn_on_action:
+      - light.turn_on: spots_living
+      - light.turn_on: spot_puerta
+    turn_off_action:
+      - light.turn_off: spots_living
+      - light.turn_off: spot_puerta
+  - platform: restart
+    name: "Comedor Restart"

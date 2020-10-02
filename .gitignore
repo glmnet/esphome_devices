@@ -7,3 +7,7 @@ secrets.yaml
 !common/
 !custom_components/
 !ArduinoPortExpander/
+!my_home/
+!GH_PR_Issues/
+!experiments/
+

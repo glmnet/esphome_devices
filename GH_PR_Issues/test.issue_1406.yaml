@@ -1,0 +1,62 @@
+# single test esp12f led (GPIO2) and some boards (GPIO16 led)
+# leds are toggled with GPIO0 (usually built in flash button)
+
+esphome:
+  name: test_esp8266
+  platform: ESP8266
+  board: nodemcuv2
+  platformio_options:
+    upload_speed: 921600
+
+logger:
+  level: VERY_VERBOSE
+  logs:
+    api.service: DEBUG
+
+packages:
+  wifi: !include package.wifi.yaml
+
+api:
+
+sensor:
+  - platform: adc
+    id: weld_duration
+    name: "Duration"
+    pin: A0
+    unit_of_measurement: "ms"
+    accuracy_decimals: 4
+    update_interval: 1s
+
+globals:
+  - id: start_stopwatch
+    type: float
+    initial_value: "0.7f"
+    restore_value: no
+
+binary_sensor:
+  - platform: gpio
+    pin: GPIO0
+    id: lala
+    on_press:
+      - globals.set:
+          id: start_stopwatch
+          value: '0.6f'
+
+switch:
+  - id: relay0
+    platform: template
+
+interval:
+  - interval: 1s
+    then:
+      - logger.log:
+          format: "weld_duration %.4d start_stopwatch %.4d"
+          args: [ 'id(weld_duration).state', 'id(start_stopwatch)' ]
+      - if:
+          condition:
+            - lambda: 'return id(weld_duration).state <= id(start_stopwatch);'
+          then:
+            - switch.turn_off: relay0
+            - lambda: |-
+                id(start_stopwatch) = 0;
+

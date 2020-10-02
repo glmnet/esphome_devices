@@ -1,0 +1,194 @@
+---
+esphome:
+  name: eh_tanque
+  platform: ESP8266
+  board: nodemcu
+
+<<: !include common/wifi.yaml
+
+api:
+
+ota:
+
+logger:
+  level: DEBUG
+  baud_rate: 0 # use UART pins for IO
+
+output:
+  - platform: gpio
+    id: rly1_pump
+    pin:
+      number: GPIO3
+      inverted: true
+  - platform: gpio
+    id: rly2_outlet
+    pin:
+      number: GPIO2
+      inverted: true
+  - platform: gpio
+    id: rly3_light
+    pin:
+      number: GPIO16
+      inverted: true
+  - platform: gpio
+    id: RLY4
+    pin:
+      number: GPIO0
+      inverted: true
+
+switch:
+  - platform: restart
+    name: "Restart Tanque"
+  - platform: output
+    name: "Bomba Tanque"
+    id: bomba_tanque
+    output: rly1_pump
+  - platform: output
+    name: "Toma Tanque"
+    output: rly2_outlet
+
+light:
+  - platform: binary
+    id: luz_tanque
+    name: "Luz tanque"
+    output: rly3_light
+
+binary_sensor:
+  - platform: status
+    name: "Tanque Status"
+    on_release:
+      then:
+      - switch.turn_off: bomba_tanque
+  - platform: gpio
+    id: tanque_abajo_flotador
+    pin:
+      number: GPIO13
+      mode: INPUT_PULLUP
+    name: Tanque abajo vacio
+    device_class: problem
+    filters:
+      - invert:
+      - delayed_on_off: 2s # debounce for some noisy from pump or generator
+    on_press:
+      # tank almost full
+      - sensor.template.publish:
+          id: tank_liters
+          state: !lambda 'return 900.0;'
+    on_release:
+      # tank almost empty
+      - sensor.template.publish:
+          id: tank_liters
+          state: !lambda 'return 80.0;'
+      # prevent pump run without water
+      - delay: 50s
+      - switch.turn_off: bomba_tanque
+  - platform: gpio
+    pin:
+      number: GPIO14
+      mode: INPUT_PULLUP
+    name: "Switch luz tanque"
+    internal: true
+    on_state:
+      then:
+        - light.toggle: luz_tanque
+  - platform: gpio
+    pin:
+      number: GPIO5
+      mode: INPUT_PULLUP
+    name: "Tanque abajo desbordado"
+    device_class: problem
+    filters:
+      - invert:
+      - delayed_on_off: 2s # prevent oscilattions of the sensor, we don't need high response time
+  - platform: gpio
+    pin:
+      number: GPIO4
+      mode: INPUT_PULLUP
+    name: "Tanque abajo lleno"
+    id: tanque_abajo_lleno
+    filters:
+      - invert:
+      - delayed_on_off: 2s # prevent oscilattions of the sensor, we don't need high response time
+  - platform: gpio
+    pin:
+      number: GPIO1
+      mode: INPUT_PULLUP
+    name: Puerta Tanque
+    filters:
+      - invert:
+      - delayed_on_off: 2s
+
+sensor:
+  - platform: pulse_counter
+    pin: GPIO12
+    name: "Flujo agua"
+    on_value:
+      - sensor.template.publish:
+          id: tank_liters
+          state: !lambda |-
+            float new_level = id(tank_liters).state;
+            if (isnan(new_level))
+              new_level = id(tanque_abajo_flotador).state ? 50.0 : 900.0;
+            new_level += x / 450;
+            if (new_level > 900.0 && id(tanque_abajo_flotador).state)
+              return 900;
+            if (new_level > 1000) return 1000;
+            return new_level;
+
+  - platform: template
+    id: tank_liters
+    on_value:
+      - sensor.template.publish:
+          id: tank_level
+          # tank max is 1000 liters, convert to %
+          state: !lambda "return x/10.0;"
+    unit_of_measurement: litre
+
+  - platform: template
+    name: Nivel Tanque Abajo
+    id: tank_level
+    unit_of_measurement: '%'
+
+interval:
+  - interval: 1s
+    then:
+      - if:
+          condition:
+            binary_sensor.is_on: tanque_abajo_lleno
+          then:
+            lambda: |-
+              float new_level = id(tank_liters).state;
+              if (isnan(new_level) || new_level < 950)
+                id(tank_liters).publish_state(950);
+      - if:
+          condition:
+            switch.is_on: bomba_tanque
+          # about 500 liters of water are pumped on 22 minutes so
+          # about 0.38 liters every second are pumped out of the tank
+          then:
+          - lambda: |-
+              float new_level = id(tank_liters).state;
+              if (isnan(new_level))
+                new_level = id(tanque_abajo_flotador).state ? 50.0 : 900.0;
+
+              new_level -= 0.38;
+              if (new_level < 0)
+                new_level = 0;
+              if (new_level < 80.0 && !id(tanque_abajo_flotador).state)
+                new_level = 80;
+              id(tank_liters).publish_state(new_level);
+
+# IO Table
+# q GPIO3  RX         Relay Pump
+# q GPIO2             Relay Outlet
+# q GPIO16            Relay Light
+# q GPIO0             Relay spare
+# i GPIO5     Green   Tank Overflow
+# i GPIO4     Brown   Tank Full
+# i GPIO13    Orange  Tank Has water (float switch)
+# i GPIO12    Gray    Water Flow
+# i GPIO14    White   Light SW
+# i GPIO1  TX Purple  Door Reed switch
+#   GND       Black
+#   VCC 3.3V  Yellow
+#   5V        Red

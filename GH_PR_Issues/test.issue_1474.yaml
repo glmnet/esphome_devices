@@ -1,0 +1,37 @@
+esphome:
+  name: test_esp32
+  platform: ESP32
+  board: esp-wrover-kit
+  platformio_options:
+    upload_speed: 921600
+
+wifi:
+  ssid: !secret wifi_ssid
+  password: !secret wifi_pass
+
+  # Enable fallback hotspot (captive portal) in case wifi connection fails
+  ap:
+    ssid: "Closet Fallback Hotspot"
+    password: "password"
+
+captive_portal:
+
+# Enable logging
+logger:
+
+# Enable Home Assistant API
+api:
+
+ota:
+
+esp32_ble_tracker:
+
+binary_sensor:
+  - platform: ble_presence
+    mac_address: "a2:32:32:32:32:32"
+    device_class: presence
+    name: "Name's Harness"
+  - platform: ble_presence
+    mac_address: "a2:32:32:32:32:32"
+    device_class: presence
+    name: "Name"

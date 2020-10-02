@@ -1,0 +1,67 @@
+esphome:
+  name: test_esp8266
+  platform: ESP8266
+  board: nodemcu
+  platformio_options:
+    upload_speed: 921600
+
+wifi:
+  ssid: !secret wifi_ssid
+  password: !secret wifi_pass
+
+api:
+
+ota:
+
+logger:
+  level: VERBOSE
+
+spi:
+  id: spi1
+  clk_pin: D0
+  mosi_pin: D1
+  miso_pin: D2
+
+
+canbus:
+  - platform: mcp2515
+    cs_pin: D5
+    can_id: 4
+    bit_rate: 50kbps
+    on_frame:
+    - can_id: 500
+      then:
+      - lambda: |-
+          std::string b(x.begin(), x.end());
+          ESP_LOGD("canid 500", "%s", &b[0] );
+    - can_id: 23
+      then:
+        - if:
+            condition:
+              lambda: 'return x[0] == 0x11;'
+            then:
+              light.toggle: light1
+
+binary_sensor:
+  - platform: gpio
+    pin: D3
+    id: x
+    on_double_click:
+      - canbus.send: [ 0x11, 0x22, 0x33 ]
+    on_release:
+      - canbus.send:
+          can_id: 23
+          data: [ 0x10, 0x20, 0x30 ]
+    on_press:
+      - canbus.send:
+          data: [ 0x10, 0x20, 0x30 ]
+
+light:
+  - platform: binary
+    id: light1
+    output: outputLight
+
+output:
+  - platform: gpio
+    id: outputLight
+    pin: D7

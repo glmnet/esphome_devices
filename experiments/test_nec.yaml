@@ -1,0 +1,49 @@
+esphome:
+  name: test_nec
+  platform: ESP8266
+  board: nodemcu
+
+  platformio_options:
+    upload_speed: 921600
+
+logger:
+  level: VERBOSE
+
+<<: !include common/wifi.yaml
+
+api:
+
+ota:
+
+remote_receiver:
+  id: rcvr
+  pin:
+    number: D5
+    inverted: True
+    mode: INPUT_PULLUP
+  tolerance: 50%
+  dump: all
+
+remote_transmitter:
+  carrier_duty_percent: 50%
+  pin: D6
+
+switch:
+  - platform: template
+    name: 'Edifier Mute'
+    turn_on_action:
+      - remote_transmitter.transmit_nec:
+          address: 0x00FF
+          command: 0x827D
+  - platform: template
+    name: 'Hyundai Netflix'
+    turn_on_action:
+      - remote_transmitter.transmit_nec:
+          address: 0xFD
+          command: 0xC23D # 0x43
+  - platform: template
+    name: 'Soundbar power'
+    turn_on_action:
+      - remote_transmitter.transmit_nec:
+          address: 0xFF
+          command: 0xA25D

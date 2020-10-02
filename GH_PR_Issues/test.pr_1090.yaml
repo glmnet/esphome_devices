@@ -1,0 +1,64 @@
+esphome:
+  name: test_esp32
+  platform: ESP32
+  board: nodemcu-32s
+  platformio_options:
+    upload_speed: 921600
+
+wifi:
+  ssid: !secret wifi_ssid
+  password: !secret wifi_pass
+  fast_connect: true
+
+logger:
+
+
+api:
+
+ota:
+
+i2c:
+  sda: GPIO21
+  scl: GPIO22
+
+font:
+  - file: "Roboto-Regular.ttf"
+    id: my_font
+    size: 16
+
+################################################################################
+
+
+sensor:
+  #-----------------------------------------------------------------------------
+  # Wi-Fi Signal Sensor
+  - platform: wifi_signal
+    id: wifi_sgnl
+    name: "WiFi Signal Sensor"
+    update_interval: 5s
+    accuracy_decimals: 0
+    filters:
+      - sliding_window_moving_average:
+          window_size: 60
+          send_every: 60
+          send_first_at: 2
+
+
+
+display:
+  - platform: ssd1306_i2c
+    model: "SSD1306 128x64"
+    #reset_pin: D0
+    address: 0x3C
+    lambda: |-
+      it.print(0, 0, id(my_font), "Hello World!");
+      it.printf(0, 26, id(my_font), "Wi-Fi: %.1f", id(wifi_sgnl).state);
+
+
+
+      it.line(1, 0, 124, 0);
+      it.line(1, 63, 124, 63);
+      it.line(0, 1, 0, 62);
+      it.line(125, 1, 125, 62);
+
+      it.line(126, 1, 126, 62); // I DO NOT SEE THIS LINE

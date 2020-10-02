@@ -1,0 +1,77 @@
+---
+esphome:
+  name: eh_porton
+  platform: ESP8266
+  board: nodemcu
+  includes:
+    - arduino_port_expander.h
+
+<<: !include common/wifi.yaml
+
+api:
+
+ota:
+
+i2c:
+  id: i2ccomponent
+
+logger:
+  level: DEBUG
+
+custom_component:
+  - id: ape
+    lambda: |-
+      auto ape_component = new ArduinoPortExpander(i2ccomponent, 0x08);
+      return {ape_component};
+
+output:
+- platform: custom
+  type: binary
+  lambda: |-
+    return {ape_binary_output(ape, 4)};
+  outputs:
+    - id: gpio_relay_1
+
+switch:
+  - platform: output
+    name: "Porton boton"
+    id: porton_boton
+    output: gpio_relay_1
+    on_turn_on:
+      then:
+        - delay: 1s
+        - switch.turn_off: porton_boton
+
+binary_sensor:
+  - platform: status
+    name: "Porton Status"
+  - platform: custom
+    lambda: |-
+      return {ape_binary_sensor(ape, 2),
+              ape_binary_sensor(ape, 3),
+              ape_binary_sensor(ape, 5),
+              ape_binary_sensor(ape, 14),
+              ape_binary_sensor(ape, 15)};
+    binary_sensors:
+      - name: Porton
+        device_class: garage_door
+      - name: Movimiento garage
+        device_class: motion
+      - name: Barrera porton garage
+        device_class: safety
+      - name: Porton movimiento
+        device_class: moving
+        filters:
+          - invert:
+      - name: Porton Manual
+        device_class: garage_door
+
+# Ribbon:
+# Black: VCC 3.3V
+# White: GND 0V
+# Gray: Arduino A2
+# Violet: Arduino 5 - > Barrera porton garage
+# Blue: Arduino A1 -> Porton Reed switch lado puerta
+# Green: Arduino 3 -> Movimiento garage
+# Yellow: Arduino A0 -> Porton moviendo
+# Orange: Arduino 2 -> Porton Reed switch lado vecino

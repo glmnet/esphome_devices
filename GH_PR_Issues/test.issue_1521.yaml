@@ -1,0 +1,42 @@
+esphome:
+  name: test_esp8266
+  platform: ESP8266
+  board: nodemcuv2
+
+wifi:
+  ssid: !secret wifi_ssid
+  password: !secret wifi_pass
+
+logger:
+  level: DEBUG
+
+api:
+
+output:
+  - platform: esp8266_pwm
+    pin: D5
+    frequency: 200 Hz
+    inverted: false
+    id: brightness_middle
+  - platform: gpio
+    pin: GPIO2
+    id: led_d2
+
+switch:
+  - platform: output
+    output: led_d2
+    id: sw_2
+
+light:
+  - platform: monochromatic
+    output: brightness_middle
+    default_transition_length: 5s
+    name: "Brightness Middle"
+    on_turn_on:
+      then:
+        - switch.turn_on: sw_2
+        - logger.log: "on event"
+    on_turn_off:
+      then:
+        - switch.turn_off: sw_2
+        - logger.log: "off event"

@@ -1,0 +1,52 @@
+esphome:
+  name: test_esp8266
+  platform: ESP8266
+  board: nodemcuv2
+  build_path: builds
+
+wifi:
+  ssid: !secret wifi_ssid
+  password: !secret wifi_pass
+  fast_connect: true
+
+logger:
+  level: VERBOSE
+
+ota:
+
+api:
+
+# display:
+#   platform: tm1637
+#   id: tm1637_display
+#   dio_pin: D7
+#   clk_pin: D6
+#   lambda: |-
+#     auto time = id(sntp_time).now();
+#     it.strftime("%H.%M", time);
+
+i2c:
+
+
+
+sensor:
+  - platform: ina219
+    address: 0x40
+    shunt_resistance: 0.1 ohm
+    current:
+      name: "INA219 Current"
+    power:
+      name: "INA219 Power"
+    bus_voltage:
+      name: "INA219 Bus Voltage"
+    shunt_voltage:
+      name: "INA219 Shunt Voltage"
+    max_voltage: 32.0V
+    max_current: 3.2A
+    update_interval: 1s
+
+# interval:
+#   interval: 1s
+#   then:
+#     logger.log:
+#       format: ''

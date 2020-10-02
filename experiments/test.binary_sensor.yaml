@@ -1,0 +1,55 @@
+esphome:
+  name: test_local2
+  platform: ESP8266
+  board: nodemcuv2
+  platformio_options:
+    upload_speed: 921600
+
+wifi:
+  ssid: !secret wifi_ssid
+  password: !secret wifi_pass
+
+# Enable logging
+logger:
+  level: VERBOSE
+
+# Example configuration entry
+sensor:
+  - platform: wifi_signal
+    name: "WiFi Signal Sensor"
+    update_interval: 60s
+
+# Enable Home Assistant API
+api:
+
+ota:
+
+binary_sensor:
+  - platform: gpio
+    pin:
+      number: D0
+      inverted: true
+      mode: INPUT
+    name: "D0 Binary sensor"
+    on_press:
+      then:
+        - script.execute: timer1
+
+output:
+  - platform: gpio
+    pin: D4
+    inverted: true
+    id: gpio_d4
+
+light:
+  - platform: binary
+    id: esp_led
+    output: gpio_d4
+
+script:
+  - id: timer1
+    then:
+      - script.stop: timer1
+      - light.turn_on: esp_led
+      - delay: 5s
+      - light.turn_off: esp_led

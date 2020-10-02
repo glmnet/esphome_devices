@@ -1,0 +1,51 @@
+esphome:
+  name: test_esp8266
+  platform: ESP8266
+  board: nodemcu
+  platformio_options:
+    upload_speed: 921600
+
+wifi:
+  ssid: !secret wifi_ssid
+  password: !secret wifi_pass
+  fast_connect: true
+
+logger:
+
+spi:
+  clk_pin: D0
+  mosi_pin: D1
+
+api:
+
+ota:
+
+display:
+  - platform: max7219digit
+    cs_pin: D2
+    num_chips: 4
+    scroll_speed: 100ms
+    scroll_mode: STOP
+    intensity: 3
+    lambda: |-
+
+      it.invert_on_off(true);
+      // Print Hello at position 0 (left)
+      it.print(0,0, id(digit_font), "Hello!");
+
+      it.intensity(5);
+
+      it.turn_on_off(false);
+
+font:
+  - file: "pixelmix.ttf"
+    id: digit_font
+    size: 8
+
+time:
+  - platform: homeassistant
+    id: hass_time
+
+image:
+  - file: "smile.png"
+    id: my_image

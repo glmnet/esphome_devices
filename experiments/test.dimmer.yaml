@@ -1,0 +1,91 @@
+esphome:
+  name: test_local2
+  platform: ESP8266
+  board: nodemcu
+  platformio_options:
+    upload_speed: 921600
+
+wifi:
+  ssid: !secret wifi_ssid
+  password: !secret wifi_pass
+  output_power: 20.5dB
+  manual_ip:
+    static_ip: 10.0.1.199
+    gateway: 10.0.1.1
+    subnet: 255.0.0.0
+
+api:
+
+ota:
+
+logger:
+  level: VERY_VERBOSE
+
+switch:
+  - platform: template
+    optimistic: true
+    name: "switch in 5s"
+    turn_on_action:
+      - light.turn_on:
+          id: l1
+          transition_length: 5s
+    turn_off_action:
+      - light.turn_off:
+          id: l1
+          transition_length: 5s
+
+
+  - platform: template
+    optimistic: true
+    name: "switch in 0s"
+    turn_on_action:
+      - light.turn_on:
+          id: l1
+          transition_length: 0s
+    turn_off_action:
+      - light.turn_off:
+          id: l1
+          transition_length: 0s
+
+
+output:
+  - platform: ac_dimmer
+    id: dimmer1
+    gate_pin: D7
+    min_power: 12%
+    init_with_half_cycle: false
+    zero_cross_pin:
+      number: D6
+      mode: INPUT
+      inverted: yes
+  - platform: ac_dimmer
+    id: dimmer2
+    gate_pin: D5
+    method: leading
+    zero_cross_pin:
+      number: D6
+      mode: INPUT
+      inverted: yes
+  - platform: ac_dimmer
+    id: dimmer3
+    gate_pin: D4
+    method: trailing
+    zero_cross_pin:
+      number: D6
+      mode: INPUT
+      inverted: yes
+
+light:
+  - platform: monochromatic
+    output: dimmer1
+    name: Dimmer Light Halogen
+    id: l1
+    gamma_correct: 0
+
+  - platform: monochromatic
+    output: dimmer2
+    name: Dimmer Light LED
+
+  - platform: monochromatic
+    output: dimmer3
+    name: Dimmer Light Leading

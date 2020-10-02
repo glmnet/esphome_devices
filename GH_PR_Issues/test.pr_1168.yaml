@@ -1,0 +1,80 @@
+esphome:
+  name: test_esp8266
+  platform: ESP8266
+  board: nodemcuv2
+  platformio_options:
+    upload_speed: 921600
+
+packages:
+  wifi: !include package.wifi.yaml
+
+logger:
+  level: VERY_VERBOSE
+
+ota:
+
+api:
+
+binary_sensor:
+  - platform: gpio
+    id: test_button0
+    pin: GPIO0
+    on_press:
+      then:
+        - script.execute: s4
+
+  - platform: gpio
+    id: test_button4
+    pin: GPIO4
+    on_press:
+      then:
+        - script.execute: s2
+
+  - platform: gpio
+    id: test_button2
+    pin: GPIO2
+    on_press:
+      then:
+        - script.execute: s3
+
+  - platform: gpio
+    id: test_button16
+    pin: GPIO16
+    on_press:
+      then:
+        - script.execute: s4
+
+
+script:
+  - id: s1
+    mode: single #default
+    then:
+      - logger.log: s1 single start
+      - delay: 10s
+      - logger.log: s1 single stop
+
+  - id: s2
+    mode: restart
+    then:
+      - logger.log: s2 restart start
+      - delay: 10s
+      - logger.log: s2 restart stop
+
+  - id: s3
+    mode: queue
+    max_runs: 4
+
+    then:
+      - logger.log: s3 queue start
+      - delay: 10s
+      - logger.log: s3 queue stop
+
+
+  - id: s4
+    mode: parallel
+    then:
+      - logger.log: s4 parallel start
+      - delay: 10s
+      - logger.log: s4 parallel stop
+
+

@@ -1,0 +1,25 @@
+esphome:
+  name: test_esp8266
+  platform: ESP8266
+  board: nodemcuv2
+
+wifi:
+  ssid: !secret wifi_ssid
+  password: !secret wifi_pass
+
+logger:
+  level: DEBUG
+
+api:
+
+binary_sensor:
+  - platform: gpio
+    id: io14
+    pin: GPIO14
+    filters:
+      - delayed_on_off: 10s
+
+interval:
+  interval: 2s
+  then:
+    - logger.log: "interval timer"

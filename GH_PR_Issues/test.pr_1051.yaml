@@ -1,0 +1,33 @@
+esphome:
+  name: test_esp8266
+  platform: ESP8266
+  board: nodemcuv2
+  platformio_options:
+    upload_speed: 921600
+
+wifi:
+  ssid: !secret wifi_ssid
+  password: !secret wifi_pass
+  fast_connect: true
+
+logger:
+  level: VERY_VERBOSE
+
+ota:
+
+api:
+
+output:
+  - platform: gpio
+    id: my_output_1
+    pin: GPIO4
+
+  - platform: gpio
+    id: my_output_2
+    pin: GPIO0
+
+fan:
+  - platform: binary
+    output: my_output_1
+    name: "Living Room Fan"
+    direction_output: my_output_2

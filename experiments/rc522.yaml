@@ -1,0 +1,67 @@
+esphome:
+  name: test_esp8266
+  platform: ESP8266
+  board: nodemcuv2
+  platformio_options:
+    upload_speed: 921600
+
+  # If buzzer is enabled, notify on api connection success
+  on_boot:
+    priority: -10
+    then:
+      - wait_until:
+          api.connected:
+      - logger.log: API is connected!
+      - rtttl.play: "success:d=24,o=5,b=100:c,g,b"
+
+output:
+  - platform: esp8266_pwm
+    pin: D2
+    id: buzzer
+
+# Define buzzer as output for RTTTL
+rtttl:
+  output: buzzer
+
+wifi:
+  ssid: !secret wifi_ssid
+  password: !secret wifi_pass
+
+# Enable logging
+logger:
+  level: DEBUG
+
+# Enable OTA updates
+ota:
+
+spi:
+  clk_pin: D5
+  miso_pin: D6
+  mosi_pin: D7
+
+api:
+
+rc522:
+  reset_pin: D3
+  cs_pin: D8
+  # on_tag:
+  #   then:
+  #     - homeassistant.tag_scanned: !lambda "return x;"
+  #     - rtttl.play: "success:d=24,o=5,b=100:c,g,b"
+
+pn532:
+  cs_pin: D1
+  # on_tag:
+  #   then:
+  #     - homeassistant.tag_scanned: !lambda "return x;"
+  #     - rtttl.play: "success:d=24,o=5,b=100:c,b,c"
+
+binary_sensor:
+  platform: rc522
+  uid: 84-52-FB-01
+  id: x
+  on_press:
+    - rtttl.play: "scale_up:d=32,o=5,b=100:c,c#,d#,e,f#,g#,a#,b"
+
+  on_release:
+    - rtttl.play: "siren:d=8,o=5,b=100:d,e,d,e,d,e,d,e"

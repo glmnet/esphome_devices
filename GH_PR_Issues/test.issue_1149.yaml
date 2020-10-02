@@ -1,0 +1,38 @@
+esphome:
+  name: test_esp8266
+  platform: ESP8266
+  board: nodemcuv2
+
+wifi:
+  ssid: !secret wifi_ssid
+  password: !secret wifi_pass
+  fast_connect: true
+
+logger:
+  level: VERY_VERBOSE
+
+ota:
+
+api:
+
+switch:
+  - platform: template
+    id: open_cover_switch
+  - platform: template
+    id: close_cover_switch
+
+cover:
+  - platform: time_based
+    name: "Time-Based Cover"
+
+    open_action:
+      - switch.turn_on: open_cover_switch
+    open_duration: 2.1min
+
+    close_action:
+      - switch.turn_on: close_cover_switch
+    close_duration: 2min
+
+    stop_action:
+      - switch.turn_off: open_cover_switch
+      - switch.turn_off: close_cover_switch

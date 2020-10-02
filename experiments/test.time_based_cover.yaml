@@ -1,0 +1,42 @@
+esphome:
+  name: test_local
+  platform: ESP8266
+  board: nodemcuv2
+  platformio_options:
+    upload_speed: 921600
+
+api:
+
+wifi:
+  ssid: !secret wifi_ssid
+  password: !secret wifi_pass
+  fast_connect: true
+
+# Enable logging
+
+text_sensor:
+  - platform: wifi_info
+    ip_address:
+      name: ESP IP Address
+    ssid:
+      name: ESP Connected SSID
+    bssid:
+      name: ESP Connected BSSID
+
+
+logger:
+  level: VERY_VERBOSE
+
+cover:
+  - platform: time_based
+    device_class: blind
+    name: "Test"
+    open_action:
+      - logger.log: 'Cover open_action'
+    open_duration: 10s
+    close_action:
+      - logger.log: 'Cover close_action'
+    close_duration: 10s
+    stop_action:
+      - logger.log: 'Cover stop_action'
+    has_built_in_endstop: true
