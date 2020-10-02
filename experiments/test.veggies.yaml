@@ -1,0 +1,113 @@
+# single test esp12f led (GPIO2) and some boards (GPIO16 led)
+# leds are toggled with GPIO0 (usually built in flash button)
+
+esphome:
+  name: test_esp8266
+  platform: ESP8266
+  board: nodemcuv2
+  platformio_options:
+    upload_speed: 921600
+
+  # ...
+  includes:
+    - "../my_home/arduino_port_expander.h"
+
+logger:
+  level: DEBUG
+  logs:
+    api.service: DEBUG
+
+packages:
+  wifi: !include ../package.wifi.yaml
+
+api:
+
+ota:
+
+i2c:
+  id: i2c_component
+
+custom_component:
+  - id: ape
+    lambda: |-
+      auto ape_component = new ArduinoPortExpander(i2c_component, 0x08);
+      return {ape_component};
+
+sensor:
+  - platform: wifi_signal
+    name: "Veggies WiFi Signal"
+    update_interval: 60s
+
+  - platform: custom
+    lambda: |-
+      return {ape_analog_input(ape, 0),
+              ape_analog_input(ape, 1),  // 1 = A1
+              ape_analog_input(ape, 2)};
+    #ape_analog_input(ape, 2) -taken from line above
+    sensors:
+      - name: Analog A0
+        id: Brightness
+        filters:
+          - throttle: 10s
+      - name: Plant Moisture pin 2
+        id: analog_a1
+        unit_of_measurement: "moisture"
+        filters:
+          - throttle: 10s
+      - name: Plant Moisture pin 3
+        id: analog_a2
+        unit_of_measurement: "moisture"
+        filters:
+          - throttle: 10s
+
+##I'm working below this line to try to figure out how to only power up the moisture sensor periodically
+#................................
+#interval:
+#  - interval: 1min
+#    then:
+#    - output.turn_on: output_pin_1
+#    - delay: 5000ms
+#..............
+#    - sensor.publish:
+#          id: analog_a2
+#          state: !lambda |-
+#            return id(analog_a2).state;
+#..............
+
+#      - platform: custom -attemp to use Lambda to call sensor
+#        lambda: |-
+#          return {ape_analog_input(ape, 2)};
+
+#       id(analog_a2).publish_state();     -I tried adding this to get the reading.
+#      - component.update: analog_a2       -This was the orgianl call
+#I think the issue is this middle code
+#    - delay: 2000ms
+#    - output.turn_off: output_pin_1
+#................................
+output:
+  - platform: custom
+    type: binary
+    lambda: |-
+      return {ape_binary_output(ape, 0),
+              ape_binary_output(ape, 1),
+              ape_binary_output(ape, 2)};
+    outputs:
+      - id: output_pin_0
+        inverted: true
+      - id: output_pin_1
+        inverted: true
+      - id: output_pin_2
+        inverted: true
+
+switch:
+  - platform: output
+    name: veg_relay_1
+    output: output_pin_0
+
+  - platform: output
+    name: veg_relay_2
+    output: output_pin_1
+
+  - platform: output
+    name: veg_relay_3
+    output: output_pin_2
