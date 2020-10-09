@@ -41,8 +41,8 @@ jobs:
         pip install esphome
     
     # Runs a single command using the runners shell
-    - name: Test EHComedor.yaml
+    - name: Test my_home only
       run: |
-        esphome EHComedor.yaml compile
+        esphome my_home/EHComedor.yaml compile
         echo Add other actions to build,
         echo test, and deploy your project.
