@@ -100,6 +100,8 @@ binary_sensor:
       - light.toggle: luz_pasillo
   - name: "Switch estudio galeria 1" # A2
     internal: true
+    filters:
+      delayed_on_off: 100ms
     on_state:
     - light.toggle: luz_estudio
   - name: "Switch Estudio Galeria" # DI8
