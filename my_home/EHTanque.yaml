@@ -4,8 +4,10 @@ esphome:
   platform: ESP8266
   board: nodemcu
 
-<<: !include common/wifi.yaml
-
+wifi:
+  ssid: !secret wifi_ssid
+  password: !secret wifi_pass
+  
 api:
 
 ota:

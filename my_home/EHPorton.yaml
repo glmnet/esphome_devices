@@ -6,8 +6,10 @@ esphome:
   includes:
     - arduino_port_expander.h
 
-<<: !include common/wifi.yaml
-
+wifi:
+  ssid: !secret wifi_ssid
+  password: !secret wifi_pass
+  
 api:
 
 ota:
