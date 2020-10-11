@@ -28,20 +28,19 @@ custom_component:
       return {ape_component};
 
 output:
-- platform: custom
-  type: binary
-  lambda: |-
-    return {ape_binary_output(ape, 7),
-            ape_binary_output(ape, 6),
-            ape_binary_output(ape, 5)};
-  outputs:
-    - id: gpio_relay_1
-      inverted: true
-    - id: gpio_relay_2
-      inverted: true
-    - id: gpio_relay_3
-      inverted: true
-
+  - platform: custom
+    type: binary
+    lambda: |-
+      return {ape_binary_output(ape, 7),
+              ape_binary_output(ape, 6),
+              ape_binary_output(ape, 5)};
+    outputs:
+      - id: gpio_relay_1
+        inverted: true
+      - id: gpio_relay_2
+        inverted: true
+      - id: gpio_relay_3
+        inverted: true
 
 light:
   - platform: binary
@@ -72,11 +71,15 @@ binary_sensor:
               ape_binary_sensor(ape, 14)};
     binary_sensors:
       - name: "Dormitorio norte Switch puerta 1"
+        filters:
+          delayed_on_off: 100ms
         internal: true
         on_state:
           then:
             - light.toggle: techo
       - name: "Dormitorio norte Switch puerta 2"
+        filters:
+          delayed_on_off: 200ms
         internal: true
         on_state:
           then:
@@ -92,27 +95,39 @@ binary_sensor:
                 - light.turn_on: cama_ventana
                 - light.turn_on: cama_pared
       - name: "Dormitorio norte Switch puerta"
+        filters:
+          delayed_on_off: 100ms
       - name: "Dormitorio norte Switch cama pared 1"
+        filters:
+          delayed_on_off: 100ms
         internal: true
         on_state:
           then:
             - light.toggle: cama_pared
       - name: "Dormitorio norte Switch cama pared 2"
+        filters:
+          delayed_on_off: 100ms
         internal: true
         on_state:
           then:
             - light.toggle: techo
       - name: "Dormitorio norte Switch cama ventana 1"
+        filters:
+          delayed_on_off: 100ms
         internal: true
         on_state:
           then:
             - light.toggle: cama_ventana
       - name: "Dormitorio norte Switch cama ventana 2"
+        filters:
+          delayed_on_off: 100ms
         internal: true
         on_state:
           then:
             - light.toggle: techo
       - name: "Dormitorio norte Ventana"
+        filters:
+          delayed_on_off: 100ms
         device_class: window
 
 remote_transmitter:
@@ -121,4 +136,4 @@ remote_transmitter:
 
 climate:
   platform: coolix
-  name: 'AC Dormitorio Norte'
+  name: "AC Dormitorio Norte"

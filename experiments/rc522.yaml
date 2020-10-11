@@ -41,8 +41,8 @@ spi:
 
 api:
 
-rc522:
-  reset_pin: D3
+rc522_spi:
+  #reset_pin: D3
   cs_pin: D8
   # on_tag:
   #   then:
@@ -57,11 +57,11 @@ pn532:
   #     - rtttl.play: "success:d=24,o=5,b=100:c,b,c"
 
 binary_sensor:
-  platform: rc522
+  platform: rc522_spi
   uid: 84-52-FB-01
   id: x
   on_press:
     - rtttl.play: "scale_up:d=32,o=5,b=100:c,c#,d#,e,f#,g#,a#,b"
 
   on_release:
-    - rtttl.play: "siren:d=8,o=5,b=100:d,e,d,e,d,e,d,e"
+    - rtttl.play: "scale_down:d=32,o=5,b=100:b,a#,g#,f#,e,d#,c#,c"

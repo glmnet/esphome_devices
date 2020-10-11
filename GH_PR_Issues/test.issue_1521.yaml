@@ -19,13 +19,10 @@ output:
     inverted: false
     id: brightness_middle
   - platform: gpio
-    pin: GPIO2
+    pin:
+      number: GPIO2
+      inverted: yes
     id: led_d2
-
-switch:
-  - platform: output
-    output: led_d2
-    id: sw_2
 
 light:
   - platform: monochromatic
@@ -34,9 +31,17 @@ light:
     name: "Brightness Middle"
     on_turn_on:
       then:
-        - switch.turn_on: sw_2
-        - logger.log: "on event"
+        - logger.log: "mono on event"
     on_turn_off:
       then:
-        - switch.turn_off: sw_2
-        - logger.log: "off event"
+        - logger.log: "mono off event"
+
+  - platform: binary
+    output: led_d2
+    name: "binary light"
+    on_turn_on:
+      then:
+        - logger.log: "binary on event"
+    on_turn_off:
+      then:
+        - logger.log: "binary off event"
