@@ -234,6 +234,7 @@ cover:
     stop_action:
       - switch.turn_on: C4_UnLock
     has_built_in_endstop: true
+    assumed_state: false
 
   - platform: time_based
     device_class: shutter
@@ -247,6 +248,7 @@ cover:
     stop_action:
       - switch.turn_on: C3_UnLock
     has_built_in_endstop: true
+    assumed_state: false
 
 binary_sensor:
   - platform: status
