@@ -12,7 +12,7 @@ api:
 ota:
 
 substitutions:
-  rgb_receiver_light_entity: light.h801_light_2
+  rgb_receiver_light_entity: light.dormitorio_norte_rgb
 
 packages:
   rgb_receiver: !include rgb_receiver.package.yaml

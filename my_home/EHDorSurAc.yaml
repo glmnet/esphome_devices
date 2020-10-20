@@ -4,7 +4,7 @@ esphome:
   board: nodemcu
 
 substitutions:
-  rgb_receiver_light_entity: light.h801_light_3
+  rgb_receiver_light_entity: light.dormitorio_sur_rgb
 
 packages:
   rgb_receiver: !include rgb_receiver.package.yaml
