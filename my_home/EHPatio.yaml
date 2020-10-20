@@ -267,23 +267,37 @@ binary_sensor:
     binary_sensors:
       - name: "Puerta Frente"
         device_class: door
+        filters:
+          delayed_on_off: 100ms
       - name: "Puerta Cocina"
         device_class: door
+        filters:
+          delayed_on_off: 100ms
       - name: "Puerta Estudio"
         device_class: door
+        filters:
+          delayed_on_off: 100ms
       - name: "Movimiento Galeria"
         device_class: motion
+        filters:
+          delayed_on_off: 100ms
       - name: "Switch Galeria 1"
         internal: true
+        filters:
+          delayed_on_off: 100ms
         on_state:
           then:
             - light.toggle: galeria
       - name: "Switch Galeria Proyectores"
+        filters:
+          delayed_on_off: 100ms
         on_state:
           then:
             - script.execute: toggle_proyectores
         internal: true
       - name: "Switch Galeria Patio"
+        filters:
+          delayed_on_off: 100ms
 
 script:
   - id: toggle_proyectores

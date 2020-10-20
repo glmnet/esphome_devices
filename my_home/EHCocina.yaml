@@ -20,30 +20,29 @@ i2c:
 logger:
   level: DEBUG
 
-
 custom_component:
-- id: ape
-  lambda: |-
-    auto ape_component = new ArduinoPortExpander(i2c_component, 0x08);
-    return {ape_component};
+  - id: ape
+    lambda: |-
+      auto ape_component = new ArduinoPortExpander(i2c_component, 0x08);
+      return {ape_component};
 
 output:
-- platform: custom
-  type: binary
-  lambda: |-
-    return {ape_binary_output(ape, 7),
-            ape_binary_output(ape, 6),
-            ape_binary_output(ape, 5),
-            ape_binary_output(ape, 4)};
-  outputs:
-    - id: gpio_relay_1
-      inverted: true
-    - id: gpio_relay_2
-      inverted: true
-    - id: gpio_relay_3
-      inverted: true
-    - id: gpio_relay_4
-      inverted: true
+  - platform: custom
+    type: binary
+    lambda: |-
+      return {ape_binary_output(ape, 7),
+              ape_binary_output(ape, 6),
+              ape_binary_output(ape, 5),
+              ape_binary_output(ape, 4)};
+    outputs:
+      - id: gpio_relay_1
+        inverted: true
+      - id: gpio_relay_2
+        inverted: true
+      - id: gpio_relay_3
+        inverted: true
+      - id: gpio_relay_4
+        inverted: true
 
 light:
   - platform: binary
@@ -72,23 +71,33 @@ binary_sensor:
     binary_sensors:
       - name: "Switch Cocina puerta 1"
         internal: true
+        filters:
+          delayed_on_off: 100ms
         on_state:
           then:
             - light.toggle: luz_cocina
       - name: "Switch Cocina puerta 2"
         internal: true
+        filters:
+          delayed_on_off: 100ms
         on_state:
           then:
             - light.toggle: luz_mesa_cocina
       - name: "Switch Cocina puerta 3"
         internal: true
+        filters:
+          delayed_on_off: 100ms
         on_state:
           then:
             - light.toggle: luz_exterior_pasillo
       - name: "Switch Mesa cocina"
         internal: true
+        filters:
+          delayed_on_off: 100ms
         on_state:
           then:
             - light.toggle: luz_mesa_cocina
       - name: "Ventana cocina"
+        filters:
+          delayed_on_off: 100ms
         device_class: window
