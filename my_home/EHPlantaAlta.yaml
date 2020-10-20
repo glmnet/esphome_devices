@@ -22,7 +22,7 @@ wifi:
   networks:
     - ssid: !secret wifi_ssid
       password: !secret wifi_pass
-      bssid: !secret bssid_mikrotik
+      #bssid: !secret bssid_mikrotik
   fast_connect: true
 
 # Enable logging
