@@ -118,7 +118,3 @@ binary_sensor:
 remote_transmitter:
   pin: GPIO14
   carrier_duty_percent: 50%
-
-climate:
-  platform: coolix
-  name: 'AC Dormitorio Norte'
