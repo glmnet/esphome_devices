@@ -7,7 +7,7 @@ esphome:
 wifi:
   ssid: !secret wifi_ssid
   password: !secret wifi_pass
-  
+
 api:
 
 ota:
@@ -60,7 +60,7 @@ binary_sensor:
     name: "Tanque Status"
     on_release:
       then:
-      - switch.turn_off: bomba_tanque
+        - switch.turn_off: bomba_tanque
   - platform: gpio
     id: tanque_abajo_flotador
     pin:
@@ -75,12 +75,12 @@ binary_sensor:
       # tank almost full
       - sensor.template.publish:
           id: tank_liters
-          state: !lambda 'return 900.0;'
+          state: !lambda "return 900.0;"
     on_release:
       # tank almost empty
       - sensor.template.publish:
           id: tank_liters
-          state: !lambda 'return 80.0;'
+          state: !lambda "return 80.0;"
       # prevent pump run without water
       - delay: 50s
       - switch.turn_off: bomba_tanque
@@ -118,7 +118,7 @@ binary_sensor:
     name: Puerta Tanque
     filters:
       - invert:
-      - delayed_on_off: 2s
+      - delayed_on_off: 1s
 
 sensor:
   - platform: pulse_counter
@@ -145,11 +145,14 @@ sensor:
           # tank max is 1000 liters, convert to %
           state: !lambda "return x/10.0;"
     unit_of_measurement: litre
-
   - platform: template
     name: Nivel Tanque Abajo
     id: tank_level
-    unit_of_measurement: '%'
+    unit_of_measurement: "%"
+
+  - platform: template
+    id: is_dark
+    lambda: return true;
 
 interval:
   - interval: 1s
@@ -168,17 +171,17 @@ interval:
           # about 500 liters of water are pumped on 22 minutes so
           # about 0.38 liters every second are pumped out of the tank
           then:
-          - lambda: |-
-              float new_level = id(tank_liters).state;
-              if (isnan(new_level))
-                new_level = id(tanque_abajo_flotador).state ? 50.0 : 900.0;
+            - lambda: |-
+                float new_level = id(tank_liters).state;
+                if (isnan(new_level))
+                  new_level = id(tanque_abajo_flotador).state ? 50.0 : 900.0;
 
-              new_level -= 0.38;
-              if (new_level < 0)
-                new_level = 0;
-              if (new_level < 80.0 && !id(tanque_abajo_flotador).state)
-                new_level = 80;
-              id(tank_liters).publish_state(new_level);
+                new_level -= 0.38;
+                if (new_level < 0)
+                  new_level = 0;
+                if (new_level < 80.0 && !id(tanque_abajo_flotador).state)
+                  new_level = 80;
+                id(tank_liters).publish_state(new_level);
 
 # IO Table
 # q GPIO3  RX         Relay Pump

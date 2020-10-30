@@ -1,5 +1,5 @@
 esphome:
-  name: eh_camera2
+  name: eh_camera3
   platform: ESP32
   board: nodemcu-32s
   platformio_options:
@@ -33,7 +33,7 @@ esp32_camera:
   power_down_pin: GPIO32
   # Image settings
 
-  name: Camera ESP32 2
+  name: Camera ESP32 3
   resolution: 1600x1200
   max_framerate: 1Hz
 
@@ -45,8 +45,8 @@ output:
 light:
   - platform: binary
     output: gpio_led
-    name: Camera ESP32 2 Light
+    name: Camera ESP32 3 Light
 
 switch:
   - platform: restart
-    name: Camera ESP32 2 Restart
+    name: Camera ESP32 3 Restart
