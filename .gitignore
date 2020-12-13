@@ -2,7 +2,7 @@
 
 **/*.pyc
 
-secrets.yaml
+/secrets.yaml
 **/
 !common/
 !custom_components/

@@ -7,6 +7,6 @@
 **/lib/
 **/src/
 **/platformio.ini
-/secrets.yaml
+
 
 !/web-spa-react/

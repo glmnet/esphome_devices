@@ -9,7 +9,7 @@ esphome:
 logger:
   level: VERBOSE
 
-<<: !include common/wifi.yaml
+<<: !include ../common/wifi.yaml
 
 api:
 
@@ -30,19 +30,19 @@ remote_transmitter:
 
 switch:
   - platform: template
-    name: 'Edifier Mute'
+    name: "Edifier Mute"
     turn_on_action:
       - remote_transmitter.transmit_nec:
           address: 0x00FF
           command: 0x827D
   - platform: template
-    name: 'Hyundai Netflix'
+    name: "Hyundai Netflix"
     turn_on_action:
       - remote_transmitter.transmit_nec:
           address: 0xFD
           command: 0xC23D # 0x43
   - platform: template
-    name: 'Soundbar power'
+    name: "Soundbar power"
     turn_on_action:
       - remote_transmitter.transmit_nec:
           address: 0xFF
