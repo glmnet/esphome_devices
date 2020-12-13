@@ -1,12 +1,11 @@
 esphome:
-  name: eh_magic_home_1
+  name: $devicename
   platform: ESP8266
   board: esp8285
   libraries:
     - FastLED
   includes:
     - light_effects.h
-
 
 wifi:
   ssid: !secret wifi_ssid
@@ -23,7 +22,7 @@ ota:
 light:
   - platform: rgb
     id: light_1
-    name: Nice Friendly Name
+    name: $light_name
     red: pwm_r
     green: pwm_g
     blue: pwm_b
@@ -76,7 +75,6 @@ output:
   #   pin: GPIO15
   #   frequency: 1000 Hz
   #   id: pwm_w
-
 
 remote_receiver:
   pin:
@@ -317,4 +315,3 @@ binary_sensor:
             red: 100%
             green: 14%
             blue: 78%
-

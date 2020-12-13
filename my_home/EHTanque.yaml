@@ -5,8 +5,12 @@ esphome:
   board: nodemcu
 
 wifi:
-  ssid: !secret wifi_ssid
-  password: !secret wifi_pass
+  networks:
+    #ssid: !secret wifi_ssid
+    password: !secret wifi_pass
+    bssid: !secret bssid_airport_express
+
+captive_portal:
 
 api:
 
@@ -119,6 +123,19 @@ binary_sensor:
     filters:
       - invert:
       - delayed_on_off: 1s
+    on_press: # close
+      light.turn_off: luz_tanque
+    on_release: # open
+      then:
+        if:
+          condition:
+            binary_sensor.is_on: is_dark
+          then:
+            light.turn_on: luz_tanque
+
+  - platform: homeassistant
+    id: is_dark
+    entity_id: binary_sensor.is_dark
 
 sensor:
   - platform: pulse_counter
@@ -149,10 +166,6 @@ sensor:
     name: Nivel Tanque Abajo
     id: tank_level
     unit_of_measurement: "%"
-
-  - platform: template
-    id: is_dark
-    lambda: return true;
 
 interval:
   - interval: 1s

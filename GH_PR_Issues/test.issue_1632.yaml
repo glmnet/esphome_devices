@@ -1,0 +1,32 @@
+esphome:
+  name: test_esp32
+  platform: ESP32
+  board: nodemcu-32s
+  platformio_options:
+    upload_speed: 921600
+
+wifi:
+  ssid: !secret wifi_ssid
+  password: !secret wifi_pass
+  fast_connect: true
+
+logger:
+  level: VERBOSE
+
+api:
+
+ota:
+
+output:
+  - platform: ac_dimmer
+    id: dimmer1
+    gate_pin: 26
+    min_power: 20%
+    zero_cross_pin:
+      number: 25
+      mode: INPUT_PULLUP
+      inverted: yes
+light:
+  - platform: monochromatic
+    output: dimmer1
+    name: Dimmer test

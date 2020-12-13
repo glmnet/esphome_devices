@@ -1,0 +1,975 @@
+esphome:
+  name: test_esp32
+  platform: ESP32
+  platformio_options:
+    upload_speed: 921600
+  board: esp32doit-devkit-v1
+  comment: "Dispositivo de gestión de los pulsadores, detectores de presencia, mandos a distancia y relés por Radio Frecuencia"
+
+wifi:
+  ssid: !secret wifi_ssid
+  password: !secret wifi_pass
+
+  # Enable fallback hotspot (captive portal) in case wifi connection fails
+  ap:
+    ssid: "testel32"
+    password: "FOOFOOFOO"
+
+captive_portal:
+web_server:
+  port: 80
+
+# Enable logging
+logger:
+  level: DEBUG
+
+# Enable Home Assistant API
+api:
+ota:
+remote_transmitter:
+  - id: TX433
+    pin: GPIO12
+    #    repeat: 5
+    carrier_duty_percent: 100%
+
+  - id: TX315
+    pin: GPIO14
+    #    repeat: 5
+    carrier_duty_percent: 100%
+
+remote_receiver:
+  - id: RX433
+    pin:
+      number: GPIO27
+    dump:
+      - rc_switch
+    tolerance: 50%
+
+  - id: RX315
+    pin:
+      number: GPIO25
+    dump:
+      - rc_switch
+    tolerance: 50%
+
+# Los switches/reles son los que reciben los códigos de ON/OFF
+# el estado lo mantienen por assumed_state o por optimistic
+# no los pongo como internal para que sea fácil reconfigurar el
+# estado binario (la relación con el dispositivo que controlan)
+# son la implementación de la comunicación entre el Gateway
+# y el dispositivo
+switch:
+  - id: luz_oeste
+    platform: template
+    name: "Luz Ext Oeste"
+    icon: "mdi:coach-lamp"
+    #    internal: true
+    optimistic: true
+    assumed_state: true
+    turn_on_action:
+      - remote_transmitter.transmit_rc_switch_raw:
+          transmitter_id: TX433
+          code: "000000000001010100010100"
+          protocol: 1
+          repeat: 5
+    turn_off_action:
+      - remote_transmitter.transmit_rc_switch_raw:
+          transmitter_id: TX433
+          code: "000000000001010100010001"
+          protocol: 1
+          repeat: 5
+
+  - id: luz_noroeste
+    platform: template
+    name: "Luz Ext NorOeste"
+    icon: "mdi:coach-lamp"
+    #    internal: true
+    optimistic: true
+    assumed_state: true
+    turn_on_action:
+      - remote_transmitter.transmit_rc_switch_raw:
+          transmitter_id: TX433
+          code: "000000000011111100111100"
+          protocol: 1
+          repeat: 5
+    turn_off_action:
+      - remote_transmitter.transmit_rc_switch_raw:
+          transmitter_id: TX433
+          code: "000000000011111100110011"
+          protocol: 1
+          repeat: 5
+
+  - id: luz_nornoreste
+    platform: template
+    name: "Luz Ext NorNorEste"
+    icon: "mdi:coach-lamp"
+    #    internal: true
+    optimistic: true
+    assumed_state: true
+    turn_on_action:
+      - remote_transmitter.transmit_rc_switch_raw:
+          transmitter_id: TX433
+          code: "000000000110100101100100"
+          protocol: 1
+          repeat: 5
+    turn_off_action:
+      - remote_transmitter.transmit_rc_switch_raw:
+          transmitter_id: TX433
+          code: "000000000110100101010101"
+          protocol: 1
+          repeat: 5
+
+  - id: luz_noreste
+    platform: template
+    name: "Luz Ext NorEste"
+    icon: "mdi:coach-lamp"
+    #    internal: true
+    optimistic: true
+    assumed_state: true
+    turn_on_action:
+      - remote_transmitter.transmit_rc_switch_raw:
+          transmitter_id: TX433
+          code: "000000001001001110001100"
+          protocol: 1
+          repeat: 5
+    turn_off_action:
+      - remote_transmitter.transmit_rc_switch_raw:
+          transmitter_id: TX433
+          code: "000000001001001101110111"
+          protocol: 1
+          repeat: 5
+
+  - id: luz_este
+    platform: template
+    name: "Luz Ext Este"
+    icon: "mdi:coach-lamp"
+    #    internal: true
+    optimistic: true
+    assumed_state: true
+    turn_on_action:
+      - remote_transmitter.transmit_rc_switch_raw:
+          transmitter_id: TX433
+          code: "000000001110011111011100"
+          protocol: 1
+          repeat: 5
+    turn_off_action:
+      - remote_transmitter.transmit_rc_switch_raw:
+          transmitter_id: TX433
+          code: "000000001110011110111011"
+          protocol: 1
+          repeat: 5
+
+  - id: luz_sureste
+    platform: template
+    name: "Luz Ext SurEste"
+    icon: "mdi:coach-lamp"
+    #    internal: true
+    optimistic: true
+    assumed_state: true
+    turn_on_action:
+      - remote_transmitter.transmit_rc_switch_raw:
+          transmitter_id: TX433
+          code: "000000010110011001010100"
+          protocol: 1
+          repeat: 5
+    turn_off_action:
+      - remote_transmitter.transmit_rc_switch_raw:
+          transmitter_id: TX433
+          code: "000000010110011000100001"
+          protocol: 1
+          repeat: 5
+
+  - id: luz_sursureste
+    platform: template
+    name: "Luz Ext SurSurEste"
+    icon: "mdi:coach-lamp"
+    #    internal: true
+    optimistic: true
+    assumed_state: true
+    turn_on_action:
+      - remote_transmitter.transmit_rc_switch_raw:
+          transmitter_id: TX433
+          code: "000000011110010011001100"
+          protocol: 1
+          repeat: 5
+    turn_off_action:
+      - remote_transmitter.transmit_rc_switch_raw:
+          transmitter_id: TX433
+          code: "000000011110010010000111"
+          protocol: 1
+          repeat: 5
+
+  - id: luz_sursuroeste
+    platform: template
+    name: "Luz Ext SurSurOeste"
+    icon: "mdi:coach-lamp"
+    #    internal: true
+    optimistic: true
+    assumed_state: true
+    turn_on_action:
+      - remote_transmitter.transmit_rc_switch_raw:
+          transmitter_id: TX433
+          code: "000000000110100101100100"
+          protocol: 1
+          repeat: 5
+    turn_off_action:
+      - remote_transmitter.transmit_rc_switch_raw:
+          transmitter_id: TX433
+          code: "000000000110100101010101"
+          protocol: 1
+          repeat: 5
+
+  - id: luz_suroeste
+    platform: template
+    name: "Luz Ext SurOeste"
+    icon: "mdi:coach-lamp"
+    #    internal: true
+    optimistic: true
+    assumed_state: true
+    turn_on_action:
+      - remote_transmitter.transmit_rc_switch_raw:
+          transmitter_id: TX433
+          code: "000000000011000100101111"
+          protocol: 1
+          repeat: 5
+    turn_off_action:
+      - remote_transmitter.transmit_rc_switch_raw:
+          transmitter_id: TX433
+          code: "000000000011000100101000"
+          protocol: 1
+          repeat: 5
+
+  - id: luz_chiscon
+    platform: template
+    name: "Luz Chiscón"
+    icon: "mdi:ceiling-light"
+    #    internal: true
+    optimistic: true
+    assumed_state: true
+    turn_on_action:
+      - remote_transmitter.transmit_rc_switch_raw:
+          transmitter_id: TX433
+          code: "000000000010111001011111"
+          protocol: 1
+          repeat: 5
+    turn_off_action:
+      - remote_transmitter.transmit_rc_switch_raw:
+          transmitter_id: TX433
+          code: "000000000010111001011001"
+          protocol: 1
+          repeat: 5
+
+  - id: luz_cocina
+    platform: template
+    name: "Luz Cocina"
+    icon: "mdi:wall-sconce-flat"
+    #    internal: true
+    optimistic: true
+    assumed_state: true
+    turn_on_action:
+      - remote_transmitter.transmit_rc_switch_raw:
+          transmitter_id: TX433
+          code: "000000000011001100110001"
+          protocol: 1
+          repeat: 5
+    turn_off_action:
+      - remote_transmitter.transmit_rc_switch_raw:
+          transmitter_id: TX433
+          code: "000000000011001100101001"
+          protocol: 1
+          repeat: 5
+
+  - id: luz_encimera
+    platform: template
+    name: "Luz Encimera"
+    icon: "mdi:led-strip"
+    #    internal: true
+    optimistic: true
+    assumed_state: true
+    turn_on_action:
+      - remote_transmitter.transmit_rc_switch_raw:
+          transmitter_id: TX433
+          code: "000000000010110000010011"
+          protocol: 1
+          repeat: 5
+    turn_off_action:
+      - remote_transmitter.transmit_rc_switch_raw:
+          transmitter_id: TX433
+          code: "000000000010110000001100"
+          protocol: 1
+          repeat: 5
+
+  - id: luz_comedor
+    platform: template
+    name: "Luz Comedor"
+    icon: "mdi: ceiling-lamp"
+    #    internal: true
+    optimistic: true
+    assumed_state: true
+    turn_on_action:
+      - remote_transmitter.transmit_rc_switch_raw:
+          transmitter_id: TX433
+          code: "000000000000000100111101"
+          protocol: 1
+          repeat: 5
+    turn_off_action:
+      - remote_transmitter.transmit_rc_switch_raw:
+          transmitter_id: TX433
+          code: "000000000000000100111101"
+          protocol: 1
+          repeat: 5
+
+  - id: luz_salon
+    platform: template
+    name: "Luz Salón"
+    icon: "mdi:dome-light"
+    #    internal: true
+    optimistic: true
+    assumed_state: true
+    turn_on_action:
+      - remote_transmitter.transmit_rc_switch_raw:
+          transmitter_id: TX433
+          code: "000000000000001011000000"
+          protocol: 1
+          repeat: 5
+    turn_off_action:
+      - remote_transmitter.transmit_rc_switch_raw:
+          transmitter_id: TX433
+          code: "000000000000001010111111"
+          protocol: 1
+          repeat: 5
+
+  - id: luz_ventilador
+    platform: template
+    name: "Luz Ventilador"
+    icon: "mdi:ceiling-fan"
+    #    internal: true
+    optimistic: true
+    assumed_state: true
+    turn_on_action:
+      - remote_transmitter.transmit_rc_switch_raw:
+          transmitter_id: TX433
+          code: "000000000110100101100100"
+          protocol: 1
+          repeat: 5
+    turn_off_action:
+      - remote_transmitter.transmit_rc_switch_raw:
+          transmitter_id: TX433
+          code: "000000000110100101010101"
+          protocol: 1
+          repeat: 5
+
+  - id: luz_suite
+    platform: template
+    name: "Luz Suite"
+    icon: "mdi:dome-light"
+    #    internal: true
+    optimistic: true
+    assumed_state: true
+    turn_on_action:
+      - remote_transmitter.transmit_rc_switch_raw:
+          transmitter_id: TX433
+          code: "000000000100110101001001"
+          protocol: 1
+          repeat: 5
+    turn_off_action:
+      - remote_transmitter.transmit_rc_switch_raw:
+          transmitter_id: TX433
+          code: "000000000100110100111110"
+          protocol: 1
+          repeat: 5
+
+  - id: luz_bano
+    platform: template
+    name: "Luz Baño"
+    icon: "mdi:dome-light"
+    #    internal: true
+    optimistic: true
+    assumed_state: true
+    turn_on_action:
+      - remote_transmitter.transmit_rc_switch_raw:
+          transmitter_id: TX433
+          code: "000000000100011110101010"
+          protocol: 1
+          repeat: 5
+    turn_off_action:
+      - remote_transmitter.transmit_rc_switch_raw:
+          transmitter_id: TX433
+          code: "000000000100011110100000"
+          protocol: 1
+          repeat: 5
+
+  - id: luz_banosuite
+    platform: template
+    name: "Luz Baño Suite"
+    icon: "mdi:dome-light"
+    #    internal: true
+    optimistic: true
+    assumed_state: true
+    turn_on_action:
+      - remote_transmitter.transmit_rc_switch_raw:
+          transmitter_id: TX433
+          code: "000000000100010101000010"
+          protocol: 1
+          repeat: 5
+    turn_off_action:
+      - remote_transmitter.transmit_rc_switch_raw:
+          transmitter_id: TX433
+          code: "000000000100010100111000"
+          protocol: 1
+          repeat: 5
+
+  - id: luz_ambsalon
+    platform: template
+    name: "Luz Amb Salon"
+    icon: "mdi:table-lamp"
+    #    internal: true
+    optimistic: true
+    assumed_state: true
+    turn_on_action:
+      - remote_transmitter.transmit_rc_switch_raw:
+          transmitter_id: TX433
+          code: "000000000000000111101011"
+          protocol: 1
+          repeat: 5
+    turn_off_action:
+      - remote_transmitter.transmit_rc_switch_raw:
+          transmitter_id: TX433
+          code: "000000000000000111101010"
+          protocol: 1
+          repeat: 5
+
+  - id: luz_ambsalaestar
+    platform: template
+    name: "Luz Amb Sala Estar"
+    icon: "mdi:table-lamp"
+    #    internal: true
+    optimistic: true
+    assumed_state: true
+    turn_on_action:
+      - remote_transmitter.transmit_rc_switch_raw:
+          transmitter_id: TX433
+          code: "000000000000001110111000"
+          protocol: 1
+          repeat: 5
+    turn_off_action:
+      - remote_transmitter.transmit_rc_switch_raw:
+          transmitter_id: TX433
+          code: "000000000000001110111000"
+          protocol: 1
+          repeat: 5
+
+  - id: luz_ambcomedor
+    platform: template
+    name: "Luz Amb Comedor"
+    icon: "mdi:table-lamp"
+    #    internal: true
+    optimistic: true
+    assumed_state: true
+    turn_on_action:
+      - remote_transmitter.transmit_rc_switch_raw:
+          transmitter_id: TX433
+          code: "000000000000010010010101"
+          protocol: 1
+          repeat: 5
+    turn_off_action:
+      - remote_transmitter.transmit_rc_switch_raw:
+          transmitter_id: TX433
+          code: "000000000000010010010100"
+          protocol: 1
+          repeat: 5
+
+  - id: luz_sara
+    platform: template
+    name: "Luz Hab. Sara"
+    icon: "mdi:lamp"
+    #    internal: true
+    optimistic: true
+    assumed_state: true
+    turn_on_action:
+      - remote_transmitter.transmit_rc_switch_raw:
+          transmitter_id: TX433
+          code: "000000001001001110001100"
+          protocol: 1
+          repeat: 5
+    turn_off_action:
+      - remote_transmitter.transmit_rc_switch_raw:
+          transmitter_id: TX433
+          code: "000000001001001101110111"
+          protocol: 1
+          repeat: 5
+
+  - id: luz_alex
+    platform: template
+    name: "Luz Hab. Álex"
+    icon: "mdi:lamp"
+    #    internal: true
+    optimistic: true
+    assumed_state: true
+    turn_on_action:
+      - remote_transmitter.transmit_rc_switch_raw:
+          transmitter_id: TX433
+          code: "000000000111011101110001"
+          protocol: 1
+          repeat: 5
+    turn_off_action:
+      - remote_transmitter.transmit_rc_switch_raw:
+          transmitter_id: TX433
+          code: "000000000111011101100000"
+          protocol: 1
+          repeat: 5
+
+  - id: luz_ambsuiteizda
+    platform: template
+    name: "Luz Amb Suite Izda."
+    icon: "mdi:lamp"
+    #    internal: true
+    optimistic: true
+    assumed_state: true
+    turn_on_action:
+      - remote_transmitter.transmit_rc_switch_raw:
+          transmitter_id: TX433
+          code: "000000000110000011110110"
+          protocol: 1
+          repeat: 5
+    turn_off_action:
+      - remote_transmitter.transmit_rc_switch_raw:
+          transmitter_id: TX433
+          code: "000000000110000011101000"
+          protocol: 1
+          repeat: 5
+
+  - id: luz_ambsuitedcha
+    platform: template
+    name: "Luz Amb Suite Dcha."
+    icon: "mdi:lamp"
+    #    internal: true
+    optimistic: true
+    assumed_state: true
+    turn_on_action:
+      - remote_transmitter.transmit_rc_switch_raw:
+          transmitter_id: TX433
+          code: "000000000000001100000011"
+          protocol: 1
+          repeat: 5
+    turn_off_action:
+      - remote_transmitter.transmit_rc_switch_raw:
+          transmitter_id: TX433
+          code: "000000000000001100000010"
+          protocol: 1
+          repeat: 5
+
+  - id: luz_ambterraza
+    platform: template
+    name: "Luz Amb Ext"
+    icon: "mdi:table-lamp"
+    #    internal: true
+    optimistic: true
+    assumed_state: true
+    turn_on_action:
+      - remote_transmitter.transmit_rc_switch_raw:
+          transmitter_id: TX433
+          code: "000000000000010111000000"
+          protocol: 1
+          repeat: 5
+    turn_off_action:
+      - remote_transmitter.transmit_rc_switch_raw:
+          transmitter_id: TX433
+          code: "000000000000010110111111"
+          protocol: 1
+          repeat: 5
+
+  - id: ext_cocina
+    platform: template
+    name: "Extractor Cocina"
+    icon: "mdi:concourse-ci"
+    #    internal: true
+    optimistic: true
+    assumed_state: true
+    turn_on_action:
+      - remote_transmitter.transmit_rc_switch_raw:
+          transmitter_id: TX433
+          code: "000000000000011000110011"
+          protocol: 1
+          repeat: 5
+    turn_off_action:
+      - remote_transmitter.transmit_rc_switch_raw:
+          transmitter_id: TX433
+          code: "000000000000011000110010"
+          protocol: 1
+          repeat: 5
+
+  - id: ext_bano
+    platform: template
+    name: "Extractor Baño"
+    icon: "mdi:concourse-ci"
+    #    internal: true
+    optimistic: true
+    assumed_state: true
+    turn_on_action:
+      - remote_transmitter.transmit_rc_switch_raw:
+          transmitter_id: TX433
+          code: "000000000000011001101010"
+          protocol: 1
+          repeat: 5
+    turn_off_action:
+      - remote_transmitter.transmit_rc_switch_raw:
+          transmitter_id: TX433
+          code: "000000000000011001101001"
+          protocol: 1
+          repeat: 5
+
+  - id: ext_banosuite
+    platform: template
+    name: "Extractor Baño Suite"
+    icon: "mdi:concourse-ci"
+    #    internal: true
+    optimistic: true
+    assumed_state: true
+    turn_on_action:
+      - remote_transmitter.transmit_rc_switch_raw:
+          transmitter_id: TX433
+          code: "000000001110011111011100"
+          protocol: 1
+          repeat: 5
+    turn_off_action:
+      - remote_transmitter.transmit_rc_switch_raw:
+          transmitter_id: TX433
+          code: "000000001110011110111011"
+          protocol: 1
+          repeat: 5
+
+  - platform: restart
+    name: "Z - Reinicio Dispositvo"
+  - platform: shutdown
+    name: "Z - Apagado. No dar aquí"
+
+  - id: rel_ext_oeste
+    platform: template
+    name: "Rele Luz Terraza Oeste"
+    icon: "mdi:coach-lamp"
+    #    internal: true
+    optimistic: true
+    assumed_state: true
+    turn_on_action:
+      - remote_transmitter.transmit_rc_switch_raw:
+          transmitter_id: TX433
+          code: "000000000001110100010001"
+          protocol: 1
+          repeat: 5
+    turn_off_action:
+      - remote_transmitter.transmit_rc_switch_raw:
+          transmitter_id: TX433
+          code: "000000000001110100010100"
+          protocol: 1
+          repeat: 5
+
+  - id: rel_fan_bano
+    platform: template
+    name: "Rele Extractor Baño"
+    icon: "mdi:fan"
+    #    internal: true
+    optimistic: true
+    assumed_state: true
+    turn_on_action:
+      - remote_transmitter.transmit_rc_switch_raw:
+          transmitter_id: TX433
+          code: "000000000001010100010100"
+          protocol: 1
+          repeat: 5
+    turn_off_action:
+      - remote_transmitter.transmit_rc_switch_raw:
+          transmitter_id: TX433
+          code: "000000000001010100010001"
+          protocol: 1
+          repeat: 5
+
+# Los pulsadores y detectores son los que emiten
+# las señales de control
+# el delayed_off sirve para el debouncing
+binary_sensor:
+  - id: botonmandoa01
+    platform: remote_receiver
+    name: "Boton MandoA01"
+    filters:
+      - delayed_off: 250ms
+    rc_switch_raw:
+      code: "010111000101000011000000"
+    on_press:
+      then:
+        - switch.toggle: luz_oeste
+        - delay: 20s
+        - switch.turn_off: luz_oeste
+
+  - id: botonmandoa02
+    platform: remote_receiver
+    name: "Boton MandoA02"
+    filters:
+      - delayed_off: 250ms
+    rc_switch_raw:
+      code: "010111000101000000110000"
+    on_press:
+      then:
+        - switch.toggle: luz_noroeste
+        - delay: 20s
+        - switch.turn_off: luz_noroeste
+
+  - id: botonmandoa03
+    platform: remote_receiver
+    name: "Boton MandoA03"
+    filters:
+      - delayed_off: 250ms
+    rc_switch_raw:
+      code: "010111000101000000001100"
+    on_press:
+      then:
+        - switch.toggle: luz_nornoreste
+        - delay: 20s
+        - switch.turn_off: luz_nornoreste
+
+  - id: botonmandoa04
+    platform: remote_receiver
+    name: "Boton MandoA04"
+    filters:
+      - delayed_off: 250ms
+    rc_switch_raw:
+      code: "010111000101000000000011"
+    on_press:
+      then:
+        - switch.toggle: luz_noreste
+        - delay: 20s
+        - switch.turn_off: luz_noreste
+
+  - id: botonmandoa05
+    platform: remote_receiver
+    name: "Boton MandoA05"
+    filters:
+      - delayed_off: 250ms
+    rc_switch_raw:
+      code: "10111000101001100000000"
+    on_press:
+      then:
+        - switch.toggle: luz_este
+        - delay: 20s
+        - switch.turn_off: luz_este
+
+  - id: botonmandoa06
+    platform: remote_receiver
+    name: "Boton MandoA06"
+    filters:
+      - delayed_off: 250ms
+    rc_switch_raw:
+      code: "10111000101110000000000"
+    on_press:
+      then:
+        - switch.toggle: luz_sureste
+        - delay: 20s
+        - switch.turn_off: luz_sureste
+
+  - id: botonmandoa07
+    platform: remote_receiver
+    name: "Boton MandoA07"
+    filters:
+      - delayed_off: 250ms
+    rc_switch_raw:
+      code: "010111000101000011110000"
+    on_press:
+      then:
+        - switch.toggle: luz_sursureste
+        - delay: 20s
+        - switch.turn_off: luz_sursureste
+
+  - id: botonmandoa08
+    platform: remote_receiver
+    name: "Boton MandoA08"
+    filters:
+      - delayed_off: 250ms
+    rc_switch_raw:
+      code: "010111000101000000111100"
+    on_press:
+      then:
+        - switch.toggle: luz_sursuroeste
+        - delay: 20s
+        - switch.turn_off: luz_sursuroeste
+
+  - id: botonmandoa09
+    platform: remote_receiver
+    name: "Boton MandoA09"
+    filters:
+      - delayed_off: 250ms
+    rc_switch_raw:
+      code: "010111000101000000001111"
+    on_press:
+      then:
+        - switch.toggle: luz_suroeste
+        - delay: 20s
+        - switch.turn_off: luz_suroeste
+
+  - id: botonmandoa10
+    platform: remote_receiver
+    name: "Boton MandoA10"
+    filters:
+      - delayed_off: 250ms
+    rc_switch_raw:
+      code: "010111000101001100000011"
+    on_press:
+      then:
+        - switch.toggle: luz_chiscon
+        - delay: 20s
+        - switch.turn_off: luz_chiscon
+
+  - id: botonmandoa11
+    platform: remote_receiver
+    name: "Boton MandoA11"
+    filters:
+      - delayed_off: 250ms
+    rc_switch_raw:
+      code: "10111000101111100000000"
+    on_press:
+      then:
+        - switch.toggle: luz_cocina
+        - delay: 20s
+        - switch.turn_off: luz_cocina
+
+  - id: botonmandoa12
+    platform: remote_receiver
+    name: "Boton MandoA12"
+    filters:
+      - delayed_off: 250ms
+    rc_switch_raw:
+      code: "010111000101110011000000"
+    on_press:
+      then:
+        - switch.toggle: luz_encimera
+        - delay: 20s
+        - switch.turn_off: luz_encimera
+
+  - id: botonmandoa13
+    platform: remote_receiver
+    name: "Boton MandoA13"
+    filters:
+      - delayed_off: 250ms
+    rc_switch_raw:
+      code: "010111000101110000110000"
+    on_press:
+      then:
+        - switch.toggle: luz_comedor
+        - delay: 20s
+        - switch.turn_off: luz_comedor
+
+  - id: botonmandoa14
+    platform: remote_receiver
+    name: "Boton MandoA14"
+    filters:
+      - delayed_off: 250ms
+    rc_switch_raw:
+      code: "010111000101110000001100"
+    on_press:
+      then:
+        - switch.toggle: luz_salon
+        - delay: 20s
+        - switch.turn_off: luz_salon
+
+  - id: botonmandoa15
+    platform: remote_receiver
+    name: "Boton MandoA15"
+    filters:
+      - delayed_off: 250ms
+    rc_switch_raw:
+      code: "010111000101001111000000"
+    on_press:
+      then:
+        - switch.toggle: luz_ventilador
+        - delay: 20s
+        - switch.turn_off: luz_ventilador
+
+  - id: botonmandoa16
+    platform: remote_receiver
+    name: "Boton MandoA16"
+    filters:
+      - delayed_off: 250ms
+    rc_switch_raw:
+      code: "010111000101001100110000"
+    on_press:
+      then:
+        - switch.toggle: luz_suite
+        - delay: 20s
+        - switch.turn_off: luz_suite
+
+  - id: botonmandoa17
+    platform: remote_receiver
+    name: "Boton MandoA17"
+    filters:
+      - delayed_off: 250ms
+    rc_switch_raw:
+      code: "010111000101001100001100"
+    on_press:
+      then:
+        - switch.toggle: luz_bano
+        - delay: 20s
+        - switch.turn_off: luz_bano
+
+  - id: botonmandoa18
+    platform: remote_receiver
+    name: "Boton MandoA18"
+    filters:
+      - delayed_off: 250ms
+    rc_switch_raw:
+      code: "010111000101110000000011"
+    on_press:
+      then:
+        - switch.toggle: luz_banosuite
+        - delay: 20s
+        - switch.turn_off: luz_banosuite
+
+  - id: botonmandob01
+    platform: remote_receiver
+    name: "Boton MandoB01"
+    filters:
+      - delayed_off: 250ms
+    rc_switch_raw:
+      code: "010101001101000011000000"
+    on_press:
+      then:
+        - switch.toggle: luz_ambsalon
+        - delay: 20s
+        - switch.turn_off: luz_ambsalon
+
+  - id: botonmandob02
+    platform: remote_receiver
+    name: "Boton MandoB02"
+    filters:
+      - delayed_off: 250ms
+    rc_switch_raw:
+      code: "010101001101000000110000"
+    on_press:
+      then:
+        - switch.toggle: luz_ambsalaestar
+        - delay: 20s
+        - switch.turn_off: luz_ambsalaestar
+
+  - id: botonmandob03
+    platform: remote_receiver
+    name: "Boton MandoB03"
+    filters:
+      - delayed_off: 250ms
+    rc_switch_raw:
+      code: "010101001101000000001100"
+    on_press:
+      then:
+        - switch.toggle: luz_ambcomedor
+        - delay: 20s
+        - switch.turn_off: luz_ambcomedor
+
+  - id: botonmandob04
+    platform: remote_receiver
+    name: "Boton MandoB04"
+    filters:
+      - delayed_off: 250ms
+    rc_switch_raw:
+      code: "010101001101000000000011"
+    on_press:
+      then:
+        - switch.toggle: luz_sara
+        - delay: 20s
+        - switch.turn_off: luz_sara

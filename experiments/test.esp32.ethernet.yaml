@@ -26,7 +26,7 @@ ethernet:
 light:
   - platform: fastled_clockless
     name: LED
-    pin: GPIO16
+    pin: GPIO12
     num_leds: 1
     chipset: WS2812B
     rgb_order: GRB

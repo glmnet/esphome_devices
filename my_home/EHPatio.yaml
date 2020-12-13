@@ -6,8 +6,12 @@ esphome:
     - arduino_port_expander.h
 
 wifi:
-  ssid: !secret wifi_ssid
-  password: !secret wifi_pass
+  networks:
+    #ssid: !secret wifi_ssid
+    password: !secret wifi_pass
+    bssid: !secret bssid_airport_express
+
+captive_portal:
 
 ota:
 
@@ -262,7 +266,12 @@ binary_sensor:
               ape_binary_sensor(ape, 0),
               ape_binary_sensor(ape, 14 + 1),
               ape_binary_sensor(ape, 12),
-              ape_binary_sensor(ape, 11)};
+              ape_binary_sensor(ape, 11),
+              // Cortinas
+              ape_binary_sensor(ape, 2),
+              ape_binary_sensor(ape, 3),
+              ape_binary_sensor(ape, 14 + 0),
+              };
 
     binary_sensors:
       - name: "Puerta Frente"
@@ -298,6 +307,15 @@ binary_sensor:
       - name: "Switch Galeria Patio"
         filters:
           delayed_on_off: 100ms
+      - name: "Cortina Pasillo"
+        filters:
+          delayed_on_off: 100ms
+      - name: "Cortina Centro"
+        filters:
+          delayed_on_off: 100ms
+      - name: "Cortina Muro"
+        filters:
+          delayed_on_off: 100ms
 
 script:
   - id: toggle_proyectores
@@ -328,7 +346,7 @@ sensor:
 ###
 # module info:
 # Male Header:
-# DI3   |  DI4  |  DI8 | T13   |  5V
+# DI3   |  DI2  |  DI8 | T13   |  5V
 # 12V   |  NC   |  NC  | GND   |  A0
 
 # Female Header
@@ -337,3 +355,14 @@ sensor:
 # A1   |  DI11
 # DI12 |  NC
 
+# DI8 Puerta Frente
+# DI9 Puerta cocina
+# DI10 Puerta estudio
+# DI11 Switch Galeria Patio
+# DI12 Switch Galeria Proyectores
+# DI0 Movimiento Galeria
+# A1 # 15 # Switch Galeria 1
+
+# DI3 Cortina
+# DI2 Cortina
+# A0 Cortina

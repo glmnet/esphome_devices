@@ -2,4 +2,4 @@ substitutions:
   devicename: eh_dor_nor_rgb
   light_name: Dormitorio Norte RGB
 
-<<: !include EHH801_base.yaml
+<<: !include EHMagicHome_base.yaml
