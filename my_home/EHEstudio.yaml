@@ -185,7 +185,7 @@ script:
           then:
             - delay: 5 min
           else:
-            - delay: 10 min
+            - delay: 12 min
       - light.turn_off: luz_banio
 
   - id: auto_off_extractor

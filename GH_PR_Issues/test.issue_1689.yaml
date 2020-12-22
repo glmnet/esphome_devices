@@ -1,0 +1,31 @@
+esphome:
+  name: test_esp8266
+  platform: ESP8266
+  board: nodemcuv2
+  platformio_options:
+    upload_speed: 921600
+
+packages:
+  wifi: !include ../package.wifi.yaml
+
+logger:
+  level: DEBUG
+
+ota:
+
+api:
+
+output:
+  - platform: ac_dimmer
+    id: dimmer1
+    gate_pin: D6
+    method: leading
+    zero_cross_pin:
+      number: D7
+      mode: INPUT_PULLUP
+      inverted: yes
+
+light:
+  - platform: monochromatic
+    output: dimmer1
+    name: Dimmer

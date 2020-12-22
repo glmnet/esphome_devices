@@ -7,8 +7,9 @@ esphome:
 
 ota:
 
-logger:
+api:
 
+logger:
   level: VERY_VERBOSE
   logs:
     api.service: DEBUG
@@ -29,10 +30,12 @@ light:
   output: led_output
   id: led
 
-
 binary_sensor:
   - platform: gpio
     id: flash_btn
     pin: GPIO0
     on_press:
       - light.toggle: led
+
+web_server:
+  port: 82

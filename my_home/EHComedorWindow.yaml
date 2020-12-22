@@ -20,15 +20,17 @@ globals:
     type: float
 
 servo:
-  - output: 'ob_t'
+  - output: "ob_t"
     id: ob_tilt
     restore: true
     min_level: 3%
     max_level: 12%
+    run_duration: 3s
+    keep_on_time: 2s
 
 output:
   - platform: esp8266_pwm ## this is for the servo
-    id: 'ob_t'
+    id: "ob_t"
     pin: D0
     frequency: 50 Hz
 
@@ -41,17 +43,7 @@ cover:
       - lambda: |-
           id(ob_tilt).write((1 - tilt) * 2 - 1);
           id(tilt_pos) = tilt;
-      - delay: 2s
-      - servo.detach: ob_tilt
 
 binary_sensor:
   - platform: status
     name: "Comedor Ventana Status"
-
-interval:
-  - interval: 10s
-    then:
-      # keep active non off known state
-      - lambda: |-
-          static int number = 12;
-          ESP_LOGD("main", "mode: %d", number++);

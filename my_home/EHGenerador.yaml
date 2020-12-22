@@ -1,0 +1,55 @@
+# This node controls remote startup and shutdown of a gasoline electricity generator
+
+esphome:
+  name: eh_generador
+  platform: ESP32
+  board: esp32doit-devkit-v1
+
+wifi:
+  ssid: !secret wifi_ssid
+  password: !secret wifi_pass
+
+api:
+
+ota:
+
+logger:
+  level: VERBOSE
+
+output:
+  - platform: gpio
+    id: starter_coil
+    pin: GPIO16
+  - platform: ledc
+    frequency: 50 Hz
+    id: choke_valve_output
+    pin: GPIO17
+
+servo:
+  id: choke_valve
+  output: choke_valve_output
+
+sensor:
+  - platform: pulse_counter
+    id: pc
+    pin: GPIO4
+
+globals:
+  - id: state
+    type: int
+    initial_value: "0"
+
+script:
+  - id: open_choke
+    then:
+      servo.write:
+        id: choke_valve
+        level: 10%
+
+  - id: start
+    then:
+      logger.log: "Starting generator..."
+
+  - id: stop
+    then:
+      logger.log: "Stopping generator..."
