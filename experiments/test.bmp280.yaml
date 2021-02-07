@@ -51,3 +51,6 @@ sensor:
   - platform: dallas
     index: 0
     name: dallas_temperature
+
+
+

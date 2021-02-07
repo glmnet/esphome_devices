@@ -4,21 +4,24 @@ esphome:
   platform: ESP8266
   board: nodemcu
 
+
+
 wifi:
-  networks:
-    #ssid: !secret wifi_ssid
-    password: !secret wifi_pass
-    bssid: !secret bssid_airport_express
+  ssid: !secret wifi_ssid
+  password: !secret wifi_pass
+    #bssid: !secret bssid_airport_express
 
 captive_portal:
 
 api:
+
 
 ota:
 
 logger:
   level: DEBUG
   baud_rate: 0 # use UART pins for IO
+
 
 output:
   - platform: gpio

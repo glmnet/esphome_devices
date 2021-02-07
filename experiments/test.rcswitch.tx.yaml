@@ -12,12 +12,14 @@ wifi:
   ssid: !secret wifi_ssid
   password: !secret wifi_pass
   fast_connect: true
-#   manual_ip:
-#     static_ip: 10.0.1.199
-#     gateway: 10.0.1.1
-#     subnet: 255.0.0.0
 
 api:
+  id: null
+  port: 32
+  password: alkjsfds
+  reboot_timeout: 2s
+
+
 
 # ota:
 
@@ -25,8 +27,7 @@ remote_transmitter:
   pin: D7
   # RF uses a 100% carrier signal
   carrier_duty_percent: 100%
-
-
+  setup_priority: 32.3
 
 
 switch:

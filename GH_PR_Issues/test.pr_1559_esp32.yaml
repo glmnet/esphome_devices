@@ -1,0 +1,71 @@
+esphome:
+  name: test_esp32
+  platform: ESP32
+  board: esp-wrover-kit
+  platformio_options:
+    upload_speed: 921600
+
+  on_boot:
+    logger.log: "hello"
+
+http_request:
+  useragent: esphome/device
+  timeout: 10s
+
+packages:
+  wifi: !include ../package.wifi.yaml
+
+logger:
+  level: VERBOSE
+
+api:
+
+ota:
+
+interval:
+  - interval: 100s
+    then:
+      - http_request.get:
+          url: https://esphome.io
+          headers:
+            Content-Type: application/json
+          verify_ssl: false
+
+mqtt:
+  broker: "192.168.178.84"
+  port: 1883
+  username: "debug"
+  password: "debug"
+  client_id: someclient
+  discovery: True
+  discovery_retain: False
+  discovery_prefix: discovery
+  topic_prefix: helloworld
+  log_topic:
+    topic: helloworld/hi
+    level: INFO
+  birth_message:
+  will_message:
+  shutdown_message:
+    topic: topic/to/send/to
+    payload: hi
+    qos: 2
+    retain: True
+  keepalive: 60s
+  reboot_timeout: 60s
+  on_message:
+    - topic: my/custom/topic
+      qos: 0
+      then:
+        - lambda: >-
+            ESP_LOGD("main", "Got message %s", x.c_str());
+  on_json_message:
+    topic: the/topic
+    then:
+      - if:
+          condition:
+            - wifi.connected:
+            - mqtt.connected:
+          then:
+            - lambda: >-
+                ESP_LOGD("main", "Got message lala");

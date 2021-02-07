@@ -1,0 +1,32 @@
+esphome:
+  name: test_esp8266
+  platform: ESP8266
+  board: nodemcu
+  platformio_options:
+    upload_speed: 921600
+
+  on_boot:
+    logger.log: "hello"
+
+http_request:
+  useragent: esphome/device
+  timeout: 10s
+
+packages:
+  wifi: !include ../package.wifi.yaml
+
+logger:
+  level: VERBOSE
+
+api:
+
+ota:
+
+interval:
+  - interval: 100s
+    then:
+      - http_request.get:
+          url: https://esphome.io
+          headers:
+            Content-Type: application/json
+          verify_ssl: false

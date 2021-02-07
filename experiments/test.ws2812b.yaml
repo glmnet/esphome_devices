@@ -15,7 +15,6 @@ wifi:
 logger:
   level: VERY_VERBOSE
 
-
 # Example configuration entry
 api:
   services:
@@ -27,7 +26,7 @@ api:
         - light.addressable_set:
             id: led
             range_from: 0
-            range_to: !lambda 'return num_leds;'
+            range_to: !lambda "return num_leds;"
             red: 100%
             green: 50%
             blue: 0%
@@ -40,6 +39,11 @@ light:
     rgb_order: GRB
     name: "BeoLamp14"
     id: led
+    on_turn_on:
+      - ds1307.write:
+          id: x
+      - ds1307.read: x
+
     effects:
       - random:
       - random:
@@ -47,6 +51,12 @@ light:
           transition_length: 5s
           update_interval: 7s
       - addressable_rainbow:
-         name: Rainbow Effect With Custom Values
-         speed: 10
-         width: 50
+          name: Rainbow Effect With Custom Values
+          speed: 10
+          width: 50
+
+i2c:
+
+time:
+  - platform: ds1307
+    id: x

@@ -9,7 +9,7 @@ esphome:
 wifi:
   ssid: !secret wifi_ssid
   password: !secret wifi_pass
-  
+
 api:
 
 ota:
@@ -27,12 +27,12 @@ custom_component:
       return {ape_component};
 
 output:
-- platform: custom
-  type: binary
-  lambda: |-
-    return {ape_binary_output(ape, 4)};
-  outputs:
-    - id: gpio_relay_1
+  - platform: custom
+    type: binary
+    lambda: |-
+      return {ape_binary_output(ape, 4)};
+    outputs:
+      - id: gpio_relay_1
 
 switch:
   - platform: output
@@ -57,6 +57,8 @@ binary_sensor:
     binary_sensors:
       - name: Porton
         device_class: garage_door
+        filters:
+          delayed_on_off: 2s
       - name: Movimiento garage
         device_class: motion
       - name: Barrera porton garage
@@ -67,7 +69,8 @@ binary_sensor:
           - invert:
       - name: Porton Manual
         device_class: garage_door
-
+        filters:
+          delayed_on_off: 2s
 # Ribbon:
 # Black: VCC 3.3V
 # White: GND 0V

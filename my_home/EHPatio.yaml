@@ -309,13 +309,13 @@ binary_sensor:
           delayed_on_off: 100ms
       - name: "Cortina Pasillo"
         filters:
-          delayed_on_off: 100ms
+          delayed_on_off: 2s
       - name: "Cortina Centro"
         filters:
-          delayed_on_off: 100ms
+          delayed_on_off: 2s
       - name: "Cortina Muro"
         filters:
-          delayed_on_off: 100ms
+          delayed_on_off: 2s
 
 script:
   - id: toggle_proyectores

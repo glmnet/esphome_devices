@@ -1,0 +1,30 @@
+esphome:
+  name: test_esp8266
+  platform: ESP8266
+  board: nodemcu
+  platformio_options:
+    upload_speed: 921600
+
+packages:
+  wifi: !include ../package.wifi.yaml
+
+logger:
+  level: VERBOSE
+
+api:
+
+ota:
+
+i2c:
+
+output:
+  - platform: mcp4725
+    id: dac_output
+    address: 0x61
+
+light:
+  - platform: monochromatic
+    name: mono_light
+    output: dac_output
+
+

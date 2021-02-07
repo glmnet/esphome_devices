@@ -4,52 +4,285 @@ esphome:
   name: eh_generador
   platform: ESP32
   board: esp32doit-devkit-v1
+  platformio_options:
+    upload_speed: 921600
+  on_loop:
+    - if:
+        condition:
+          lambda: |-
+            return id(log_counter) > 0 ? id(log_counter)-- : 0;
+        then:
+          - lambda: "id(v_batt).update();"
+          - logger.log:
+              level: info
+              format: "%d v_batt: %.3f"
+              args: [id(log_counter), id(v_batt).state]
+
+
+
+substitutions:
+  device_name: Generador
+
+globals:
+  - id: log_counter
+    type: int
+    restore_value: no
+    initial_value: "0"
 
 wifi:
   ssid: !secret wifi_ssid
   password: !secret wifi_pass
 
 api:
+  services:
+    - service: turn_on
+      then:
+        - script.execute: turn_on
+    - service: turn_off
+      then:
+        - script.execute: turn_off
+    - service: dump_batt_voltage
+      then:
+        - globals.set:
+            id: log_counter
+            value: "300"
+    - service: set_servo
+
+      variables:
+        servo_percent: int
+      then:
+        servo.write:
+          id: choke_valve
+          level: !lambda "return servo_percent / 100.0;"
 
 ota:
 
+dallas:
+  pin: GPIO22
+
 logger:
-  level: VERBOSE
+  baud_rate: 0
+  level: DEBUG
 
 output:
   - platform: gpio
+    id: carburator_fuel_valve
+    pin: GPIO4 # relay 1
+    inverted: true
+  - platform: gpio
+    id: ignition_ground
+    pin: GPIO0 # relay 2
+    inverted: true
+  - platform: gpio
     id: starter_coil
-    pin: GPIO16
+    pin: # GPIO2 # relay 3
+      number: GPIO2
+    inverted: true
+
+  - platform: gpio
+    id: battery_charger
+    pin: GPIO15 # relay 4
+    inverted: true
+
   - platform: ledc
     frequency: 50 Hz
     id: choke_valve_output
-    pin: GPIO17
+    pin: GPIO23
 
 servo:
   id: choke_valve
   output: choke_valve_output
+  transition_length: 2s
+  auto_detach_time: 1s
+
+uart:
+  baud_rate: 9600
+  tx_pin: GPIO19
+  rx_pin: GPIO21
 
 sensor:
+  - platform: dallas
+    index: 0
+    name: ${device_name} Temperatura Motor
+
+  - platform: pzemac
+    current:
+      name: ${device_name} Corriente
+    voltage:
+      name: ${device_name} Voltage
+    frequency:
+      name: ${device_name} Frecuencia
+    energy:
+      name: ${device_name} Energía
+    power_factor:
+      name: ${device_name} Factor de potencia
+    update_interval: 5s
+
   - platform: pulse_counter
     id: pc
-    pin: GPIO4
+    pin: GPIO16
+  - platform: adc
+    pin: GPIO39
+    id: v_fuente
+    unit_of_measurement: Volt
+    name: ${device_name} Voltage Fuente
+    update_interval: 30s
+    filters:
+      # 33k / 1k5  -> (33k + 1k5) / 1k5 = 23
+      - multiply: 23.0
+  - platform: adc
+    pin: GPIO36
+    id: v_batt
+    unit_of_measurement: Volt
+    name: ${device_name} Voltage Bateria
+    update_interval: 30s
+    filters:
+      # 33k / 1k5  -> (33k + 1k5) / 1k5 = 23
+      - multiply: 23.0
+  - platform: pulse_counter
+    pin: GPIO34
+    name: ${device_name} Motor RPM
+    id: engine_rpm_instant
+    update_interval: 300ms
+    unit_of_measurement: RPM
+    filters:
+      # we have two pulses per second, so divide by 2
+      multiply: 0.5
 
-globals:
-  - id: state
-    type: int
-    initial_value: "0"
+  # # there is a pin connected to the spark plug ignition coil open terminal
+  # # (used to stop the engine by grounding it)
+  # # there is a voltage divider and diode so signal is actually two very smalls
+  # # peaks for every spark
+  # # we measure the space between sparks
+  # - platform: pulse_meter
+  #   pin:
+  #     number: GPIO34
+  #     inverted: true
+  #   id: engine_rpm
+  #   name: Generador Motor RPM
+  #   internal_filter: 20ms
+  #   unit_of_measurement: RPM
+  #   timeout: 5s
+  #   filters:
+  #     # we have two pulses per second, so divide by 2
+  #     multiply: 0.5
+  #   on_value:
+  #     then:
+  #       - logger.log:
+  #           level: info
+  #           format: "got %.2f"
+  #           args: [x]
+
+switch:
+  - platform: output
+    output: battery_charger
+    id: battery_charger_switch
+    name: ${device_name} Cargador Bateria
+
+#   - platform: output
+#     output: ignition_ground
+#     name: Ignition Ground
+#   - platform: output
+#     output: carburator_fuel_valve
+#     name: Carburator Fuel Valve
+#   - platform: output
+#     output: aux_relay
+#     name: Aux Relay
+
+debug:
 
 script:
   - id: open_choke
     then:
       servo.write:
         id: choke_valve
-        level: 10%
-
-  - id: start
+        level: 30%
+  - id: close_choke
     then:
-      logger.log: "Starting generator..."
+      servo.write:
+        id: choke_valve
+        level: -85%
 
-  - id: stop
+  - id: starter_max_time
+    mode: single
     then:
-      logger.log: "Stopping generator..."
+      - delay: 5s
+      - logger.log:
+          format: "Tiempo arranque agotado"
+          level: info
+
+
+  - id: turn_on
+    then:
+      - logger.log:
+          format: "Arrancando generador..."
+          level: info
+      - output.turn_off: ignition_ground
+      - output.turn_off: carburator_fuel_valve
+      - switch.turn_off: battery_charger_switch
+      - script.execute: close_choke
+      - delay: 3s
+      - logger.log:
+          format: "Comando arranque..."
+          level: info
+
+      - delay: 1s
+      - script.execute: starter_max_time
+      - output.turn_on: starter_coil
+      - wait_until:
+          or:
+            - not:
+                script.is_running: starter_max_time
+            - sensor.in_range:
+                id: engine_rpm_instant
+                above: 2000
+
+      - output.turn_off: starter_coil
+
+      # check if timed out
+      - if:
+          condition:
+            not:
+              script.is_running: starter_max_time
+          then:
+            - script.execute: open_choke
+            - logger.log:
+                level: INFO
+                format: "Generador no arranco"
+            - script.stop: turn_on
+
+      - delay: 500ms
+      - script.execute: open_choke
+
+      - logger.log:
+          level: INFO
+          format: "Generador arranque normal completo"
+
+  - id: turn_off
+    then:
+      - logger.log: "Stopping generator..."
+      - output.turn_on: carburator_fuel_valve
+      - delay: 1s
+      - output.turn_on: ignition_ground
+      - delay: 10s
+      - output.turn_off: carburator_fuel_valve
+      - output.turn_off: ignition_ground
+      - binary_sensor.template.publish:
+          id: generador_on
+          state: OFF
+
+binary_sensor:
+  - platform: template
+    id: generador_on
+    name: ${device_name} Encendido
+    lambda: !lambda return id(engine_rpm_instant).state > 2700;
+  - platform: gpio
+    pin: GPIO35
+    id: start_switch
+    on_press:
+      - logger.log:
+          level: info
+          format: "start switch"
+      - globals.set:
+          id: log_counter
+          value: "300"

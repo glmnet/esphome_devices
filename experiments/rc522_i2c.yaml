@@ -1,0 +1,68 @@
+esphome:
+  name: test_esp8266
+  platform: ESP8266
+  board: nodemcuv2
+  platformio_options:
+    upload_speed: 921600
+
+  # If buzzer is enabled, notify on api connection success
+  on_boot:
+    priority: -10
+    then:
+      - wait_until:
+          api.connected:
+      - logger.log: API is connected!
+      - rtttl.play: "success:d=24,o=5,b=100:c,g,b"
+
+output:
+  - platform: esp8266_pwm
+    pin: D0
+    id: buzzer
+
+# Define buzzer as output for RTTTL
+rtttl:
+  output: buzzer
+
+wifi:
+  ssid: !secret wifi_ssid
+  password: !secret wifi_pass
+
+# Enable logging
+logger:
+  level: DEBUG
+
+# Enable OTA updates
+ota:
+
+# spi:
+#   clk_pin: D5
+#   miso_pin: D6
+#   mosi_pin: D7
+
+api:
+
+i2c:
+  scan: true
+
+rc522_i2c:
+  address: 0x28
+  reset_pin: D3
+  on_tag:
+    then:
+      - homeassistant.tag_scanned: !lambda "return x;"
+      - rtttl.play: "success:d=24,o=5,b=100:c,g,b"
+
+binary_sensor:
+  # - platform: rc522
+  #   uid: 84-52-FB-01
+  #   id: x
+  #   on_press:
+  #     - rtttl.play: "scale_up:d=32,o=5,b=100:c,c#,d#,e,f#,g#,a#,b"
+
+  #   on_release:
+  #     - rtttl.play: "scale_down:d=32,o=5,b=100:b,a#,g#,f#,e,d#,c#,c"
+  - platform: rc522
+    uid: CA-BE-41-CE
+    id: y
+    on_press:
+      - rtttl.play: "MissionImp:d=16,o=6,b=95:32d,32d#,32d,32d#,32d,32d#,32d,32d#,32d,32d,32d#,32e,32f,32f#,32g,g,8p,g,8p,a#,p,c7,p,g,8p,g,8p,f,p,f#,p,g,8p,g,8p,a#,p,c7,p,g,8p,g,8p,f,p,f#,p,a#,g,2d,32p,a#,g,2c#,32p,a#,g,2c,a#5,8c,2p,32p,a#5,g5,2f#,32p,a#5,g5,2f,32p,a#5,g5,2e,d#,8d"

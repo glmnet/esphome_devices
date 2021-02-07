@@ -1,0 +1,62 @@
+# watever
+esphome:
+  name: ds
+  platform: ESP8266
+  board: nodemcu
+
+  platformio_options:
+    upload_speed: 921600
+
+  esp8266_restore_from_flash: false
+
+  on_boot:
+    priority: 3
+    then:
+      logger.log: lele
+
+  on_loop:
+    delay: 3s
+
+  on_shutdown:
+    - delay: 3s
+    - delay: 33s
+
+sensor:
+  - platform: dht
+    id: fds
+    pin: GPIO4
+
+
+interval:
+  - interval: 4s
+    then:
+      delay: 4s
+  - interval: 3s
+    then:
+      delay: 22s
+
+remote_receiver:
+  pin: GPIO3
+
+binary_sensor:
+  - platform: remote_receiver
+    id: lele
+    raw:
+      code: [3,-4,5]
+
+output:
+  - platform: esp8266_pwm
+    id: pwm_buzzer
+    pin: GPIO2
+
+
+
+rtttl:
+  - id: llo
+    output: pwm_buzzer
+  - id: llo2
+    output: pwm_buzzer
+  - id: llo3
+    output: pwm_buzzer
+  - id: llo4
+    output: pwm_buzzer

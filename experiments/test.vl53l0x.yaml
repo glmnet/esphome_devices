@@ -26,4 +26,4 @@ i2c:
 sensor:
   - platform: vl53l0x
     name: "VL53L0x Distance"
-    update_interval: 10s
+    update_interval: 2s
