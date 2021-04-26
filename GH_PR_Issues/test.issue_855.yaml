@@ -1,0 +1,410 @@
+substitutions:
+  # Change the disp_name to something you want
+  disp_name: south_panel
+  # Interval of how often the power is updated
+  update_time: 6s
+  # 30A/1V SCT-013-030: 8650
+  # 50A/1V SCT-013-050: 15420
+  # 100A/50ma SCT-013-000: 32498
+  current_cal: "36000"
+  #9VAC Transformer for versions > meter v1.2
+  voltage_cal: "7305"
+
+esphome:
+  name: test-esp32
+  platform: ESP32
+  board: nodemcu-32s
+  platformio_options:
+    upload_speed: 921600
+
+wifi:
+  ssid: lala123
+  password: "wifi_password"
+
+# Enable logging
+logger:
+
+# Enable Home Assistant API
+api:
+
+ota:
+
+spi:
+  clk_pin: 18
+  miso_pin: 19
+  mosi_pin: 23
+sensor:
+  #IC1 Main
+  - platform: atm90e32
+    cs_pin: 5
+    phase_a:
+      voltage:
+        name: ${disp_name} Volts A Main2
+        accuracy_decimals: 1
+      current:
+        name: ${disp_name} CT1 Amps2
+      power:
+        name: ${disp_name} CT1 Watts2
+      gain_voltage: ${voltage_cal}
+      gain_ct: ${current_cal}
+    phase_b:
+      current:
+        name: ${disp_name} CT2 Amps2
+      power:
+        name: ${disp_name} CT2 Watts2
+      gain_voltage: ${voltage_cal}
+      gain_ct: ${current_cal}
+    phase_c:
+      current:
+        name: ${disp_name} CT3 Amps2
+      power:
+        name: ${disp_name} CT3 Watts2
+      gain_voltage: ${voltage_cal}
+      gain_ct: ${current_cal}
+    frequency:
+      name: ${disp_name} Freq A Main2
+    line_frequency: 60Hz
+    gain_pga: 1X
+    update_interval: ${update_time}
+  #IC2 Main
+  - platform: atm90e32
+    cs_pin: 5
+    phase_a:
+      voltage:
+        name: ${disp_name} Volts A Main2
+        accuracy_decimals: 1
+      current:
+        name: ${disp_name} CT1 Amps2
+      power:
+        name: ${disp_name} CT1 Watts2
+      gain_voltage: ${voltage_cal}
+      gain_ct: ${current_cal}
+    phase_b:
+      current:
+        name: ${disp_name} CT2 Amps2
+      power:
+        name: ${disp_name} CT2 Watts2
+      gain_voltage: ${voltage_cal}
+      gain_ct: ${current_cal}
+    phase_c:
+      current:
+        name: ${disp_name} CT3 Amps2
+      power:
+        name: ${disp_name} CT3 Watts2
+      gain_voltage: ${voltage_cal}
+      gain_ct: ${current_cal}
+    frequency:
+      name: ${disp_name} Freq A Main2
+    line_frequency: 60Hz
+    gain_pga: 1X
+    update_interval: ${update_time}
+  #IC2 Main
+  - platform: atm90e32
+    cs_pin: 4
+    phase_a:
+      current:
+        name: ${disp_name} CT4 Amps
+      power:
+        name: ${disp_name} CT4 Watts
+      gain_voltage: ${voltage_cal}
+      gain_ct: ${current_cal}
+    phase_b:
+      current:
+        name: ${disp_name} CT5 Amps
+      power:
+        name: ${disp_name} CT5 Watts
+      gain_voltage: ${voltage_cal}
+      gain_ct: ${current_cal}
+    phase_c:
+      current:
+        name: ${disp_name} CT6 Amps
+      power:
+        name: ${disp_name} CT6 Watts
+      gain_voltage: ${voltage_cal}
+      gain_ct: ${current_cal}
+    line_frequency: 60Hz
+    gain_pga: 1X
+    update_interval: ${update_time}
+  #IC1 AddOn 1
+  - platform: atm90e32
+    cs_pin: 0
+    phase_a:
+      current:
+        name: ${disp_name} CT7 Amps
+      power:
+        name: ${disp_name} CT7 Watts
+      gain_voltage: ${voltage_cal}
+      gain_ct: ${current_cal}
+    phase_b:
+      current:
+        name: ${disp_name} CT8 Amps
+      power:
+        name: ${disp_name} CT8 Watts
+      gain_voltage: ${voltage_cal}
+      gain_ct: ${current_cal}
+    phase_c:
+      current:
+        name: ${disp_name} CT9 Amps
+      power:
+        name: ${disp_name} CT9 Watts
+        id: ct9Watts
+      gain_voltage: ${voltage_cal}
+      gain_ct: ${current_cal}
+    line_frequency: 60Hz
+    gain_pga: 1X
+    update_interval: ${update_time}
+  #IC2 AddOn 1
+  - platform: atm90e32
+    cs_pin: 16
+    phase_a:
+      current:
+        name: ${disp_name} CT10 Amps
+      power:
+        name: ${disp_name} CT10 Watts
+      gain_voltage: ${voltage_cal}
+      gain_ct: ${current_cal}
+    phase_b:
+      current:
+        name: ${disp_name} CT11 Amps
+      power:
+        name: ${disp_name} CT11 Watts
+      gain_voltage: ${voltage_cal}
+      gain_ct: ${current_cal}
+    phase_c:
+      current:
+        name: ${disp_name} CT12 Amps
+      power:
+        name: ${disp_name} CT12 Watts
+      gain_voltage: ${voltage_cal}
+      gain_ct: ${current_cal}
+    line_frequency: 60Hz
+    gain_pga: 1X
+    update_interval: ${update_time}
+  #IC1 AddOn 2
+  - platform: atm90e32
+    cs_pin: 2
+    phase_a:
+      current:
+        name: ${disp_name} CT13 Amps
+        id: ct13Amps
+      power:
+        name: ${disp_name} CT13 Watts
+        id: ct13Watts
+      gain_voltage: ${voltage_cal}
+      gain_ct: ${current_cal}
+    phase_b:
+      current:
+        name: ${disp_name} CT14 Amps
+        id: ct14Amps
+      power:
+        name: ${disp_name} CT14 Watts
+        id: ct14Watts
+      gain_voltage: ${voltage_cal}
+      gain_ct: ${current_cal}
+    phase_c:
+      current:
+        name: ${disp_name} CT15 Amps
+        id: ct15Amps
+      power:
+        name: ${disp_name} CT15 Watts
+        id: ct15Watts
+      gain_voltage: ${voltage_cal}
+      gain_ct: ${current_cal}
+    line_frequency: 60Hz
+    gain_pga: 1X
+    update_interval: ${update_time}
+  #IC2 AddOn 2
+  - platform: atm90e32
+    cs_pin: 17
+    phase_a:
+      current:
+        name: ${disp_name} CT16 Amps
+      power:
+        name: ${disp_name} CT16 Watts
+      gain_voltage: ${voltage_cal}
+      gain_ct: ${current_cal}
+    phase_b:
+      current:
+        name: ${disp_name} CT17 Amps
+      power:
+        name: ${disp_name} CT17 Watts
+      gain_voltage: ${voltage_cal}
+      gain_ct: ${current_cal}
+    phase_c:
+      current:
+        name: ${disp_name} CT18 Amps
+      power:
+        name: ${disp_name} CT18 Watts
+        id: ct18Watts
+      gain_voltage: ${voltage_cal}
+      gain_ct: ${current_cal}
+    line_frequency: 60Hz
+    gain_pga: 1X
+    update_interval: ${update_time}
+  #IC1 AddOn 3
+  - platform: atm90e32
+    cs_pin: 13
+    phase_a:
+      current:
+        name: ${disp_name} CT19 Amps
+      power:
+        name: ${disp_name} CT19 Watts
+      gain_voltage: ${voltage_cal}
+      gain_ct: ${current_cal}
+    phase_b:
+      current:
+        name: ${disp_name} CT20 Amps
+      power:
+        name: ${disp_name} CT20 Watts
+      gain_voltage: ${voltage_cal}
+      gain_ct: ${current_cal}
+    phase_c:
+      current:
+        name: ${disp_name} CT21 Amps
+      power:
+        name: ${disp_name} CT21 Watts
+      gain_voltage: ${voltage_cal}
+      gain_ct: ${current_cal}
+    line_frequency: 60Hz
+    gain_pga: 1X
+    update_interval: ${update_time}
+  #IC2 AddOn 3
+  - platform: atm90e32
+    cs_pin: 22
+    phase_a:
+      current:
+        name: ${disp_name} CT22 Amps
+      power:
+        name: ${disp_name} CT22 Watts
+      gain_voltage: ${voltage_cal}
+      gain_ct: ${current_cal}
+    phase_b:
+      current:
+        name: ${disp_name} CT23 Amps
+      power:
+        name: ${disp_name} CT23 Watts
+      gain_voltage: ${voltage_cal}
+      gain_ct: ${current_cal}
+    phase_c:
+      current:
+        name: ${disp_name} CT24 Amps
+      power:
+        name: ${disp_name} CT24 Watts
+      gain_voltage: ${voltage_cal}
+      gain_ct: ${current_cal}
+    line_frequency: 60Hz
+    gain_pga: 1X
+    update_interval: ${update_time}
+  #IC1 AddOn 4
+  - platform: atm90e32
+    cs_pin: 14
+    phase_a:
+      current:
+        name: ${disp_name} CT25 Amps
+      power:
+        name: ${disp_name} CT25 Watts
+      gain_voltage: ${voltage_cal}
+      gain_ct: ${current_cal}
+    phase_b:
+      current:
+        name: ${disp_name} CT26 Amps
+      power:
+        name: ${disp_name} CT26 Watts
+      gain_voltage: ${voltage_cal}
+      gain_ct: ${current_cal}
+    phase_c:
+      current:
+        name: ${disp_name} CT27 Amps
+      power:
+        name: ${disp_name} CT27 Watts
+      gain_voltage: ${voltage_cal}
+      gain_ct: ${current_cal}
+    line_frequency: 60Hz
+    gain_pga: 1X
+    update_interval: ${update_time}
+  #IC2 AddOn 4
+  - platform: atm90e32
+    cs_pin: 25
+    phase_a:
+      current:
+        name: ${disp_name} CT28 Amps
+      power:
+        name: ${disp_name} CT28 Watts
+      gain_voltage: ${voltage_cal}
+      gain_ct: ${current_cal}
+    phase_b:
+      current:
+        name: ${disp_name} CT29 Amps
+      power:
+        name: ${disp_name} CT29 Watts
+      gain_voltage: ${voltage_cal}
+      gain_ct: ${current_cal}
+    phase_c:
+      current:
+        name: ${disp_name} CT30 Amps
+        id: ct30Amps
+      power:
+        name: ${disp_name} CT30 Watts
+        id: ct30Watts
+      gain_voltage: ${voltage_cal}
+      gain_ct: ${current_cal}
+    line_frequency: 60Hz
+    gain_pga: 1X
+    update_interval: ${update_time}
+  #IC1 AddOn 5
+  - platform: atm90e32
+    cs_pin: 15
+    phase_a:
+      current:
+        name: ${disp_name} CT31 Amps
+      power:
+        name: ${disp_name} CT31 Watts
+      gain_voltage: ${voltage_cal}
+      gain_ct: ${current_cal}
+    phase_b:
+      current:
+        name: ${disp_name} CT32 Amps
+      power:
+        name: ${disp_name} CT32 Watts
+      gain_voltage: ${voltage_cal}
+      gain_ct: ${current_cal}
+    phase_c:
+      current:
+        name: ${disp_name} CT33 Amps
+      power:
+        name: ${disp_name} CT33 Watts
+      gain_voltage: ${voltage_cal}
+      gain_ct: ${current_cal}
+    line_frequency: 60Hz
+    gain_pga: 1X
+    update_interval: ${update_time}
+  #IC2 AddOn 5
+  - platform: atm90e32
+    cs_pin: 26
+    phase_a:
+      current:
+        name: ${disp_name} CT34 Amps
+      power:
+        name: ${disp_name} CT34 Watts
+      gain_voltage: ${voltage_cal}
+      gain_ct: ${current_cal}
+    phase_b:
+      current:
+        name: ${disp_name} CT35 Amps
+      power:
+        name: ${disp_name} CT35 Watts
+      gain_voltage: ${voltage_cal}
+      gain_ct: ${current_cal}
+    phase_c:
+      current:
+        name: ${disp_name} CT36 Amps
+      power:
+        name: ${disp_name} CT36 Watts
+      gain_voltage: ${voltage_cal}
+      gain_ct: ${current_cal}
+    line_frequency: 60Hz
+    gain_pga: 1X
+    update_interval: ${update_time}
+time:
+  - platform: sntp
+    id: sntp_time

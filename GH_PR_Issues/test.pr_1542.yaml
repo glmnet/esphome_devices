@@ -1,0 +1,122 @@
+esphome:
+  name: test-esp32
+  platform: ESP32
+  board: nodemcu-32s
+  platformio_options:
+    upload_speed: 921600
+
+api:
+  services:
+    - service: lala
+      variables:
+        name: string
+      then:
+        logger.log:
+          format: "lala service called! %s"
+          args: [name.c_str()]
+
+wifi:
+  ssid: !secret wifi_ssid
+  password: !secret wifi_pass
+  fast_connect: true
+
+logger:
+  level: DEBUG
+
+ota:
+
+font:
+  - file: "Roboto-Regular.ttf"
+    id: my_font
+    size: 16
+
+################################################################################
+
+sensor:
+  - platform: wifi_signal
+    id: wifi_sgnl
+    name: "WiFi Signal Sensor"
+    update_interval: 5s
+    accuracy_decimals: 0
+    filters:
+      - sliding_window_moving_average:
+          window_size: 60
+          send_every: 60
+          send_first_at: 2
+
+globals:
+  - id: touch_x
+    type: int
+  - id: touch_y
+    type: int
+
+  - id: touch_on
+    type: boolean
+
+xpt2046:
+  cs_pin: GPIO12
+  on_state:
+    - lambda: |-
+        id (touch_on) = touched;
+        id(touch_x) = x;
+        id(touch_y) = y;
+    - component.update: display_x
+
+  update_interval: 50ms
+  report_interval: 500ms
+  dimension_x: 240
+  dimension_y: 320
+  calibration_x_max: 280
+  calibration_x_min: 3860
+  calibration_y_max: 340
+  calibration_y_min: 3860
+
+spi:
+  clk_pin: GPIO25
+  mosi_pin: GPIO26
+  miso_pin: GPIO32
+
+image:
+  - id: esphome_logo
+    file: logo.png
+    resize: 240x42
+    type: binary
+
+color:
+  - id: BLACK
+  - id: WHITE
+    red: 100%
+    green: 100%
+    blue: 100%
+  - id: RED
+    red: 100%
+
+binary_sensor:
+  - platform: xpt2046
+    x_max: 240
+    x_min: 0
+    y_min: 0
+    y_max: 42
+    id: esphome_logo_touch
+    on_state:
+      - component.update: display_x
+
+display:
+  - platform: ili9341
+    lambda: |-
+      it.fill(BLACK);
+      if (id(esphome_logo_touch).state)
+        it.image(0, 0, id(esphome_logo));
+      else
+        it.image(0, 0, id(esphome_logo), RED, BLACK);
+      if (id(touch_on))
+        it.filled_circle(id(touch_x) - 5, id(touch_y) - 5, 10, RED);
+
+    id: display_x
+    model: TFT_2.4
+    cs_pin: GPIO14
+    dc_pin: GPIO27
+    #led_pin: 32
+    reset_pin: GPIO33
+    rotation: 0
+    update_interval: 5s

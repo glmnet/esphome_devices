@@ -1,5 +1,5 @@
 esphome:
-  name: eh_comedor
+  name: eh-comedor
   platform: ESP8266
   board: nodemcu
   # Use a local copy of ESPHome

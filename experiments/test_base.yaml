@@ -1,0 +1,27 @@
+substitutions:
+  device: esp${num}
+
+packages:
+  wifi_info: !include wifi_info.yaml
+
+esphome:
+  name: ${device}
+  build_path: ./build/${device}
+
+wifi:
+  ap:
+    ssid: ${device}_AP
+    password: testtestAP
+  manual_ip:
+    static_ip: 192.168.1.1${num}
+    gateway: 192.168.1.1
+    subnet: 255.255.255.0
+    dns1: 192.168.1.1
+
+captive_portal:
+
+api:
+
+ota:
+
+logger:

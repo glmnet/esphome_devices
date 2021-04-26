@@ -1,5 +1,5 @@
 esphome:
-  name: test_esp8266
+  name: test-esp8266
   platform: ESP8266
   board: nodemcu
   platformio_options:
@@ -16,31 +16,16 @@ api:
 
 ota:
 
-remote_transmitter:
-  pin: GPIO0
-  carrier_duty_percent: 50%
+i2c:
 
-switch:
-  - platform: gpio
-    id: x
-    pin: GPIO0
-    restore_source: none
-    restore_initial_value: true
+sensor:
+  - platform: bh1750
+    name: lele
 
-climate:
-  - platform: coolix
-    id: cx
-    restore_source: flash
-    restore_initial_value:
-      mode: 'off'
+external_components:
+  #- source: github://esphome/esphome@importlib-custom-components
 
-cover:
-  - platform: template
-    id: x_cover
-    restore_source: none
-    restore_initial_value: open
-
-globals:
-  - id: xx
-    type: int
-    restore_initial_value: '234'
+  - source:
+      type: local
+      path: components
+    components: [bh1750]

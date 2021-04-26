@@ -38,7 +38,7 @@ display:
       it.turn_on_off(false);
 
 font:
-  - file: "pixelmix.ttf"
+  - file: "../pixelmix.ttf"
     id: digit_font
     size: 8
 
@@ -47,5 +47,5 @@ time:
     id: hass_time
 
 image:
-  - file: "smile.png"
+  - file: "../smile.png"
     id: my_image

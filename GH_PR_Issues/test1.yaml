@@ -88,6 +88,8 @@ mqtt:
                 headers:
                   Content-Type: application/json
                 verify_ssl: false
+                on_response:
+
             - http_request.post:
                 url: https://esphome.io
                 verify_ssl: false

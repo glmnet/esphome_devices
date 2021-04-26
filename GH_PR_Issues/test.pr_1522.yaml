@@ -1,0 +1,45 @@
+esphome:
+  name: test_esp8266
+  platform: ESP8266
+  board: nodemcu
+  platformio_options:
+    upload_speed: 921600
+
+wifi:
+  ssid: !secret wifi_ssid
+  password: !secret wifi_pass
+
+api:
+
+ota:
+
+logger:
+  level: VERBOSE
+
+light:
+  - platform: rgbww
+    name: light1
+    cold_white: output_cw
+    warm_white:
+    blue: output_blue
+    red: output_red
+    green: output_green
+    cold_white_color_temperature: 6536 K
+    warm_white_color_temperature: 2000 K
+
+output:
+  - platform: esp8266_pwm
+    id: output_cw
+    pin: D7
+  - platform: esp8266_pwm
+    id: output_ww
+    pin: D7
+  - platform: esp8266_pwm
+    id: output_blue
+    pin: D7
+  - platform: esp8266_pwm
+    id: output_red
+    pin: D7
+  - platform: esp8266_pwm
+    id: output_green
+    pin: D7

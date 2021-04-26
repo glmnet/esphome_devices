@@ -1,0 +1,105 @@
+esphome:
+  name: test-esp32
+  platform: ESP32
+  board: nodemcu-32s
+  platformio_options:
+    upload_speed: 921600
+  libraries:
+    - teemuatlut/TMCStepper
+  includes:
+    - tmc_stepper_setup.h
+
+wifi:
+  ssid: !secret wifi_ssid
+  password: !secret wifi_pass
+
+# Enable logging
+logger:
+  level: DEBUG
+
+ota:
+
+uart:
+  id: uart_stepper
+  tx_pin: GPIO17
+  rx_pin: GPIO16
+  baud_rate: 9600
+
+custom_component:
+  - lambda: |-
+      auto my_custom = new TMCStepperComponent(id(uart_stepper));
+      return {my_custom};
+
+status_led:
+  pin: GPIO26
+
+api:
+  services:
+    - service: control_stepper_2
+      variables:
+        target: int
+        speed: int
+      then:
+        - logger.log:
+            format: moving to %d
+            args: [target]
+        - stepper.set_speed:
+            id: my_stepper
+            speed: !lambda "return speed;"
+        - stepper.set_target:
+            id: my_stepper
+            target: !lambda "return target;"
+
+binary_sensor:
+  - platform: gpio
+    name: Button1
+    pin: GPIO23
+    on_press:
+      then:
+        if:
+          condition:
+            lambda: "return id(my_stepper).target_position == 0;"
+          then:
+            stepper.set_target:
+              id: my_stepper
+              target: 128000
+          else:
+            stepper.set_target:
+              id: my_stepper
+              target: 0
+
+  - platform: gpio
+    name: Button2
+    pin: GPIO34
+    on_press:
+      script.execute: stop_at_current_position
+
+  - platform: gpio
+    name: Sensor1
+    pin: GPIO22
+  - platform: gpio
+    name: Sensor2
+    pin: GPIO32
+  - platform: gpio
+    name: StallGuard
+    pin: GPIO2
+    on_press:
+      script.execute: stop_at_current_position
+
+stepper:
+  - platform: a4988
+    step_pin: GPIO13
+    dir_pin: GPIO14
+    sleep_pin:
+      number: GPIO27
+      inverted: true
+    id: my_stepper
+    acceleration: 5000 steps/s^2
+    max_speed: 5000 steps/s
+
+script:
+  - id: stop_at_current_position
+    then:
+      stepper.set_target:
+        id: my_stepper
+        target: !lambda "return id(my_stepper).current_position;"

@@ -22,6 +22,10 @@ ota:
 
 i2c:
 
+ads1115:
+  - address: 0x48
+    continuous_mode: false
+
 sensor:
   - platform: vl53l0x
     name: "VL53L0x Distance"
@@ -29,3 +33,19 @@ sensor:
     update_interval: 60s
     signal_rate_limit: 0.25
     long_range: true
+  - platform: ads1115
+    multiplexer: 'A0_GND'
+    gain: 6.144
+    name: "ADS1115 Channel A0-GND"
+  - platform: ina219
+    address: 0x40
+    current:
+      name: "INA219 Current"
+    power:
+      name: "INA219 Power"
+    bus_voltage:
+      name: "INA219 Bus Voltage"
+    shunt_voltage:
+      name: "INA219 Shunt Voltage"
+
+

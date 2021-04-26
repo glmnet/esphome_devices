@@ -69,6 +69,87 @@ light:
           transition_length: 4s
           update_interval: 5s
 
+      - strobe:
+          name: Mario
+          colors:
+            - state: True
+              brightness: 100%
+              red: 0%
+              green: 100%
+              blue: 0%
+              duration: 500ms
+            - state: True
+              brightness: 100%
+              red: 0%
+              green: 0%
+              blue: 100%
+              duration: 500ms
+            - state: True
+              brightness: 100%
+              red: 100%
+              green: 100%
+              blue: 0%
+              duration: 500ms
+            - state: True
+              brightness: 100%
+              red: 100%
+              green: 0%
+              blue: 0%
+              duration: 500ms
+      - strobe:
+          name: Birthday
+          colors:
+            - state: True
+              brightness: 100%
+              red: 100%
+              green: 90%
+              blue: 0%
+              duration: 500ms
+            - state: False
+              duration: 150ms
+            - state: True
+              brightness: 100%
+              red: 0%
+              green: 100%
+              blue: 0%
+              duration: 500ms
+            - state: True
+              brightness: 100%
+              red: 100%
+              green: 0%
+              blue: 0%
+              duration: 500ms
+            - state: True
+              brightness: 100%
+              red: 00%
+              green: 0%
+              blue: 100%
+              duration: 500ms
+            - state: True
+              brightness: 100%
+              red: 100%
+              green: 0%
+              blue: 0%
+              duration: 500ms
+            - state: True
+              brightness: 100%
+              red: 00%
+              green: 0%
+              blue: 100%
+              duration: 500ms
+            - state: True
+              brightness: 100%
+              red: 100%
+              green: 10%
+              blue: 50%
+              duration: 2500ms
+            - state: True
+              brightness: 100%
+              red: 40%
+              green: 40%
+              blue: 100%
+              duration: 3500ms
+
   # - platform: monochromatic
   #   name: "LED Red"
   #   output: output_pin5

@@ -38,8 +38,7 @@ static const char *TAGape = "ape";
 #define CMD_SETUP_ANALOG_INTERNAL 0x10
 #define CMD_SETUP_ANALOG_DEFAULT 0x11
 
-#define get_ape(constructor) static_cast<ArduinoPortExpander *> \
-  (const_cast<custom_component::CustomComponentConstructor *>(&constructor)->get_component(0))
+#define get_ape(constructor) static_cast<ArduinoPortExpander *>(constructor.get_component(0))
 
 #define ape_binary_output(ape, pin) get_ape(ape)->get_binary_output(pin)
 #define ape_binary_sensor(ape, pin) get_ape(ape)->get_binary_sensor(pin)

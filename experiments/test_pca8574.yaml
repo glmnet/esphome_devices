@@ -1,0 +1,29 @@
+esphome:
+  name: test_esp32
+  platform: ESP32
+  board: esp32doit-devkit-v1
+  platformio_options:
+    upload_speed: 921600
+
+logger:
+
+wifi:
+  ssid: !secret wifi_ssid
+  password: !secret wifi_pass
+
+api:
+
+ota:
+
+i2c:
+  scan: true
+
+pcf8574:
+  - address: 0x27
+
+switch:
+  - platform: gpio
+    pin:
+      pcf8574:
+      number: 0
+    name: PCF8574_0

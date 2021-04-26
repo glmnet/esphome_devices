@@ -1,5 +1,5 @@
 esphome:
-  name: eh_comedor_ac
+  name: eh-comedor-ac
   platform: ESP8266
   board: nodemcu
 

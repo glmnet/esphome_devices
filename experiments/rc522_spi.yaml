@@ -18,6 +18,9 @@ output:
   - platform: esp8266_pwm
     pin: D0
     id: buzzer
+  - platform: esp8266_pwm
+    pin: D1
+    id: servo_output
 
 # Define buzzer as output for RTTTL
 rtttl:
@@ -30,6 +33,9 @@ wifi:
 # Enable logging
 logger:
   level: DEBUG
+  logs:
+    api: DEBUG
+    spi: DEBUG
 
 # # Enable OTA updates
 ota:
@@ -41,6 +47,10 @@ spi:
 
 api:
 
+servo:
+  output: servo_output
+  id: servo_1
+
 rc522_spi:
   #reset_pin: D3
   cs_pin: D8
@@ -51,21 +61,29 @@ rc522_spi:
       - if:
           condition:
             not:
-                rtttl.is_playing:
+              rtttl.is_playing:
           then:
             - rtttl.play: "success:d=24,o=5,b=100:c,g,b"
 
 binary_sensor:
-  # - platform: rc522
-  #   uid: 84-52-FB-01
-  #   id: x
-  #   on_press:
-  #     - rtttl.play: "scale_up:d=32,o=5,b=100:c,c#,d#,e,f#,g#,a#,b"
+  - platform: rc522
+    uid: 84-52-FB-01
+    id: x
+    on_press:
+      - rtttl.play: "scale_up:d=32,o=5,b=100:c,c#,d#,e,f#,g#,a#,b"
 
-  #   on_release:
-  #     - rtttl.play: "scale_down:d=32,o=5,b=100:b,a#,g#,f#,e,d#,c#,c"
+    on_release:
+      - rtttl.play: "scale_down:d=32,o=5,b=100:b,a#,g#,f#,e,d#,c#,c"
   - platform: rc522
     uid: CA-BE-41-CE
     id: y
     on_press:
-      - rtttl.play: "MissionImp:d=16,o=6,b=95:32d,32d#,32d,32d#,32d,32d#,32d,32d#,32d,32d,32d#,32e,32f,32f#,32g,g,8p,g,8p,a#,p,c7,p,g,8p,g,8p,f,p,f#,p,g,8p,g,8p,a#,p,c7,p,g,8p,g,8p,f,p,f#,p,a#,g,2d,32p,a#,g,2c#,32p,a#,g,2c,a#5,8c,2p,32p,a#5,g5,2f#,32p,a#5,g5,2f,32p,a#5,g5,2e,d#,8d"
+      #- rtttl.play: "MissionImp:d=16,o=6,b=95:32d,32d#,32d,32d#,32d,32d#,32d,32d#,32d,32d,32d#,32e,32f,32f#,32g,g,8p,g,8p,a#,p,c7,p,g,8p,g,8p,f,p,f#,p,g,8p,g,8p,a#,p,c7,p,g,8p,g,8p,f,p,f#,p,a#,g,2d,32p,a#,g,2c#,32p,a#,g,2c,a#5,8c,2p,32p,a#5,g5,2f#,32p,a#5,g5,2f,32p,a#5,g5,2e,d#,8d"
+      - logger.log: "Start servo change"
+      - servo.write:
+          id: servo_1
+          level: 50%
+      - delay: 2s
+      - logger.log: "Done"
+      - servo.detach: servo_1
+      - logger.log: "Detached"

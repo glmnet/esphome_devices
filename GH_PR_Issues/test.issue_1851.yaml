@@ -1,0 +1,79 @@
+esphome:
+  name: test-esp8266
+  platform: ESP8266
+  board: nodemcu
+  platformio_options:
+    upload_speed: 921600
+
+  # If buzzer is enabled, notify on api connection success
+  on_boot:
+    priority: -10
+    then:
+      - wait_until:
+          api.connected:
+      - logger.log: API is connected!
+
+wifi:
+  ssid: !secret wifi_ssid
+  password: !secret wifi_pass
+
+logger:
+  level: DEBUG
+
+debug:
+
+ota:
+
+api:
+  services:
+    - service: test
+      variables:
+        a_int: int
+        a_string: string
+        a_float: float
+        a_bool: bool
+        a_int_array: int[]
+        a_string_array: string[]
+        a_float_array: float[]
+        a_bool_array: bool[]
+      then:
+        logger.log: service called
+    - service: control_servo
+      variables:
+        level: float
+      then:
+        - servo.write:
+            id: my_servo
+            level: !lambda "return level / 100.0;"
+    - service: control_servo2
+      variables:
+        level: float
+      then:
+        - servo.write:
+            id: my_servo2
+            level: !lambda "return level / 100.0;"
+
+    - service: control_servo2_detach
+      variables:
+        level: float
+      then:
+        - servo.detach: my_servo2
+
+# Example configuration entry
+servo:
+  - id: my_servo
+    output: pwm_output
+  - id: my_servo2
+    output: pwm_output2
+
+# Example output platform
+# On ESP32, use ledc output
+output:
+  - platform: esp8266_pwm
+    id: pwm_output
+    pin: D2
+    frequency: 50 Hz
+  - platform: esp8266_pwm
+    id: pwm_output2
+    pin: D1
+    frequency: 50 Hz

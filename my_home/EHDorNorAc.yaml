@@ -1,5 +1,5 @@
 esphome:
-  name: eh_dor_nor_ac
+  name: eh-dor-nor-ac
   platform: ESP8266
   board: nodemcu
 

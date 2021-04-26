@@ -16,14 +16,14 @@ api:
 
 ota:
 
-
 sensor:
   - platform: pulse_counter
     pin: GPIO12 #D6
     name: "Tanque agua flujo entrada"
     update_interval: 5s
     filters:
-    - lambda: return (x / 27.0) * 60.0;
+      - lambda: return (x / 27.0) * 60.0;
+
     unit_of_measurement: "L/hr"
   - platform: pulse_counter
     pin: D5 #

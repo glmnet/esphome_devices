@@ -5,22 +5,23 @@ esphome:
   platformio_options:
     upload_speed: 921600
 
-packages:
-  wifi: !include ../package.wifi.yaml
+# packages:
+#   wifi: !include ../package.wifi.yaml
 
-api:
+# api:
 
-ota:
+# ota:
 
 logger:
+  level: VERBOSE
 
 uart:
-  baud_rate: 9600
-  tx_pin: TX
+  baud_rate: 115200
   rx_pin: RX
+  rx_buffer_size: 1024
 
 dsmr:
-  update_interval: 1s
+  decryption_key: !secret decryption_key
 
 sensor:
   - platform: dsmr
@@ -30,6 +31,6 @@ sensor:
 text_sensor:
   - platform: dsmr
     identification:
-      name: 'dsmr_identification'
+      name: "dsmr_identification"
     p1_version:
-      name: 'dsmr_p1_version'
+      name: "dsmr_p1_version"

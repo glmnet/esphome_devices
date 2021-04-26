@@ -17,11 +17,14 @@ api:
 ota:
 
 dallas:
-  pin: D4
-  update_interval: 60s
+  - pin: D4
+    id: dallas_component
+    update_interval: 60s
+  - pin: D5
 
 sensor:
   - platform: dallas
+    dallas_id: dallas_component
     address: 0xF176C32712646128
     id: dallas_temp
     internal: true
@@ -41,6 +44,6 @@ remote_transmitter:
 
 climate:
   platform: coolix
-  name: 'New AC No Sensor'
+  name: "New AC No Sensor"
   sensor: dallas_temp
   receiver_id: rcvr

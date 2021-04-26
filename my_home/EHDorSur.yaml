@@ -1,5 +1,5 @@
 esphome:
-  name: eh_dor_sur
+  name: eh-dor-sur
   platform: ESP8266
   board: nodemcu
   # Use a local copy of ESPHome

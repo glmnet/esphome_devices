@@ -1,5 +1,5 @@
 esphome:
-  name: eh_estudio
+  name: eh-estudio
   platform: ESP8266
   board: nodemcu
   includes:

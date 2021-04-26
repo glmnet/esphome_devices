@@ -1,0 +1,4 @@
+text_sensor:
+  - platform: wifi_info
+    bssid:
+      name: ${device} Connected BSSID

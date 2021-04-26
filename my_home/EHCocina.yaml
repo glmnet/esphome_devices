@@ -1,8 +1,7 @@
 esphome:
-  name: eh_cocina
+  name: eh-cocina
   platform: ESP8266
   board: nodemcu
-  # Use a local copy of ESPHome
   includes:
     - arduino_port_expander.h
 
@@ -25,6 +24,9 @@ custom_component:
     lambda: |-
       auto ape_component = new ArduinoPortExpander(i2c_component, 0x08);
       return {ape_component};
+    components:
+      id: ape_componentex
+
 
 output:
   - platform: custom

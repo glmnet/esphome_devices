@@ -1,27 +1,24 @@
 ---
 esphome:
-  name: eh_tanque
+  name: eh-tanque
   platform: ESP8266
   board: nodemcu
 
-
-
 wifi:
   ssid: !secret wifi_ssid
-  password: !secret wifi_pass
+  password:
+    !secret wifi_pass
     #bssid: !secret bssid_airport_express
 
 captive_portal:
 
 api:
 
-
 ota:
 
 logger:
   level: DEBUG
   baud_rate: 0 # use UART pins for IO
-
 
 output:
   - platform: gpio
@@ -69,21 +66,20 @@ binary_sensor:
       then:
         - switch.turn_off: bomba_tanque
   - platform: gpio
-    id: tanque_abajo_flotador
+    id: flotador_vacio
     pin:
       number: GPIO13
       mode: INPUT_PULLUP
     name: Tanque abajo vacio
     device_class: problem
     filters:
-      - invert:
       - delayed_on_off: 2s # debounce for some noisy from pump or generator
-    on_press:
+    on_release:
       # tank almost full
       - sensor.template.publish:
           id: tank_liters
           state: !lambda "return 900.0;"
-    on_release:
+    on_press:
       # tank almost empty
       - sensor.template.publish:
           id: tank_liters
@@ -150,9 +146,9 @@ sensor:
           state: !lambda |-
             float new_level = id(tank_liters).state;
             if (isnan(new_level))
-              new_level = id(tanque_abajo_flotador).state ? 50.0 : 900.0;
+              new_level = id(flotador_vacio).state ? 50.0 : 900.0;
             new_level += x / 450;
-            if (new_level > 900.0 && id(tanque_abajo_flotador).state)
+            if (new_level > 900.0 && id(flotador_vacio).state)
               return 900;
             if (new_level > 1000) return 1000;
             return new_level;
@@ -190,13 +186,13 @@ interval:
             - lambda: |-
                 float new_level = id(tank_liters).state;
                 if (isnan(new_level))
-                  new_level = id(tanque_abajo_flotador).state ? 50.0 : 900.0;
+                  new_level = id(flotador_vacio).state ? 50.0 : 900.00;
 
                 new_level -= 0.38;
                 if (new_level < 0)
                   new_level = 0;
-                if (new_level < 80.0 && !id(tanque_abajo_flotador).state)
-                  new_level = 80;
+                if (new_level < 70.0 && !id(flotador_vacio).state)
+                  new_level = 70;
                 id(tank_liters).publish_state(new_level);
 
 # IO Table

@@ -1,5 +1,5 @@
 esphome:
-  name: eh_comedor_window
+  name: eh-comedor-window
   platform: ESP8266
   board: nodemcu
   esp8266_restore_from_flash: yes
@@ -25,8 +25,8 @@ servo:
     restore: true
     min_level: 3%
     max_level: 12%
-    run_duration: 3s
-    keep_on_time: 2s
+    transition_length: 5s
+    auto_detach_time: 2s
 
 output:
   - platform: esp8266_pwm ## this is for the servo

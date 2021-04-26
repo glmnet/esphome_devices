@@ -1,5 +1,0 @@
-substitutions:
-  devicename: eh_planta_alta_rgb
-  light_name: Planta Alta RGB
-
-<<: !include EHH801_base.yaml

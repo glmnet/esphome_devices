@@ -1,7 +1,7 @@
 # This node controls remote startup and shutdown of a gasoline electricity generator
 
 esphome:
-  name: eh_generador
+  name: eh-generador
   platform: ESP32
   board: esp32doit-devkit-v1
   platformio_options:

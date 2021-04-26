@@ -39,3 +39,11 @@ binary_sensor:
 
 web_server:
   port: 82
+
+
+
+
+
+
+dallas:
+  pin: GPIO35

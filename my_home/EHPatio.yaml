@@ -1,5 +1,5 @@
 esphome:
-  name: eh_patio
+  name: eh-patio
   platform: ESP8266
   board: nodemcu
   includes:
@@ -308,12 +308,15 @@ binary_sensor:
         filters:
           delayed_on_off: 100ms
       - name: "Cortina Pasillo"
+        device_class: opening
         filters:
           delayed_on_off: 2s
       - name: "Cortina Centro"
+        device_class: opening
         filters:
           delayed_on_off: 2s
       - name: "Cortina Muro"
+        device_class: opening
         filters:
           delayed_on_off: 2s
 

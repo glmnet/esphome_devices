@@ -1,0 +1,26 @@
+api:
+
+binary_sensor:
+  - platform: status
+    name: "Porton Status"
+
+ota:
+
+sensor:
+  - platform: uptime
+    name: ${device_name} uptime
+  - platform: wifi_signal
+    name: ${device_name} signal
+
+switch:
+  - platform: restart
+    name: ${device_name} restart
+
+text_sensor:
+  - platform: wifi_info
+    bssid:
+      name: ${device_name} BSSID
+
+wifi:
+  ssid: !secret wifi_ssid
+  password: !secret wifi_pass

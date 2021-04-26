@@ -99,6 +99,7 @@ output:
       - id: output_pin_2
         inverted: true
 
+
 switch:
   - platform: output
     name: veg_relay_1

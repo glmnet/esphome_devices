@@ -1,8 +1,10 @@
 esphome:
-  name: test_esp8266
-  platform: ESP8266
-  board: nodemcuv2
+  name: test_esp32
+  platform: ESP32
+  board: esp-wrover-kit
   build_path: builds
+  platformio_options:
+    upload_speed: 921600
 
 wifi:
   ssid: !secret wifi_ssid
@@ -10,7 +12,7 @@ wifi:
   fast_connect: true
 
 logger:
-  level: VERBOSE
+  level: DEBUG
 
 ota:
 
@@ -26,13 +28,14 @@ api:
 #     it.strftime("%H.%M", time);
 
 i2c:
-
-
+  scl: GPIO13
+  sda: GPIO14
 
 sensor:
   - platform: ina219
     address: 0x40
     shunt_resistance: 0.1 ohm
+
     current:
       name: "INA219 Current"
     power:
@@ -43,8 +46,7 @@ sensor:
       name: "INA219 Shunt Voltage"
     max_voltage: 32.0V
     max_current: 3.2A
-    update_interval: 1s
-
+    update_interval: 3s
 # interval:
 #   interval: 1s
 #   then:

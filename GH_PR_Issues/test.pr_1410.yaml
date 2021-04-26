@@ -1,0 +1,30 @@
+esphome:
+  name: test-esp32
+  platform: ESP32
+  board: nodemcu-32s
+  platformio_options:
+    upload_speed: 921600
+
+wifi:
+  ssid: !secret wifi_ssid
+  password: !secret wifi_pass
+  fast_connect: true
+
+logger:
+  level: DEBUG
+
+ota:
+
+i2c:
+
+tca9548a:
+    - address: 0x70
+      id: multiplex0
+      scan: True
+
+# Individual I2C Devices
+sensor:
+  - platform: bmp280
+    multiplexer:
+      id: multiplex0
+      channel: 0
