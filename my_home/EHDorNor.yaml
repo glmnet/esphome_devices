@@ -8,7 +8,7 @@ esphome:
     - switch.turn_on: tomas_electricos
 
 substitutions:
-  entity_name: "Dormitorio Norte Temp"
+  entity_prefix: "Dormitorio Norte"
 
 wifi:
   ssid: !secret wifi_ssid
@@ -52,28 +52,28 @@ output:
 light:
   - platform: binary
     id: techo
-    name: "${entity_name} luz techo"
+    name: "${entity_prefix} luz techo"
     output: gpio_relay_1
   - platform: binary
     id: cama_pared
-    name: "${entity_name} luz cama pared"
+    name: "${entity_prefix} luz cama pared"
     output: gpio_relay_2
   - platform: binary
     id: cama_ventana
-    name: "${entity_name} luz cama ventana"
+    name: "${entity_prefix} luz cama ventana"
     output: gpio_relay_3
 
 switch:
   - platform: output
     output: gpio_relay_4
     id: tomas_electricos
-    name: "${entity_name} tomas electricos"
+    name: "${entity_prefix} tomas electricos"
 
 
 
 binary_sensor:
   - platform: status
-    name: "${entity_name} status"
+    name: "${entity_prefix} status"
   - platform: custom
     lambda: |-
       return {ape_binary_sensor(ape, 2),
@@ -85,13 +85,13 @@ binary_sensor:
               ape_binary_sensor(ape, 15),
               ape_binary_sensor(ape, 9)};
     binary_sensors:
-      - name: "${entity_name} switch puerta 1"
+      - name: "${entity_prefix} switch puerta 1"
         filters:
           delayed_on_off: 100ms
         on_state:
           then:
             - light.toggle: techo
-      - name: "${entity_name} switch puerta 2"
+      - name: "${entity_prefix} switch puerta 2"
         filters:
           delayed_on_off: 200ms
         on_state:
@@ -107,34 +107,34 @@ binary_sensor:
               else:
                 - light.turn_on: cama_ventana
                 - light.turn_on: cama_pared
-      - name: "${entity_name} switch puerta 3"
+      - name: "${entity_prefix} switch puerta 3"
         filters:
           delayed_on_off: 100ms
-      - name: "${entity_name} switch cama pared 1"
+      - name: "${entity_prefix} switch cama pared 1"
         filters:
           delayed_on_off: 100ms
         on_state:
           then:
             - light.toggle: cama_pared
-      - name: "${entity_name} switch cama pared 2"
+      - name: "${entity_prefix} switch cama pared 2"
         filters:
           delayed_on_off: 100ms
         on_state:
           then:
             - light.toggle: techo
-      - name: "${entity_name} switch cama ventana 1"
+      - name: "${entity_prefix} switch cama ventana 1"
         filters:
           delayed_on_off: 100ms
         on_state:
           then:
             - light.toggle: cama_ventana
-      - name: "${entity_name} switch cama ventana 2"
+      - name: "${entity_prefix} switch cama ventana 2"
         filters:
           delayed_on_off: 100ms
         on_state:
           then:
             - light.toggle: techo
-      - name: "${entity_name} ventana"
+      - name: "${entity_prefix} ventana"
         filters:
           delayed_on_off: 100ms
         device_class: window

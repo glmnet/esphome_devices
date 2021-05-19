@@ -1,5 +1,5 @@
 esphome:
-  name: $devicename
+  name: $esphome_name
   platform: ESP8266
   board: esp8285
   libraries:
@@ -22,7 +22,7 @@ ota:
 light:
   - platform: rgb
     id: light_1
-    name: $light_name
+    name: $node_name
     red: pwm_r
     green: pwm_g
     blue: pwm_b
@@ -83,6 +83,9 @@ remote_receiver:
   dump: nec
 
 binary_sensor:
+  - platform: status
+    name: "${node_name} Status"
+
   - platform: remote_receiver
     id: "on"
     nec:

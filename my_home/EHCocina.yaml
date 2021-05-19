@@ -27,7 +27,6 @@ custom_component:
     components:
       id: ape_componentex
 
-
 output:
   - platform: custom
     type: binary

@@ -1,0 +1,52 @@
+esphome:
+  platform: ESP8266
+  name: test-esp8266
+  board: d1_mini
+  platformio_options:
+    upload_speed: 921600
+
+packages:
+  wifi: !include ../package.wifi.yaml
+
+api:
+
+ota:
+
+logger:
+  level: DEBUG
+  baud_rate: 0
+
+uart:
+  baud_rate: 9600
+  tx_pin: GPIO15
+  rx_pin: GPIO13
+
+i2c:
+  - scl: GPIO5
+    sda: GPIO4
+    scan: true
+
+# Example configuration entry
+sensor:
+  - platform: hmc5883l
+    address: 0x1E
+    field_strength_x:
+      name: "HMC5883L Field Strength X"
+    field_strength_y:
+      name: "HMC5883L Field Strength Y"
+    field_strength_z:
+      name: "HMC5883L Field Strength Z"
+    heading:
+      name: "HMC5883L Heading"
+    oversampling: 1x
+    range: 130uT
+    update_interval: 1s
+
+gps:
+  latitude:
+    name: gps_latitude
+  longitude:
+    name: gps_longitude
+
+time:
+  - platform: gps

@@ -1,5 +1,5 @@
 substitutions:
-  devicename: eh-planta-alta-rgb
-  light_name: Banio Planta Alta RGB
+  esphome_name: eh-planta-alta-rgb
+  node_name: Planta Alta RGB
 
 <<: !include EHH801_base.yaml

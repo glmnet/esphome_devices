@@ -22,6 +22,7 @@ ethernet:
   clk_mode: GPIO0_IN
   phy_addr: 1
   power_pin: GPIO17
+  #enable_mdns: true
 
 light:
   - platform: fastled_clockless

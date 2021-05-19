@@ -1,5 +1,5 @@
 esphome:
-  name: test_local2
+  name: test-esp8266
   platform: ESP8266
   board: nodemcuv2
   platformio_options:

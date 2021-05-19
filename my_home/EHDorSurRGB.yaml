@@ -1,5 +1,5 @@
 substitutions:
-  devicename: eh-dor-sur-rgb
-  light_name: Dormitorio Sur RGB
+  esphome_name: eh-dor-sur-rgb
+  node_name: Dormitorio Sur RGB
 
 <<: !include EHMagicHome_base.yaml

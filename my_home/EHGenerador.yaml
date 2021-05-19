@@ -18,8 +18,6 @@ esphome:
               format: "%d v_batt: %.3f"
               args: [id(log_counter), id(v_batt).state]
 
-
-
 substitutions:
   device_name: Generador
 
@@ -47,7 +45,6 @@ api:
             id: log_counter
             value: "300"
     - service: set_servo
-
       variables:
         servo_percent: int
       then:
@@ -210,7 +207,6 @@ script:
       - logger.log:
           format: "Tiempo arranque agotado"
           level: info
-
 
   - id: turn_on
     then:

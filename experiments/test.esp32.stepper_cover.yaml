@@ -1,0 +1,180 @@
+substitutions:
+  device_name: test-esp32
+  pulley_diameter_mm: "15"
+  gear_ratio: "1" # not used yet for simplicity
+  distance_mm: "1000"
+  acceleration: 8000 steps/s^2
+  velocity: 8000 steps/s
+  open_current: 500ma
+  open_stall_threshold: "20"
+  close_current: 600ma
+  close_stall_threshold: "17"
+  tcool_threshold: "910"
+  microsteps: "64"
+
+esphome:
+  name: ${device_name}
+  platform: ESP32
+  board: nodemcu-32s
+  platformio_options:
+    upload_speed: 921600
+
+  on_boot:
+    - tmc2209.setup:
+        microsteps: 64
+        tcool_threshold: ${tcool_threshold}
+
+wifi:
+  ssid: !secret wifi_ssid
+  password: !secret wifi_pass
+
+# Enable logging
+logger:
+  level: VERBOSE
+
+ota:
+
+uart:
+  id: uart_stepper
+  tx_pin: GPIO17
+  rx_pin: GPIO16
+  baud_rate: 9600
+
+# custom_component:
+#   - lambda: |-
+#       auto my_custom = new TMCStepperComponent(id(uart_stepper));
+#       return {my_custom};
+
+status_led:
+  pin: GPIO26
+
+api:
+  services:
+    - service: control_stepper_2
+      variables:
+        target: int
+        speed: int
+      then:
+        - logger.log:
+            format: moving to %d
+            args: [target]
+        - stepper.set_speed:
+            id: my_stepper
+            speed: !lambda "return speed;"
+        - stepper.set_target:
+            id: my_stepper
+            target: !lambda "return target;"
+    - service: setup_stepper
+      variables:
+        microsteps: int
+        tcool_threshold: int
+        stall_threshold: int
+        rms_current: float
+      then:
+        - tmc2209.setup:
+            id: my_stepper
+            microsteps: !lambda "return microsteps;"
+            tcool_threshold: !lambda "return tcool_threshold;"
+            stall_threshold: !lambda "return stall_threshold;"
+            current: !lambda "return rms_current;"
+
+binary_sensor:
+  - platform: gpio
+    name: Button1
+    pin:
+      number: GPIO23
+      inverted: true
+    on_press:
+      then:
+        if:
+          condition:
+            lambda: "return id(my_stepper).target_position == 0;"
+          then:
+            stepper.set_target:
+              id: my_stepper
+              target: 128000
+          else:
+            stepper.set_target:
+              id: my_stepper
+              target: 0
+
+  - platform: gpio
+    name: Button2
+    pin:
+      number: GPIO34
+      inverted: true
+      mode: INPUT_PULLUP
+    on_press:
+      script.execute: stop_at_current_position
+
+  - platform: gpio
+    name: Sensor1
+    pin:
+      number: GPIO22
+      inverted: true
+  - platform: gpio
+    name: SensorGPIO0
+    pin:
+      number: GPIO0
+      inverted: true
+  - platform: gpio
+    name: Sensor2
+    pin:
+      number: GPIO32
+      inverted: true
+  - platform: gpio
+    id: stall_guard_sensor
+    name: StallGuard
+    pin: GPIO2
+    on_press:
+      script.execute: stop_at_current_position
+
+stepper:
+  - platform: tmc2209
+    id: my_stepper
+
+    step_pin: GPIO13
+    dir_pin: GPIO14
+
+    sleep_pin:
+      number: GPIO27
+      inverted: true
+    acceleration: ${acceleration}
+    max_speed: ${velocity}
+
+script:
+  - id: stop_at_current_position
+    then:
+      stepper.set_target:
+        id: my_stepper
+        target: !lambda "return id(my_stepper).current_position;"
+
+globals:
+  - id: open_position
+    type: float
+    initial_value: 200 * ${microsteps} * (${distance_mm} / ${pulley_diameter_mm} * PI)
+
+cover:
+  - platform: template
+    name: "${device_name} cover"
+    open_action:
+      - tmc2209.setup:
+          current: ${open_current}
+          stall_threshold: ${open_stall_threshold}
+      - stepper.set_target:
+          id: my_stepper
+          target: !lambda "return id(open_position);"
+
+    close_action:
+      - tmc2209.setup:
+          current: ${close_current}
+          stall_threshold: ${close_stall_threshold}
+      - stepper.set_target:
+          id: my_stepper
+          target: 0 # 0 Means closed
+
+    stop_action:
+      - script.execute: stop_at_current_position
+
+    lambda: |-
+      return id(my_stepper).current_position / id(open_position);

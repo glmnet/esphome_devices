@@ -1,35 +1,56 @@
+---
 esphome:
-  platform: ESP8266
   name: test-esp8266
+  platform: ESP8266
   board: d1_mini
-  platformio_options:
-    upload_speed: 921600
 
-packages:
-  wifi: !include ../package.wifi.yaml
+wifi:
+  networks:
+    - ssid: !secret wifi_ssid
+      password: !secret wifi_password
 
-api:
+captive_portal:
 
 ota:
 
 logger:
+  level: VERY_VERBOSE
+  logs:
+    uart_esp8266: DEBUG
+    api.service: DEBUG
 
-uart:
-  baud_rate: 9600
-  tx_pin: TX
-  rx_pin: RX
 
-dsmr:
-  update_interval: 1s
+output:
+  - platform: gpio
+    pin:
+      number: GPIO2
+      inverted: true
+    id: led_pin
 
-sensor:
-  - platform: dsmr
-    energy_delivered_tariff1:
-      name: dsmr_energy_delivered_tariff1
+light:
+  - platform: binary
+    output: led_pin
+    id: led_light
 
-text_sensor:
-  - platform: dsmr
-    identification:
-      name: 'dsmr_identification'
-    p1_version:
-      name: 'dsmr_p1_version'
+
+binary_sensor:
+  - platform: gpio
+    id: boot_button_test
+    pin:
+      number: GPIO0 # boot
+      inverted: true
+    filters:
+      - autorepeat:
+
+          # - delay: 1s
+          #   time_on: 100ms
+          #   time_off: 200ms
+          # - delay: 2s
+          #   time_on: 50ms
+          #   time_off: 100ms
+    on_press:
+      light.turn_on: led_light
+    on_release:
+      light.turn_off: led_light
+
+

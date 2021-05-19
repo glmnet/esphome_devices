@@ -34,3 +34,6 @@ text_sensor:
       name: "dsmr_identification"
     p1_version:
       name: "dsmr_p1_version"
+
+external_components:
+  - source: ../../dsmr/components/

@@ -1,5 +1,5 @@
 esphome:
-  name: $devicename
+  name: $esphome_name
   platform: ESP8266
   board: esp01_1m
 
@@ -8,15 +8,14 @@ wifi:
   password: !secret wifi_pass
 
 logger:
-  level: debug
+  level: DEBUG
 
 api:
 ota:
 
-# sensor:
-#   - platform: wifi_signal
-#     name: "WiFi Signal h801light"
-#     update_interval: 60s
+binary_sensor:
+  - platform: status
+    name: "${node_name} Status"
 
 output:
   - platform: esp8266_pwm
@@ -52,7 +51,7 @@ output:
 
 light:
   - platform: rgb
-    name: $light_name
+    name: $node_name
     red: pwm_r
     green: pwm_g
     blue: pwm_b

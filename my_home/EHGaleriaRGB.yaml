@@ -1,7 +1,6 @@
 substitutions:
-  devicename: eh-galeria-rgb
-  light_name: Galeria RGB
+  esphome_name: eh-galeria-rgb
+  node_name: Galeria RGB
 
 <<: !include EHH801_base.yaml
-
 

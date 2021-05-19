@@ -1,8 +1,10 @@
+substitutions:
+  node_name: Comedor AC
+
 esphome:
   name: eh-comedor-ac
   platform: ESP8266
   board: nodemcu
-
 
 wifi:
   ssid: !secret wifi_ssid
@@ -38,7 +40,7 @@ climate:
 
 binary_sensor:
   - platform: status
-    name: "Comedor AC Status"
+    name: "${node_name} Status"
   - platform: gpio
     id: whirlpool_on
     name: Whirlpool on
@@ -89,7 +91,7 @@ switch:
 globals:
   - id: ac_mode_global
     type: int
-    initial_value: 'climate::ClimateMode::CLIMATE_MODE_COOL'
+    initial_value: "climate::ClimateMode::CLIMATE_MODE_COOL"
     restore_value: yes
 
 interval:

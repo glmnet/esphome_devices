@@ -23,9 +23,11 @@ sensor:
     name: lele
 
 external_components:
-  #- source: github://esphome/esphome@importlib-custom-components
-
-  - source:
-      type: local
-      path: components
+  - source: github://esphome/esphome@importlib-custom-components
+    refresh: 1d
     components: [bh1750]
+
+  # - source:
+  #     type: local
+  #     path: components
+  #   components: [bh1750]

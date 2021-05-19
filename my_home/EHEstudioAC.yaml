@@ -18,6 +18,10 @@ dallas:
   pin: D4
   update_interval: 60s
 
+binary_sensor:
+  - platform: status
+    name: "Estudio AC Status"
+
 sensor:
   - platform: dallas
     #address: 0xF77AF93F12646128
