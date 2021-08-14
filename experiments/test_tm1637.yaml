@@ -13,6 +13,7 @@ wifi:
   password: !secret wifi_pass
 
 api:
+  password: lelexe
 
 time:
   - platform: homeassistant
@@ -26,15 +27,12 @@ display:
   update_interval: 500ms
   intensity: 3
   lambda: |-
-      it.print("13.3~");
-
-
-  # static int i = 0;
-  # i++;
-  # if ((i % 2) == 0)
-  #   it.strftime("%H.%M", id(homeassistant_time).now());
-  # else
-  #   it.strftime("%H%M", id(homeassistant_time).now());
+    static int i = 0;
+    i++;
+    if ((i % 2) == 0)
+      it.strftime("%H.%M", id(homeassistant_time).now());
+    else
+      it.strftime("%H%M", id(homeassistant_time).now());
 
 globals:
   - id: intensity
@@ -59,7 +57,3 @@ binary_sensor:
               ESP_LOGD("main", "isnan function works");
             if (z == NAN)
               ESP_LOGD("main", "== NAN works");
-
-
-
-

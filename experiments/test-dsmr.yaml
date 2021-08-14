@@ -27,6 +27,8 @@ sensor:
   - platform: dsmr
     energy_delivered_tariff1:
       name: dsmr_energy_delivered_tariff1
+    energy_delivered_lux:
+      name: dsmr_energy_delivered_tarifflux
 
 text_sensor:
   - platform: dsmr
@@ -36,4 +38,6 @@ text_sensor:
       name: "dsmr_p1_version"
 
 external_components:
-  - source: ../../dsmr/components/
+  - source: github://glmnet/esphome@dsmr-component
+    components: dsmr
+    refresh: 1 sec

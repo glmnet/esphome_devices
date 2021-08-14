@@ -1,0 +1,110 @@
+esphome:
+  name: test-esp32
+  platform: ESP32
+  board: esp32doit-devkit-v1
+  platformio_options:
+    upload_speed: 921600
+
+api:
+
+ota:
+
+logger:
+  level: DEBUG
+
+wifi:
+  ssid: !secret wifi_ssid
+  password: !secret wifi_pass
+
+i2c:
+  scan: true
+  sda: GPIO21
+  scl: GPIO22
+
+mcp23017:
+  id: mcp23017_hub
+
+binary_sensor:
+  - platform: gpio
+    name: "MCP23017 GPA0 Pin #21"
+    pin:
+      mcp23xxx: mcp23017_hub
+      number: 0
+      mode: INPUT_PULLUP
+  - platform: gpio
+    name: "MCP23017 GPA1 Pin #22"
+    pin:
+      mcp23xxx: mcp23017_hub
+      number: 1
+  - platform: gpio
+    name: "MCP23017 GPA2 Pin #23"
+    pin:
+      mcp23xxx: mcp23017_hub
+      number: 2
+  - platform: gpio
+    name: "MCP23017 GPA3 Pin #24"
+    pin:
+      mcp23xxx: mcp23017_hub
+      number: 3
+  - platform: gpio
+    name: "MCP23017 GPA4 Pin #25"
+    pin:
+      mcp23xxx: mcp23017_hub
+      number: 4
+  - platform: gpio
+    name: "MCP23017 GPA5 Pin #26"
+    pin:
+      mcp23xxx: mcp23017_hub
+      number: 5
+  - platform: gpio
+    name: "MCP23017 GPA6 Pin #27"
+    pin:
+      mcp23xxx: mcp23017_hub
+      number: 6
+  - platform: gpio
+    name: "MCP23017 GPA7 Pin #28"
+    pin:
+      mcp23xxx: mcp23017_hub
+      number: 7
+
+switch:
+  - platform: gpio
+    name: "MCP23017 GPB0 Pin #1"
+    pin:
+      mcp23xxx: mcp23017_hub
+      number: 8
+  - platform: gpio
+    name: "MCP23017 GPB1 Pin #2"
+    pin:
+      mcp23xxx: mcp23017_hub
+      number: 9
+  - platform: gpio
+    name: "MCP23017 GPB2 Pin #3"
+    pin:
+      mcp23xxx: mcp23017_hub
+      number: 10
+  - platform: gpio
+    name: "MCP23017 GPB3 Pin #4"
+    pin:
+      mcp23xxx: mcp23017_hub
+      number: 11
+  - platform: gpio
+    name: "MCP23017 GPB4 Pin #5"
+    pin:
+      mcp23xxx: mcp23017_hub
+      number: 12
+  - platform: gpio
+    name: "MCP23017 GPB5 Pin #6"
+    pin:
+      mcp23xxx: mcp23017_hub
+      number: 13
+  - platform: gpio
+    name: "MCP23017 GPB6 Pin #7"
+    pin:
+      mcp23xxx: mcp23017_hub
+      number: 14
+  - platform: gpio
+    name: "MCP23017 GPB7 Pin #8"
+    pin:
+      mcp23xxx: mcp23017_hub
+      number: 15

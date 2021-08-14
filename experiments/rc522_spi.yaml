@@ -16,7 +16,7 @@ esphome:
 
 output:
   - platform: esp8266_pwm
-    pin: D0
+    pin: D3
     id: buzzer
   - platform: esp8266_pwm
     pin: D1
@@ -52,7 +52,7 @@ servo:
   id: servo_1
 
 rc522_spi:
-  #reset_pin: D3
+  reset_pin: D0
   cs_pin: D8
   update_interval: 2s
   on_tag:

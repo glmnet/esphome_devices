@@ -1,16 +1,21 @@
 substitutions:
   device_name: test-esp32
-  pulley_diameter_mm: "15"
+  pulley_diameter_mm: "12.2" # 1 turn about 38.3 mm
   gear_ratio: "1" # not used yet for simplicity
-  distance_mm: "1000"
-  acceleration: 8000 steps/s^2
-  velocity: 8000 steps/s
-  open_current: 500ma
-  open_stall_threshold: "20"
+  distance_mm: "383" # about 10 turns
+  acceleration: 1000 steps/s^2
+  microsteps: "2"
+  velocity: 800 steps/s # 200 (motor steps) * ${microsteps}
+  open_current: 600ma
+  open_stall_threshold: "16"
   close_current: 600ma
-  close_stall_threshold: "17"
+  close_stall_threshold: "16"
   tcool_threshold: "910"
-  microsteps: "64"
+  change_direction: "True"
+
+external_components:
+  source: github://glmnet/esphome@stepper-tmc2209
+  components: [tmc2209]
 
 esphome:
   name: ${device_name}
@@ -21,8 +26,10 @@ esphome:
 
   on_boot:
     - tmc2209.setup:
-        microsteps: 64
+        microsteps: 2
         tcool_threshold: ${tcool_threshold}
+        current: 600mA
+        stall_threshold: 20
 
 wifi:
   ssid: !secret wifi_ssid
@@ -30,7 +37,15 @@ wifi:
 
 # Enable logging
 logger:
-  level: VERBOSE
+  level: INFO
+
+# verbose logger over uart causes motor artifacts as pulses are generated in main loop
+# logger:
+#   level: VERBOSE
+#   logs:
+#     api: DEBUG
+#     api.service: DEBUG
+#     scheduler: DEBUG
 
 ota:
 
@@ -40,21 +55,26 @@ uart:
   rx_pin: GPIO16
   baud_rate: 9600
 
-# custom_component:
-#   - lambda: |-
-#       auto my_custom = new TMCStepperComponent(id(uart_stepper));
-#       return {my_custom};
-
 status_led:
   pin: GPIO26
 
 api:
   services:
-    - service: control_stepper_2
+    - service: control_stepper
       variables:
         target: int
         speed: int
+        microsteps: int
+        tcool_threshold: int
+        stall_threshold: int
+        rms_current_amps: float
       then:
+        - tmc2209.setup:
+            id: my_stepper
+            microsteps: !lambda "return microsteps;"
+            tcool_threshold: !lambda "return tcool_threshold;"
+            stall_threshold: !lambda "return stall_threshold;"
+            current: !lambda "return rms_current_amps;"
         - logger.log:
             format: moving to %d
             args: [target]
@@ -64,19 +84,14 @@ api:
         - stepper.set_target:
             id: my_stepper
             target: !lambda "return target;"
-    - service: setup_stepper
-      variables:
-        microsteps: int
-        tcool_threshold: int
-        stall_threshold: int
-        rms_current: float
+    - service: set_stepper_zero
       then:
-        - tmc2209.setup:
+        - stepper.report_position:
             id: my_stepper
-            microsteps: !lambda "return microsteps;"
-            tcool_threshold: !lambda "return tcool_threshold;"
-            stall_threshold: !lambda "return stall_threshold;"
-            current: !lambda "return rms_current;"
+            position: 0
+        - stepper.set_target:
+            id: my_stepper
+            target: 0
 
 binary_sensor:
   - platform: gpio
@@ -84,28 +99,22 @@ binary_sensor:
     pin:
       number: GPIO23
       inverted: true
+      mode: INPUT
     on_press:
       then:
-        if:
-          condition:
-            lambda: "return id(my_stepper).target_position == 0;"
-          then:
-            stepper.set_target:
-              id: my_stepper
-              target: 128000
-          else:
-            stepper.set_target:
-              id: my_stepper
-              target: 0
+        - cover.open:
+            id: template_cov
 
   - platform: gpio
     name: Button2
     pin:
       number: GPIO34
       inverted: true
-      mode: INPUT_PULLUP
+      mode: INPUT
     on_press:
-      script.execute: stop_at_current_position
+      then:
+        - cover.close:
+            id: template_cov
 
   - platform: gpio
     name: Sensor1
@@ -134,7 +143,9 @@ stepper:
     id: my_stepper
 
     step_pin: GPIO13
-    dir_pin: GPIO14
+    dir_pin:
+      number: GPIO14
+      inverted: ${change_direction}
 
     sleep_pin:
       number: GPIO27
@@ -152,15 +163,18 @@ script:
 globals:
   - id: open_position
     type: float
-    initial_value: 200 * ${microsteps} * (${distance_mm} / ${pulley_diameter_mm} * PI)
+    initial_value: ${distance_mm} / (${pulley_diameter_mm} * PI) * 200 * ${microsteps}
 
 cover:
   - platform: template
+    id: template_cov
     name: "${device_name} cover"
+
     open_action:
       - tmc2209.setup:
           current: ${open_current}
           stall_threshold: ${open_stall_threshold}
+          microsteps: 2
       - stepper.set_target:
           id: my_stepper
           target: !lambda "return id(open_position);"
@@ -169,12 +183,43 @@ cover:
       - tmc2209.setup:
           current: ${close_current}
           stall_threshold: ${close_stall_threshold}
+          microsteps: 2
       - stepper.set_target:
           id: my_stepper
-          target: 0 # 0 Means closed
+          # 0 Means closed
+          target: 0
+
+    position_action:
+      - stepper.set_target:
+          id: my_stepper
+          target: !lambda "return id(open_position) * pos;"
 
     stop_action:
       - script.execute: stop_at_current_position
 
+interval:
+  interval: 2s
+  then:
     lambda: |-
-      return id(my_stepper).current_position / id(open_position);
+      static auto operation = COVER_OPERATION_IDLE;
+      static auto position = id(my_stepper).current_position;
+      if (operation != id(template_cov).current_operation ||
+          position != id(my_stepper).current_position)
+      {
+        if (id(my_stepper).current_position > id(my_stepper).target_position)
+          operation = COVER_OPERATION_CLOSING;
+        else if (id(my_stepper).current_position < id(my_stepper).target_position)
+          operation = COVER_OPERATION_OPENING;
+        else
+          operation = COVER_OPERATION_IDLE;
+        id(template_cov).current_operation = operation;
+
+        position =  id(my_stepper).current_position;
+        id(template_cov).position = position / id(open_position);
+
+        id(template_cov).publish_state();
+
+        // ESP_LOGD("main", "Stepper Position is: %d/%d", id(my_stepper).current_position, (int)id(open_position));
+        // ESP_LOGD("main", "Stepper Position is: %d/%d", id(my_stepper).current_position, (int)id(open_position));
+        // ESP_LOGD("main", "Stepper Position is: %d/%d", id(my_stepper).current_position, (int)id(open_position));
+      }

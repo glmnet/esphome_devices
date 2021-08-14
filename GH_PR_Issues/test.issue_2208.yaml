@@ -1,0 +1,41 @@
+esphome:
+  name: test-esp8266
+  platform: ESP8266
+  board: nodemcu
+  platformio_options:
+    upload_speed: 921600
+
+  # If buzzer is enabled, notify on api connection success
+  on_boot:
+    priority: -10
+    then:
+      - wait_until:
+          api.connected:
+      - logger.log: API is connected!
+
+wifi:
+  ssid: !secret wifi_ssid
+  password: !secret wifi_pass
+
+logger:
+  level: DEBUG
+
+debug:
+
+ota:
+
+api:
+
+sensor:
+  - platform: dht
+    pin: GPIO2
+    temperature:
+      name: lele_sensor
+    model: dht22
+
+external_components:
+  - source:
+      type: git
+      url: https://github.com:/gb53smith/esphome
+      ref: main
+    components: [dht]

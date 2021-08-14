@@ -4,7 +4,8 @@ substitutions:
   device_description: "DIY P1 module to read your smart meter"
 
 external_components:
-  - source: github://zuidwijk/dsmr
+  - source: github://glmnet/esphome@dsmr-component
+    components: [dsmr]
 
 esphome:
   name: ${device_name}
@@ -94,6 +95,10 @@ sensor:
       name: dsmr_energy_returned_tariff1
     energy_returned_tariff2:
       name: dsmr_energy_returned_tariff2
+    total_imported_energy:
+      name: total_imported_energy_lux
+    total_exported_energy:
+      name: total_exported_energy_lux
     power_delivered:
       name: power_delivered
       accuracy_decimals: 0
@@ -104,6 +109,10 @@ sensor:
       accuracy_decimals: 0
       filters:
         - multiply: 1000
+    reactive_power_delivered:
+      name: reactive_power_delivered_lux
+    reactive_power_returned:
+      name: reactive_power_returned_lux
     electricity_failures:
       name: electricity_failures
       icon: mdi:alert
@@ -152,6 +161,38 @@ sensor:
       accuracy_decimals: 0
       filters:
         - multiply: 1000
+
+    reactive_power_delivered_l1:
+      name: reactive_power_delivered_l1
+      accuracy_decimals: 0
+      filters:
+        - multiply: 1000
+    reactive_power_delivered_l2:
+      name: reactive_power_delivered_l2
+      accuracy_decimals: 0
+      filters:
+        - multiply: 1000
+    reactive_power_delivered_l3:
+      name: reactive_power_delivered_l3
+      accuracy_decimals: 0
+      filters:
+        - multiply: 1000
+    reactive_power_returned_l1:
+      name: reactive_power_returned_l1
+      accuracy_decimals: 0
+      filters:
+        - multiply: 1000
+    reactive_power_returned_l2:
+      name: reactive_power_returned_l2
+      accuracy_decimals: 0
+      filters:
+        - multiply: 1000
+    reactive_power_returned_l3:
+      name: reactive_power_returned_l3
+      accuracy_decimals: 0
+      filters:
+        - multiply: 1000
+
     gas_delivered:
       name: gas_delivered
     gas_delivered_be:

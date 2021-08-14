@@ -135,13 +135,6 @@ binary_sensor:
       - name: "Switch baño 2" # DI11
         filters:
           delayed_on_off: 100ms
-        on_state:
-          then:
-            - if:
-                condition:
-                  lambda: return id(extractor_banio).state;
-                then:
-                  - script.execute: auto_off_extractor
       - name: "Movimiento estudio" # A0
         filters:
           delayed_on_off: 100ms

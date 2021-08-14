@@ -26,20 +26,28 @@ remote_receiver:
   pin:
     number: GPIO14
     inverted: True
-    mode: INPUT_PULLUP
+    mode: OUTPUT_OPEN_DRAIN
   tolerance: 45%
 
 remote_transmitter:
-  carrier_duty_percent: 50%
-  pin: GPIO12
+  - id: receiver_hack
+    carrier_duty_percent: 100%
+    pin:
+      number: GPIO14
+      inverted: true
+      mode: OUTPUT_OPEN_DRAIN
+  - id: ir_LED
+    carrier_duty_percent: 50%
+    pin: GPIO12
 
 climate:
   - platform: coolix
     sensor: temp_norte
-    name: 'AC Dormitorio Norte'
+    name: "AC Dormitorio Norte"
     supports_heat: True
     supports_cool: True
     receiver_id: rcvr
+    transmitter_id: receiver_hack
 
 switch:
   - platform: restart
@@ -49,18 +57,20 @@ switch:
     name: Dor Nor Netflix
     turn_on_action:
       - remote_transmitter.transmit_nec:
+          transmitter_id: ir_LED
           address: 0xFD
           command: 0xC23D # 0x43
   - platform: template
     name: Dor Nor TV Power
+
     turn_on_action:
       - remote_transmitter.transmit_nec:
+          transmitter_id: ir_LED
           address: 0x00FD
           command: 0xC03F
 
 i2c:
   id: i2c_component
-
 
 sensor:
   - platform: bmp280
@@ -73,7 +83,6 @@ sensor:
       oversampling: 1x
     address: 0x76
     update_interval: 60s
-
 
 binary_sensor:
   - platform: status

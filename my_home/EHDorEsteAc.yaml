@@ -1,11 +1,11 @@
 esphome:
-  name: test-esp8266
+  name: eh-dor-este-ac
   platform: ESP8266
   board: nodemcu
-  # on_boot:
-  #   - delay: 5s
-  #   - lambda: |-
-  #       pinMode(D5, INPUT_PULLUP);
+  on_boot:
+    - delay: 5s
+    - lambda: |-
+        pinMode(D5, INPUT_PULLUP);
 
 wifi:
   ssid: !secret wifi_ssid
@@ -25,7 +25,7 @@ remote_receiver:
   pin:
     number: D5
     inverted: True
-    mode: OUTPUT_OPEN_DRAIN
+    mode: INPUT_PULLUP
   tolerance: 45%
   id: ir_receiver
 

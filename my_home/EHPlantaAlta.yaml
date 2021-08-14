@@ -312,6 +312,8 @@ switch:
     optimistic: true
     name: Presurizadora Automatico
     id: auto_pressure_pump_manual
+    on_turn_off:
+      - switch.turn_off: pressure_pump
 
   - platform: template
     name: Presurizadora con luz baño

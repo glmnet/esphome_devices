@@ -1,5 +1,5 @@
 esphome:
-  name: test_local
+  name: test-esp8266
   platform: ESP8266
   board: nodemcuv2
   platformio_options:
@@ -13,36 +13,21 @@ wifi:
 # Enable logging
 
 logger:
-  level: VERY_VERBOSE
+  level: DEBUG
+  baud_rate: 0
+
+ota:
 
 # Example configuration entry
 api:
-  services:
-    - service: start_laundry
-      variables:
-        num_leds: int
-      then:
-        - logger.log: "Hello World"
-        - light.addressable_set:
-            id: led
-            range_from: 0
-            range_to: !lambda "return num_leds;"
-            red: 100%
-            green: 50%
-            blue: 0%
 
 light:
-  - platform: fastled_clockless
-    chipset: WS2812B
-    pin: D5
-    num_leds: 16
-    rgb_order: GRB
-    name: "BeoLamp14"
+  - platform: neopixelbus
+    variant: WS2812
+    num_leds: 138
+    pin: GPIO3
+    name: "LampEspejoBanio"
     id: led
-    on_turn_on:
-      - ds1307.write:
-          id: x
-      - ds1307.read: x
 
     effects:
       - random:
@@ -55,8 +40,30 @@ light:
           speed: 10
           width: 50
 
-i2c:
+  - platform: partition
+    name: "LampEspejoBanio_Izquierda"
+    segments:
+      - id: led
+        from: 0
+        to: 44
 
-time:
-  - platform: ds1307
-    id: x
+  - platform: partition
+    name: "LampEspejoBanio_Arriba"
+    segments:
+      - id: led
+        from: 45
+        to: 68
+
+  - platform: partition
+    name: "LampEspejoBanio_Derecha"
+    segments:
+      - id: led
+        from: 69
+        to: 113
+
+  - platform: partition
+    name: "LampEspejoBanio_Abajo"
+    segments:
+      - id: led
+        from: 114
+        to: 138

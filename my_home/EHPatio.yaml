@@ -211,15 +211,30 @@ switch:
             times: 2
             wait_time: 2ms
 
+globals:
+  - id: disable_cover_commands
+    type: boolean
+    initial_value: "false"
+
 cover:
   - platform: time_based
     device_class: shutter
     name: "Cortina 9 Muro"
+    id: cover_muro
     open_action:
-      - switch.turn_on: C9_Subir
+      - if:
+          condition:
+            lambda: "return !id(disable_cover_commands);"
+          then:
+            - switch.turn_on: C9_Subir
+
     open_duration: 40s
     close_action:
-      - switch.turn_on: C9_Bajar
+      - if:
+          condition:
+            lambda: "return !id(disable_cover_commands);"
+          then:
+            - switch.turn_on: C9_Bajar
     close_duration: 40s
     stop_action:
       - switch.turn_on: C9_UnLock
@@ -229,11 +244,20 @@ cover:
   - platform: time_based
     device_class: shutter
     name: "Cortina 4 Centro"
+    id: cover_centro
     open_action:
-      - switch.turn_on: C4_Subir
+      - if:
+          condition:
+            lambda: "return !id(disable_cover_commands);"
+          then:
+            - switch.turn_on: C4_Subir
     open_duration: 40s
     close_action:
-      - switch.turn_on: C4_Bajar
+      - if:
+          condition:
+            lambda: "return !id(disable_cover_commands);"
+          then:
+            - switch.turn_on: C4_Bajar
     close_duration: 40s
     stop_action:
       - switch.turn_on: C4_UnLock
@@ -243,11 +267,20 @@ cover:
   - platform: time_based
     device_class: shutter
     name: "Cortina 3 Pasillo"
+    id: cover_pasillo
     open_action:
-      - switch.turn_on: C3_Subir
+      - if:
+          condition:
+            lambda: "return !id(disable_cover_commands);"
+          then:
+            - switch.turn_on: C3_Subir
     open_duration: 40s
     close_action:
-      - switch.turn_on: C3_Bajar
+      - if:
+          condition:
+            lambda: "return !id(disable_cover_commands);"
+          then:
+            - switch.turn_on: C3_Bajar
     close_duration: 40s
     stop_action:
       - switch.turn_on: C3_UnLock
@@ -308,14 +341,17 @@ binary_sensor:
         filters:
           delayed_on_off: 100ms
       - name: "Cortina Pasillo"
+        id: bs_pasillo
         device_class: opening
         filters:
           delayed_on_off: 2s
       - name: "Cortina Centro"
+        id: bs_centro
         device_class: opening
         filters:
           delayed_on_off: 2s
       - name: "Cortina Muro"
+        id: bs_muro
         device_class: opening
         filters:
           delayed_on_off: 2s
@@ -337,6 +373,16 @@ script:
             ESP_LOGD("main", "Este switch %d, turning off", esteStatus);
             id(patio_proyector_oeste).turn_off().perform();
           }
+
+  - id: verify_muro_cover_state
+    then:
+      - if:
+          condition:
+            - lambda: "return id(cover_muro).position == COVER_CLOSED;"
+            - binary_sensor.is_off:
+                id:
+          then:
+            logger.log: "hello"
 
 dallas:
   pin: GPIO14

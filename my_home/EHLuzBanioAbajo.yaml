@@ -1,0 +1,88 @@
+esphome:
+  name: eh-banio-abajo
+  platform: ESP8266
+  board: esp12e
+
+wifi:
+  ssid: !secret wifi_ssid
+  password: !secret wifi_pass
+  fast_connect: true
+
+# Enable logging
+
+logger:
+  level: DEBUG
+  baud_rate: 0 # using RX pin for neopixel bus
+
+# Example configuration entry
+api:
+  services:
+    - service: next_light_effect
+      then:
+        - light.control:
+            id: led
+            effect: ef1
+        - light.addressable_set:
+            red: 100%
+            id: led
+            color_brightness: 100%
+
+number:
+  - platform: template
+    max_value: 32
+    min_value: 0
+    step: 1
+    name: My number
+
+light:
+  - platform: neopixelbus
+    variant: WS2812
+    num_leds: 138
+    pin: GPIO3
+    name: "Luz Espejo Planta baja"
+    id: led
+
+    effects:
+      - random:
+      - random:
+          name: Random Effect With Custom Values
+          transition_length: 5s
+          update_interval: 7s
+      - addressable_flicker:
+      - addressable_color_wipe:
+      - addressable_fireworks:
+      - addressable_random_twinkle:
+      - addressable_scan:
+      - addressable_twinkle:
+      - addressable_rainbow:
+          name: ef1
+          speed: 10
+          width: 50
+
+  # - platform: partition
+  #   name: "LampEspejoBanio_Izquierda"
+  #   segments:
+  #     - id: led
+  #       from: 0
+  #       to: 44
+
+  # - platform: partition
+  #   name: "LampEspejoBanio_Arriba"
+  #   segments:
+  #     - id: led
+  #       from: 45
+  #       to: 68
+
+  # - platform: partition
+  #   name: "LampEspejoBanio_Derecha"
+  #   segments:
+  #     - id: led
+  #       from: 69
+  #       to: 113
+
+  # - platform: partition
+  #   name: "LampEspejoBanio_Abajo"
+  #   segments:
+  #     - id: led
+  #       from: 114
+  #       to: 138
