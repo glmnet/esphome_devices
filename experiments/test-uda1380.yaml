@@ -1,0 +1,21 @@
+esphome:
+  platform: ESP32
+  name: test-esp32
+  board: esp32doit-devkit-v1
+  platformio_options:
+    upload_speed: 921600
+
+packages:
+  wifi: !include ../package.wifi.yaml
+
+api:
+
+ota:
+
+logger:
+
+i2c:
+  scan: true
+
+uda1380:
+  - id: s21

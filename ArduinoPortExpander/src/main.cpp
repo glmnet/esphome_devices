@@ -13,7 +13,7 @@ Ports:
 #include <Arduino.h>
 #include <Wire.h>
 
-//#define DEBUG // remove debug so pin 0 and 1 can be used for IO
+#define DEBUG // remove debug so pin 0 and 1 can be used for IO
 
 #define I2C_ADDRESS 8
 

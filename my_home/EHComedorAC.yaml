@@ -17,18 +17,34 @@ ota:
 logger:
   level: DEBUG
 
+# remote_receiver:
+#   id: rcvr
+#   pin:
+#     number: GPIO14
+#     inverted: True
+#     mode: INPUT_PULLUP
+#   tolerance: 45%
+#   dump: raw
+
+# remote_transmitter:
+#   carrier_duty_percent: 50%
+#   pin: GPIO122
+
 remote_receiver:
   id: rcvr
   pin:
     number: GPIO14
     inverted: True
-    mode: INPUT_PULLUP
+    mode: OUTPUT_OPEN_DRAIN
   tolerance: 45%
-  dump: raw
 
 remote_transmitter:
-  carrier_duty_percent: 50%
-  pin: GPIO12
+  - id: receiver_hack
+    carrier_duty_percent: 100%
+    pin:
+      number: GPIO14
+      inverted: true
+      mode: OUTPUT_OPEN_DRAIN
 
 climate:
   - platform: whirlpool
@@ -50,6 +66,7 @@ binary_sensor:
     filters:
       - invert:
       - delayed_off: 200ms
+
     # on_press:
     #   - logger.log: 'Detected AC is on'
     #   - lambda: |-

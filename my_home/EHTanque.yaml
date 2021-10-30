@@ -10,8 +10,6 @@ wifi:
     !secret wifi_pass
     #bssid: !secret bssid_airport_express
 
-captive_portal:
-
 api:
 
 ota:
@@ -24,23 +22,7 @@ output:
   - platform: gpio
     id: rly1_pump
     pin:
-      number: GPIO3
-      inverted: true
-  - platform: gpio
-    id: rly2_outlet
-    pin:
-      number: GPIO2
-      inverted: true
-  - platform: gpio
-    id: rly3_light
-    pin:
-      number: GPIO16
-      inverted: true
-  - platform: gpio
-    id: RLY4
-    pin:
-      number: GPIO0
-      inverted: true
+      number: GPIO13
 
 switch:
   - platform: restart
@@ -49,15 +31,6 @@ switch:
     name: "Bomba Tanque"
     id: bomba_tanque
     output: rly1_pump
-  - platform: output
-    name: "Toma Tanque"
-    output: rly2_outlet
-
-light:
-  - platform: binary
-    id: luz_tanque
-    name: "Luz tanque"
-    output: rly3_light
 
 binary_sensor:
   - platform: status
@@ -68,7 +41,8 @@ binary_sensor:
   - platform: gpio
     id: flotador_vacio
     pin:
-      number: GPIO13
+      inverted: true
+      number: GPIO3
       mode: INPUT_PULLUP
     name: Tanque abajo vacio
     device_class: problem
@@ -89,15 +63,6 @@ binary_sensor:
       - switch.turn_off: bomba_tanque
   - platform: gpio
     pin:
-      number: GPIO14
-      mode: INPUT_PULLUP
-    name: "Switch luz tanque"
-    internal: true
-    on_state:
-      then:
-        - light.toggle: luz_tanque
-  - platform: gpio
-    pin:
       number: GPIO5
       mode: INPUT_PULLUP
     name: "Tanque abajo desbordado"
@@ -114,23 +79,6 @@ binary_sensor:
     filters:
       - invert:
       - delayed_on_off: 2s # prevent oscilattions of the sensor, we don't need high response time
-  - platform: gpio
-    pin:
-      number: GPIO1
-      mode: INPUT_PULLUP
-    name: Puerta Tanque
-    filters:
-      - invert:
-      - delayed_on_off: 1s
-    on_press: # close
-      light.turn_off: luz_tanque
-    on_release: # open
-      then:
-        if:
-          condition:
-            binary_sensor.is_on: is_dark
-          then:
-            light.turn_on: luz_tanque
 
   - platform: homeassistant
     id: is_dark
@@ -196,13 +144,13 @@ interval:
                 id(tank_liters).publish_state(new_level);
 
 # IO Table
-# q GPIO3  RX         Relay Pump
+# q GPIO13            Relay Pump
 # q GPIO2             Relay Outlet
 # q GPIO16            Relay Light
 # q GPIO0             Relay spare
 # i GPIO5     Green   Tank Overflow
 # i GPIO4     Brown   Tank Full
-# i GPIO13    Orange  Tank Has water (float switch)
+# i GPIO3     Orange  Tank Has water (float switch)
 # i GPIO12    Gray    Water Flow
 # i GPIO14    White   Light SW
 # i GPIO1  TX Purple  Door Reed switch

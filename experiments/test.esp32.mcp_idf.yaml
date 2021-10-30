@@ -1,0 +1,53 @@
+# this is a comment
+
+esphome:
+  name: test-esp32
+  # platform: ESP32
+  # board: nodemcu-32s
+  platformio_options:
+    upload_speed: 921600
+
+esp32:
+  board: nodemcu-32s
+  framework:
+    type: esp-idf
+
+wifi:
+  ssid: !secret wifi_ssid
+  password: !secret wifi_pass
+
+logger:
+
+api:
+  encryption:
+    key: "+/pGf5YDHQMO8ULAlTaynASGLz8m4p0+gzVzcuzdIro="
+
+ota:
+
+mcp23017:
+  id: mcp23017_hub
+
+i2c:
+
+# Individual outputs
+switch:
+  - platform: gpio
+    name: "MCP23017 Pin #0"
+    pin:
+      mcp23xxx: mcp23017_hub
+      # Use pin number 0
+      number: 0
+      mode: OUTPUT
+      inverted: false
+
+# Individual inputs
+binary_sensor:
+  - platform: gpio
+    name: "MCP23017 Pin #1"
+    pin:
+      mcp23xxx: mcp23017_hub
+      # Use pin number 1
+      number: 1
+      # One of INPUT or INPUT_PULLUP
+      mode: INPUT_PULLUP
+      inverted: false

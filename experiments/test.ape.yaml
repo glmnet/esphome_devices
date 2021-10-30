@@ -1,5 +1,5 @@
 esphome:
-  name: test_local
+  name: test_esp8266
   platform: ESP8266
   board: nodemcu
   platformio_options:
@@ -34,23 +34,23 @@ custom_component:
 # define binary outputs, here we have 4, as the relays are inverse logic (a path to ground turns
 # the relay ON), we defined the inverted: true option of ESPHome outputs.
 output:
-- platform: custom
-  type: binary
-  lambda: |-
-    return {ape_binary_output(expander1, 2),
-            ape_binary_output(expander1, 3),
-            ape_binary_output(expander1, 4),
-            ape_binary_output(expander1, 5)};
+  - platform: custom
+    type: binary
+    lambda: |-
+      return {ape_binary_output(expander1, 2),
+              ape_binary_output(expander1, 3),
+              ape_binary_output(expander1, 4),
+              ape_binary_output(expander1, 5)};
 
-  outputs:
-    - id: relay_1
-      inverted: true
-    - id: relay_2
-      inverted: true
-    - id: relay_3
-      inverted: true
-    - id: relay_4
-      inverted: true
+    outputs:
+      - id: relay_1
+        inverted: true
+      - id: relay_2
+        inverted: true
+      - id: relay_3
+        inverted: true
+      - id: relay_4
+        inverted: true
 
 # connect lights to the first 2 relays
 light:
@@ -65,10 +65,10 @@ light:
 
 # connect a fan to the third relay
 fan:
-- platform: binary
-  id: ceiling_fan
-  output: relay_3
-  name: Ceiling fan
+  - platform: binary
+    id: ceiling_fan
+    output: relay_3
+    name: Ceiling fan
 
 # connect a pump to the 4th relay
 switch:
@@ -76,7 +76,6 @@ switch:
     name: Tank pump
     id: tank_pump
     output: relay_4
-
 
 # define binary sensors, use the Arduino PIN number for digital pins and
 # for analog use 14 for A0, 15 for A1 and so on...
@@ -127,5 +126,3 @@ sensor:
         id: analog_a2
         filters:
           - throttle: 2s
-
-

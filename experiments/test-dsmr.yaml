@@ -5,23 +5,27 @@ esphome:
   platformio_options:
     upload_speed: 921600
 
-# packages:
-#   wifi: !include ../package.wifi.yaml
+packages:
+  wifi: !include ../package.wifi.yaml
 
-# api:
+api:
 
-# ota:
+ota:
 
 logger:
-  level: VERBOSE
+  level: VERY_VERBOSE
+  logs:
+    uart_esp8266: DEBUG
+    api.service: DEBUG
 
 uart:
   baud_rate: 115200
   rx_pin: RX
-  rx_buffer_size: 1024
 
 dsmr:
-  decryption_key: !secret decryption_key
+  #decryption_key: !secret decryption_key
+  crc_check: false
+  gas_mbus_id: 2
 
 sensor:
   - platform: dsmr
@@ -32,12 +36,13 @@ sensor:
 
 text_sensor:
   - platform: dsmr
-    identification:
-      name: "dsmr_identification"
-    p1_version:
-      name: "dsmr_p1_version"
+    # identification:
+    #   name: "dsmr_identification"
+    # p1_version:
+    #   name: "dsmr_p1_version"
+    # gas_delivered_text:
+    #   name: "gas delivered raw"
+# external_components:
+#   source: github://glmnet/esphome@dsmr-updates
+#   components: dsmr
 
-external_components:
-  - source: github://glmnet/esphome@dsmr-component
-    components: dsmr
-    refresh: 1 sec

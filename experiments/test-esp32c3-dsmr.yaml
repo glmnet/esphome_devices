@@ -1,0 +1,186 @@
+esphome:
+  name: esp32c3
+  platform: ESP32
+  board: esp32-c3-devkitm-1
+  platformio_options:
+    board_build.f_cpu: 80000000L
+    platform: https://github.com/platformio/platform-espressif32#feature/arduino-idf-master
+  on_boot:
+    then:
+      - if:
+          condition:
+            lambda: return id(has_key);
+          then:
+            - lambda: |-
+                std::string key(id(stored_decryption_key), 32);
+                id(dsmr_instance).set_decryption_key(key);
+          else:
+            - logger.log:
+                level: info
+                format: "Not using decryption key. If you need to set a key use Home Assistant service 'ESPHome:  ${device_name}_set_dsmr_key'"
+
+# Enable logging
+logger:
+
+# Enable Home Assistant API
+api:
+  services:
+    service: set_dsmr_key
+    variables:
+      private_key: string
+    then:
+      - logger.log:
+          format: Setting private key %s. Set to empty string to disable
+          args: [private_key.c_str()]
+      - globals.set:
+          id: has_key
+          value: !lambda "return private_key.length() == 32;"
+      - lambda: |-
+          if (private_key.length() == 32)
+            private_key.copy(id(stored_decryption_key), 32);
+          id(dsmr_instance).set_decryption_key(private_key);
+
+ota:
+  password: "e927baf1b822ebe698d18b07dec266d6"
+
+web_server:
+  port: 80
+
+uart:
+  baud_rate: 115200
+  #rx_pin: GPIO20
+  rx_pin: RX
+
+wifi:
+  ssid: "iRouter"
+  password: "Sunshine.1010"
+
+  # Enable fallback hotspot (captive portal) in case wifi connection fails
+  ap:
+    ssid: "Esp32C3 Fallback Hotspot"
+    password: "K5AY5Ta90RQF"
+
+captive_portal:
+
+globals:
+  - id: has_key
+    type: bool
+    restore_value: yes
+    initial_value: "false"
+  - id: stored_decryption_key
+    type: char[32]
+    restore_value: yes
+
+dsmr:
+  id: dsmr_instance
+  # For Luxembourg users set here your decryption key
+  #decryption_key: !secret decryption_key // enable this when using decryption for Luxembourg; key like '00112233445566778899AABBCCDDEEFF'
+
+sensor:
+  - platform: dsmr
+    energy_delivered_lux:
+      name: "Energy Consumed Luxembourg"
+      state_class: total_increasing
+    energy_delivered_tariff1:
+      name: "Energy Consumed Tariff 1"
+      state_class: total_increasing
+    energy_delivered_tariff2:
+      name: "Energy Consumed Tariff 2"
+      state_class: total_increasing
+    energy_returned_lux:
+      name: "Energy Produced Luxembourg"
+      state_class: total_increasing
+    energy_returned_tariff1:
+      name: "Energy Produced Tariff 1"
+      state_class: total_increasing
+    energy_returned_tariff2:
+      name: "Energy Produced Tariff 2"
+      state_class: total_increasing
+    power_delivered:
+      name: "Power Consumed"
+      accuracy_decimals: 0
+      filters:
+        - multiply: 1000
+    power_returned:
+      name: "Power Produced"
+      accuracy_decimals: 0
+      filters:
+        - multiply: 1000
+    electricity_failures:
+      name: "Electricity Failures"
+      icon: mdi:alert
+    electricity_long_failures:
+      name: "Long Electricity Failures"
+      icon: mdi:alert
+    voltage_l1:
+      name: "Voltage Phase 1"
+    voltage_l2:
+      name: "Voltage Phase 2"
+    voltage_l3:
+      name: "Voltage Phase 3"
+    current_l1:
+      name: "Current Phase 1"
+    current_l2:
+      name: "Current Phase 2"
+    current_l3:
+      name: "Current Phase 3"
+    power_delivered_l1:
+      name: "Power Consumed Phase 1"
+      accuracy_decimals: 0
+      filters:
+        - multiply: 1000
+    power_delivered_l2:
+      name: "Power Consumed Phase 2"
+      accuracy_decimals: 0
+      filters:
+        - multiply: 1000
+    power_delivered_l3:
+      name: "Power Consumed Phase 3"
+      accuracy_decimals: 0
+      filters:
+        - multiply: 1000
+    power_returned_l1:
+      name: "Power Produced Phase 1"
+      accuracy_decimals: 0
+      filters:
+        - multiply: 1000
+    power_returned_l2:
+      name: "Power Produced Phase 2"
+      accuracy_decimals: 0
+      filters:
+        - multiply: 1000
+    power_returned_l3:
+      name: "Power Produced Phase 3"
+      accuracy_decimals: 0
+      filters:
+        - multiply: 1000
+    gas_delivered:
+      name: "Gas Consumed"
+      state_class: total_increasing
+    gas_delivered_be:
+      name: "Gas Consumed Belgium"
+      state_class: total_increasing
+  - platform: uptime
+    name: "Uptime"
+  - platform: wifi_signal
+    name: "Wi-Fi Signal"
+    update_interval: 60s
+
+text_sensor:
+  - platform: dsmr
+    identification:
+      name: "DSMR Identification"
+    p1_version:
+      name: "DSMR Version"
+    p1_version_be:
+      name: "DSMR Version Belgium"
+  - platform: wifi_info
+    ip_address:
+      name: "IP Address"
+    ssid:
+      name: "Wi-Fi SSID"
+    bssid:
+      name: "Wi-Fi BSSID"
+  - platform: version
+    name: "ESPHome Version"
+    hide_timestamp: true
