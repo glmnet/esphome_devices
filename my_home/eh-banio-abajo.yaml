@@ -9,6 +9,7 @@ wifi:
   fast_connect: true
 
 # Enable logging
+ota:
 
 logger:
   level: DEBUG
@@ -29,6 +30,7 @@ api:
 
 number:
   - platform: template
+    optimistic: true
     max_value: 32
     min_value: 0
     step: 1
@@ -86,3 +88,5 @@ light:
   #     - id: led
   #       from: 114
   #       to: 138
+
+web_server:

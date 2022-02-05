@@ -1,9 +1,11 @@
 esphome:
   name: eh-patio
-  platform: ESP8266
-  board: nodemcu
   includes:
     - arduino_port_expander.h
+
+esp8266:
+  board: esp12e
+  restore_from_flash: true
 
 wifi:
   networks:
@@ -374,15 +376,15 @@ script:
             id(patio_proyector_oeste).turn_off().perform();
           }
 
-  - id: verify_muro_cover_state
-    then:
-      - if:
-          condition:
-            - lambda: "return id(cover_muro).position == COVER_CLOSED;"
-            - binary_sensor.is_off:
-                id:
-          then:
-            logger.log: "hello"
+  # - id: verify_muro_cover_state
+  #   then:
+  #     - if:
+  #         condition:
+  #           - lambda: "return id(cover_muro).position == COVER_CLOSED;"
+  #           - binary_sensor.is_off:
+  #               id:
+  #         then:
+  #           logger.log: "hello"
 
 dallas:
   pin: GPIO14

@@ -1,0 +1,380 @@
+# This node controls remote startup and shutdown of a gasoline electricity generator
+
+esphome:
+  name: eh-generador
+  platform: ESP32
+  board: esp32doit-devkit-v1
+  platformio_options:
+    upload_speed: 921600
+  on_boot:
+    # make sure choke is open position, if for some reason generator starts and the thing reboots this will make it run smooth.
+    - script.execute: open_choke
+  on_loop:
+    - if:
+        condition:
+          lambda: |-
+            return id(log_counter) > 0 ? id(log_counter)-- : 0;
+        then:
+          - lambda: "id(v_batt).update();"
+          - logger.log:
+              level: info
+              format: "%d v_batt: %.3f"
+              args: [id(log_counter), id(v_batt).state]
+
+substitutions:
+  device_name: Generador
+
+ota:
+
+logger:
+  baud_rate: 0
+  level: DEBUG
+
+globals:
+  - id: log_counter
+    type: int
+    restore_value: no
+    initial_value: "0"
+
+wifi:
+  ssid: !secret wifi_ssid
+  password: !secret wifi_pass
+
+uart:
+  baud_rate: 9600
+  tx_pin: GPIO17
+  rx_pin: GPIO16
+
+sim800l:
+  registered:
+    id: sim800l_registered
+    name: Generador Registrado red celular
+  rssi:
+    name: Generador RSSI
+  on_sms_received:
+    - logger.log:
+        format: "Received '%s' from %s"
+        args: ["message.c_str()", "sender.c_str()"]
+    - lambda: |-
+        id(sms_sender).publish_state(sender);
+        id(sms_message).publish_state(message);
+
+    # locally handle Generator commands
+    - if:
+        condition:
+          or:
+            - text_sensor.state:
+                id: sms_sender
+                state: !secret glm_phone_number
+            - text_sensor.state:
+                id: sms_sender
+                state: !secret clau_phone_number
+        then:
+          - if:
+              condition:
+                text_sensor.state:
+                  id: sms_message
+                  state: "Generador encender"
+              then:
+                script.execute: turn_on
+          - if:
+              condition:
+                - text_sensor.state:
+                    id: sms_message
+                    state: "Generador apagar"
+              then:
+                script.execute: turn_off
+
+text_sensor:
+  - platform: template
+    id: sms_sender
+    name: "Sms Sender"
+  - platform: template
+    id: sms_message
+    name: "Sms Message"
+
+api:
+  services:
+    - service: send_sms
+      variables:
+        recipient: string
+        message: string
+      then:
+        - sim800l.send_sms:
+            recipient: !lambda "return recipient;"
+            message: !lambda "return message;"
+
+    - service: dial
+      variables:
+        recipient: string
+      then:
+        sim800l.dial:
+          recipient: !lambda "return recipient;"
+    - service: turn_on
+      then:
+        - script.execute: turn_on
+    - service: turn_off
+      then:
+        - script.execute: turn_off
+    - service: dump_batt_voltage
+      then:
+        - globals.set:
+            id: log_counter
+            value: "300"
+    - service: set_servo
+      variables:
+        servo_percent: int
+      then:
+        servo.write:
+          id: choke_valve
+          level: !lambda "return servo_percent / 100.0;"
+
+dallas:
+  pin: GPIO22
+
+output:
+  - platform: gpio
+    id: carburator_fuel_valve
+    pin: GPIO4 # relay 1
+    inverted: true
+  - platform: gpio
+    id: ignition_ground
+    pin: GPIO0 # relay 2
+    inverted: true
+  - platform: gpio
+    id: starter_coil
+    pin: # GPIO2 # relay 3
+      number: GPIO2
+    inverted: true
+
+  - platform: gpio
+    id: battery_saver
+    pin: GPIO15 # relay 4
+    inverted: true
+
+  - platform: ledc
+    frequency: 50 Hz
+    id: choke_valve_output
+    pin: GPIO23
+
+servo:
+  id: choke_valve
+  output: choke_valve_output
+  auto_detach_time: 1s
+
+sensor:
+  - platform: uptime
+    name: ${device_name} Uptime
+
+  - platform: dallas
+    index: 0
+    name: ${device_name} Temperatura Motor
+
+  # - platform: pulse_counter
+  #   id: pc
+  #   pin: GPIO16
+
+  - platform: adc
+    pin: GPIO39
+    id: v_fuente
+    unit_of_measurement: Volt
+    state_class: measurement
+    name: ${device_name} Voltage Fuente
+    update_interval: 30s
+    filters:
+      # 33k / 1k5  -> (33k + 1k5) / 1k5 = 23
+      - multiply: 23.0
+  - platform: adc
+    pin: GPIO36
+    id: v_batt
+    unit_of_measurement: Volt
+    state_class: measurement
+    name: ${device_name} Voltage Bateria
+    update_interval: 30s
+    filters:
+      # 33k / 1k5  -> (33k + 1k5) / 1k5 = 23
+      - multiply: 23.0
+
+  # # there is a pin connected to the spark plug ignition coil open terminal
+  # # (used to stop the engine by grounding it)
+
+  # # via optocoupler pulses low on every spark
+
+  - platform: pulse_counter
+    pin: GPIO34
+    id: engine_rpm_instant
+    update_interval: 300ms
+    count_mode:
+      falling_edge: INCREMENT
+      rising_edge: DISABLE
+
+  - platform: template
+    id: engine_rpm_instant_public
+    name: ${device_name} Motor RPM
+    unit_of_measurement: RPM
+    state_class: measurement
+    lambda: return id(engine_rpm_instant).state;
+    update_interval: never
+
+debug:
+
+script:
+  - id: open_choke # Open is for normal generator run
+    then:
+      # slowly open guarantees smooth startup
+      - servo.write:
+          id: choke_valve
+          level: -65%
+      - delay: 400ms
+      - servo.write:
+          id: choke_valve
+          level: -45%
+      - delay: 400ms
+      - servo.write:
+          id: choke_valve
+          level: -35%
+      - delay: 400ms
+      - servo.write:
+          id: choke_valve
+          level: -5%
+      - delay: 400ms
+      - servo.write:
+          id: choke_valve
+          level: 15%
+      - delay: 300ms
+      - servo.write:
+          id: choke_valve
+          level: 30%
+  - id: close_choke # Close is for startup only
+    then:
+      servo.write:
+        id: choke_valve
+        level: -85%
+
+  - id: starter_max_time
+    mode: single
+    then:
+      - delay: 5s
+      - logger.log:
+          format: "Tiempo arranque agotado"
+          level: info
+
+  - id: turn_on
+    then:
+      - logger.log:
+          format: "Arrancando generador..."
+          level: info
+      - output.turn_off: ignition_ground
+      - output.turn_off: carburator_fuel_valve
+
+      - script.execute: close_choke
+      - delay: 3s
+      - logger.log:
+          format: "Comando arranque..."
+          level: info
+
+      - delay: 1s
+      - script.execute: starter_max_time
+      - output.turn_on: starter_coil
+      - wait_until:
+          or:
+            - not:
+                script.is_running: starter_max_time
+            - for:
+                time: 1s
+                condition:
+                  - sensor.in_range:
+                      id: engine_rpm_instant
+                      above: 700
+
+      - delay: 200ms
+      - output.turn_off: starter_coil
+
+      # check if timed out
+      - if:
+          condition:
+            not:
+              script.is_running: starter_max_time
+          then:
+            - script.execute: open_choke
+            - logger.log:
+                level: INFO
+                format: "Generador no arranco"
+            - script.stop: turn_on
+
+      - delay: 600ms
+      - script.execute: open_choke
+
+      - logger.log:
+          level: INFO
+          format: "Generador arranque normal completo"
+
+  - id: turn_off
+    then:
+      - logger.log: "Stopping generator..."
+      - output.turn_on: carburator_fuel_valve
+      - delay: 1s
+      - output.turn_on: ignition_ground
+      - delay: 10s
+      - output.turn_off: carburator_fuel_valve
+      - output.turn_off: ignition_ground
+
+binary_sensor:
+  - platform: template
+    id: generador_on
+    name: ${device_name} Encendido
+    lambda: !lambda return id(engine_rpm_instant).state > 2700;
+  - platform: gpio
+    pin: GPIO35
+    id: start_switch
+    on_press:
+      - logger.log:
+          level: info
+          format: "start switch"
+      - globals.set:
+          id: log_counter
+          value: "300"
+  - platform: template
+    id: on_ac_power
+
+interval:
+  # battery saver
+  - interval: 1s
+    then:
+      - if:
+          condition:
+            - sensor.in_range:
+                id: v_fuente
+                above: 11.0
+          then:
+            output.turn_on: battery_saver
+          else:
+            if:
+              condition:
+                for:
+                  time: 1 min
+                  condition:
+                    sensor.in_range:
+                      id: v_batt
+                      below: 11.5
+              then:
+                - logger.log:
+                    level: WARN
+                    format: Shutting down due to battery LOW
+                - delay: 2s
+                - output.turn_off: battery_saver
+  - interval: 5s
+    then:
+      if:
+        condition:
+          or:
+            - sensor.in_range:
+                id: engine_rpm_instant_public
+                above: 0
+            - sensor.in_range:
+                id: engine_rpm_instant
+                above: 0
+        then:
+          sensor.template.publish:
+            id: engine_rpm_instant_public
+            state: !lambda return id(engine_rpm_instant).state;

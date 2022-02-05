@@ -4,3 +4,4 @@ substitutions:
 
 <<: !include EHH801_base.yaml
 
+web_server:

@@ -1,14 +1,15 @@
 esphome:
   name: eh-dor-sur-ac
-  platform: ESP8266
-  board: nodemcu
+
+esp8266:
+  board: esp12e
+  restore_from_flash: true
 
 substitutions:
   rgb_receiver_light_entity: light.dormitorio_sur_rgb
 
 packages:
   rgb_receiver: !include rgb_receiver.package.yaml
-
 
 wifi:
   ssid: !secret wifi_ssid
@@ -24,19 +25,19 @@ logger:
 remote_receiver:
   id: rcvr
   pin:
-    number: D5
+    number: GPIO14
     inverted: True
     mode: INPUT_PULLUP
   tolerance: 45%
 
 remote_transmitter:
   carrier_duty_percent: 50%
-  pin: D6
+  pin: GPIO12
 
 climate:
   - platform: tcl112
     sensor: temp_sur
-    name: 'AC Dormitorio Sur'
+    name: "AC Dormitorio Sur"
     supports_heat: True
     supports_cool: True
     receiver_id: rcvr
@@ -71,4 +72,3 @@ sensor:
 binary_sensor:
   - platform: status
     name: "Dormitorio Sur AC Status"
-

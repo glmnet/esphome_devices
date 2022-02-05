@@ -1,0 +1,96 @@
+esphome:
+  platform: esp8266
+  name: test-esp8266
+  board: nodemcuv2
+  platformio_options:
+    upload_speed: 921600
+
+ota:
+
+api:
+
+logger:
+  level: VERBOSE
+  logs:
+    api.service: DEBUG
+
+wifi:
+  ssid: !secret wifi_ssid
+  password: !secret wifi_pass
+
+output:
+  - platform: gpio
+    pin: GPIO2
+    id: led_output
+
+light:
+  platform: binary
+  output: led_output
+  id: led
+
+binary_sensor:
+  - platform: gpio
+    id: flash_btn
+    pin: GPIO0
+    on_press:
+      - light.toggle: led
+  - platform: remote_receiver
+    id: btn_top
+    name: CS_BotonArriba
+    rc_switch_raw:
+      protocol: 6
+      code: "1011110110111101111000110101"
+
+    filters:
+      - delayed_off: 1s
+    on_press:
+      - light.turn_on: led
+      - delay: 200ms
+      - light.turn_off: led
+
+  - platform: remote_receiver
+    id: btn_bottom_left
+    name: CS_BotonIzq
+    rc_switch_raw:
+      protocol: 6
+      code: "1011110110111101111000100101"
+    filters:
+      - delayed_off: 1s
+    on_press:
+      - light.turn_on: led
+      - delay: 200ms
+      - light.turn_off: led
+      - delay: 200ms
+      - light.turn_on: led
+      - delay: 200ms
+      - light.turn_off: led
+
+  - platform: remote_receiver
+    id: btn_right
+    name: CS_BotonDerecho
+    rc_switch_raw:
+      protocol: 6
+      code: "1011110110111101111000010101"
+    filters:
+      - delayed_off: 1s
+    on_press:
+      - light.turn_on: led
+      - delay: 200ms
+      - light.turn_off: led
+      - delay: 200ms
+      - light.turn_on: led
+      - delay: 200ms
+      - light.turn_off: led
+      - delay: 200ms
+      - light.turn_on: led
+      - delay: 200ms
+      - light.turn_off: led
+
+remote_receiver:
+  pin: D1
+
+  # Settings to optimize recognition of RF devices
+  tolerance: 50%
+  filter: 250us
+  idle: 7ms
+  buffer_size: 2kb

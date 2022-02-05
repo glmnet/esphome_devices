@@ -43,55 +43,14 @@ logger:
   logs:
     i2c: DEBUG
     uart: DEBUG
-    sim800l: DEBUG
 
 # Enable Home Assistant API
 api:
-  services:
-    - service: send_sms
-      variables:
-        recipient: string
-        message: string
-      then:
-        - sim800l.send_sms:
-            recipient: !lambda "return recipient;"
-            message: !lambda "return message;"
-    - service: dial
-      variables:
-        recipient: string
-      then:
-        sim800l.dial:
-          recipient: !lambda "return recipient;"
 
 ota:
 
 i2c:
   id: i2ccomponent
-
-uart:
-  baud_rate: 9600
-  tx_pin: TX
-  rx_pin: RX
-  data_bits: 8
-  parity: NONE
-  stop_bits: 1
-
-sim800l:
-  on_sms_received:
-    - logger.log:
-        format: "Received '%s' from %s"
-        args: ["message.c_str()", "sender.c_str()"]
-    - lambda: |-
-        id(sms_sender).publish_state(sender);
-        id(sms_message).publish_state(message);
-
-text_sensor:
-  - platform: template
-    id: sms_sender
-    name: "Sms Sender"
-  - platform: template
-    id: sms_message
-    name: "Sms Message"
 
 custom_component:
   - id: ape1 # bornes verdes
@@ -109,18 +68,6 @@ binary_sensor:
     on_press:
       then:
         - script.execute: api_just_connected
-    on_release:
-      if:
-        condition:
-          for:
-            time: 1min
-            condition:
-              not:
-                api.connected:
-        then:
-          - sim800l.send_sms:
-              recipient: !secret glm_phone_number
-              message: "Conexion a Home Assistant perdida"
 
   - platform: homeassistant
     name: "Switch Escalera 1 from HA"

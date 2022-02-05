@@ -1,12 +1,15 @@
 esphome:
-  platform: ESP8266
-  name: test-esp8266
-  board: d1_mini
+  name: test-esp32
   platformio_options:
     upload_speed: 921600
 
 packages:
   wifi: !include ../package.wifi.yaml
+
+esp32:
+  framework:
+    type: esp-idf
+  board: esp32-c3-devkitm-1
 
 api:
 
@@ -15,16 +18,17 @@ ota:
 logger:
   level: VERY_VERBOSE
   logs:
-    uart_esp8266: DEBUG
+    uart.arduino_esp8266: DEBUG
+    uart.idf: DEBUG
     api.service: DEBUG
 
 uart:
   baud_rate: 115200
-  rx_pin: RX
+  rx_pin: GPIO20
 
 dsmr:
   #decryption_key: !secret decryption_key
-  crc_check: false
+  crc_check: true
   gas_mbus_id: 2
 
 sensor:
@@ -33,6 +37,8 @@ sensor:
       name: dsmr_energy_delivered_tariff1
     energy_delivered_lux:
       name: dsmr_energy_delivered_tarifflux
+    gas_delivered:
+      name: dsmr_gas_delivered
 
 text_sensor:
   - platform: dsmr
@@ -40,9 +46,9 @@ text_sensor:
     #   name: "dsmr_identification"
     # p1_version:
     #   name: "dsmr_p1_version"
-    # gas_delivered_text:
-    #   name: "gas delivered raw"
-# external_components:
-#   source: github://glmnet/esphome@dsmr-updates
-#   components: dsmr
+    gas_delivered_text:
+      name: "gas delivered raw"
 
+external_components:
+  source: github://glmnet/esphome@new-dsmr
+  components: dsmr

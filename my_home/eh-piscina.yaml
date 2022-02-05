@@ -1,0 +1,129 @@
+esphome:
+  name: eh-piscina
+  platformio_options:
+    upload_speed: 921600
+
+wifi:
+  ssid: !secret wifi_ssid
+  password: !secret wifi_pass
+
+logger:
+
+api:
+
+ota:
+# ethernet:
+#   type: LAN8720
+#   mdc_pin: GPIO23
+#   mdio_pin: GPIO18
+#   clk_mode: GPIO0_IN
+#   phy_addr: 1
+#   power_pin: GPIO17
+#   #enable_mdns: true
+
+esp32:
+  framework:
+    type: esp-idf
+  board: nodemcu-32s
+
+binary_sensor:
+  - platform: status
+    name: "Piscina Status"
+  - platform: remote_receiver
+    receiver_id: rx_rf
+    id: btn_top
+    name: CS_BotonArriba
+    rc_switch_raw:
+      protocol: 6
+      code: "1011110110111101111000110101"
+    #            1011110110111101111000110
+    filters:
+      - delayed_off: 1s
+
+  - platform: remote_receiver
+    receiver_id: rx_rf
+    id: btn_bottom_left
+    name: CS_BotonIzq
+    rc_switch_raw:
+      protocol: 6
+      code: "1011110110111101111000100101"
+    filters:
+      - delayed_off: 1s
+
+  - platform: remote_receiver
+    receiver_id: rx_rf
+    id: btn_right
+    name: CS_BotonDerecho
+    rc_switch_raw:
+      protocol: 6
+      code: "1011110110111101111000010101"
+    filters:
+      - delayed_off: 1s
+
+sensor:
+  - platform: uptime
+    name: Piscina uptime
+  - platform: wifi_signal
+    name: Piscina Wifi Signal
+  - platform: dallas
+    name: Piscina Temperatura
+    index: 0
+
+status_led:
+  pin: GPIO12
+
+output:
+  - platform: gpio
+    pin: GPIO4
+    id: relay2
+    inverted: true
+  - platform: gpio
+    pin: GPIO2
+    id: relay3
+    inverted: true
+
+switch:
+  - platform: gpio
+    id: switch_pool_pump
+    name: Bomba Piscina
+    restore_mode: ALWAYS_OFF
+    pin:
+      number: GPIO5
+      inverted: true
+    on_turn_on:
+      # auto turn off after 3 hours
+      - delay: 3h
+      - switch.turn_off: switch_pool_pump
+
+  - platform: gpio
+    name: Bomba riego
+    pin:
+      number: GPIO15
+      inverted: true
+  - platform: restart
+    name: "Piscina Restart"
+
+light:
+  - platform: binary
+    name: Luz fondo este
+    output: relay2
+  - platform: binary
+    name: Luz fondo oeste
+    output: relay3
+
+remote_receiver:
+  - id: rx_rf
+    pin:
+      number: GPIO14
+    dump:
+      - rc_switch
+
+    # Settings to optimize recognition of RF devices
+    tolerance: 50%
+    filter: 150us
+    idle: 6ms
+    buffer_size: 2kb
+
+dallas:
+  pin: GPIO32
+  update_interval: 5s

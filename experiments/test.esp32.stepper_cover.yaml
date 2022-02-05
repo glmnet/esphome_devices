@@ -14,8 +14,8 @@ substitutions:
   change_direction: "True"
 
 external_components:
-  source: github://glmnet/esphome@stepper-tmc2209
-  components: [tmc2209]
+  source: github://glmnet/esphome@stepper-tmc2209-new_uart
+  components: [uart, tmc2209]
 
 esphome:
   name: ${device_name}

@@ -1,0 +1,40 @@
+esphome:
+  name: test-esp32
+  platform: ESP32
+  board: nodemcu-32s
+  platformio_options:
+    upload_speed: 921600
+
+wifi:
+  ssid: !secret wifi_ssid
+  password: !secret wifi_pass
+
+logger:
+  level: DEBUG
+ota:
+
+api:
+
+esp32_touch:
+  setup_mode: true
+  iir_filter: 600ms
+  low_voltage_reference: 0.8
+  high_voltage_reference: 2.4
+  voltage_attenuation: 0.5
+
+binary_sensor:
+  - platform: esp32_touch
+    id: touch_s1
+    pin: GPIO27
+    threshold: 1000
+
+sensor:
+  - platform: template
+    name: TankLevelRaw
+    update_interval: 10s
+    lambda: return touch_s1->get_value();
+    unit_of_measurement: "%"
+    filters:
+      - sliding_window_moving_average:
+          window_size: 25
+          send_every: 1

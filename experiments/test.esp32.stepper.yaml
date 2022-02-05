@@ -12,9 +12,9 @@ substitutions:
   tcool_threshold: "910"
   microsteps: "64"
 
-external_components:
-  source: github://glmnet/esphome@stepper-tmc2209
-  components: [tmc2209]
+# external_components:
+#   source: github://glmnet/esphome@stepper-tmc2209
+#   components: [tmc2209]
 
 esphome:
   name: ${device_name}
@@ -36,7 +36,7 @@ wifi:
 
 # Enable logging
 # logger:
-#   level: INFO
+#   level: DEBUG
 
 # verbose logger over uart causes motor artifacts as pulses are generated in main loop
 logger:
@@ -121,7 +121,7 @@ binary_sensor:
     pin:
       number: GPIO34
       inverted: true
-      mode: INPUT_PULLUP
+      mode: INPUT
     on_press:
       script.execute: stop_at_current_position
 

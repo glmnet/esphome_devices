@@ -65,11 +65,10 @@ binary_sensor:
     pin:
       number: GPIO5
       mode: INPUT_PULLUP
-    name: "Tanque abajo desbordado"
-    device_class: problem
+    name: "Puerta Quincho"
+    device_class: door
     filters:
-      - invert:
-      - delayed_on_off: 2s # prevent oscilattions of the sensor, we don't need high response time
+      - delayed_on_off: 500ms # prevent
   - platform: gpio
     pin:
       number: GPIO4
@@ -88,6 +87,10 @@ sensor:
   - platform: pulse_counter
     pin: GPIO12
     name: "Flujo agua"
+    id: water_flow_sensor
+    unit_of_measurement: "l/min"
+    filters:
+      - lambda: return (x / 450.0); # 450 pulses 1 liter
     on_value:
       - sensor.template.publish:
           id: tank_liters
@@ -95,11 +98,15 @@ sensor:
             float new_level = id(tank_liters).state;
             if (isnan(new_level))
               new_level = id(flotador_vacio).state ? 50.0 : 900.0;
-            new_level += x / 450;
+            new_level += x;
             if (new_level > 900.0 && id(flotador_vacio).state)
               return 900;
             if (new_level > 1000) return 1000;
             return new_level;
+  - platform: integration
+    name: "Agua total"
+    sensor: water_flow_sensor
+    time_unit: min
 
   - platform: template
     id: tank_liters

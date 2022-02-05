@@ -1,0 +1,99 @@
+esphome:
+  name: eh-energia
+
+esp8266:
+  board: esp12e
+  restore_from_flash: true
+
+wifi:
+  password: !secret wifi_pass
+  ssid: !secret wifi_ssid
+
+captive_portal:
+
+ota:
+
+api:
+
+logger:
+  baud_rate: 0
+  level: DEBUG
+
+substitutions:
+  device_name: Energia
+
+uart:
+  baud_rate: 9600
+  tx_pin: TX
+  rx_pin: RX
+
+sensor:
+  - platform: pzemac
+    id: pzem1
+    address: 1
+    current:
+      name: ${device_name} L1 Corriente
+    voltage:
+      name: ${device_name} L1 Voltage
+    frequency:
+      name: ${device_name} L1 Frecuencia
+    energy:
+      name: ${device_name} L1 Energía
+    power:
+      name: "${device_name} L1 Potencia"
+    power_factor:
+      name: ${device_name} L1 Factor de potencia
+    update_interval: never
+  - platform: pzemac
+    id: pzem2
+    address: 2
+    current:
+      name: ${device_name} L2 Corriente
+    voltage:
+      name: ${device_name} L2 Voltage
+    frequency:
+      name: ${device_name} L2 Frecuencia
+    energy:
+      name: ${device_name} L2 Energía
+    power:
+      name: "${device_name} L2 Potencia"
+    power_factor:
+      name: ${device_name} L2 Factor de potencia
+    update_interval: never
+  - platform: pzemac
+    id: pzem3
+    address: 3
+    current:
+      name: ${device_name} L3 Corriente
+    voltage:
+      name: ${device_name} L3 Voltage
+    frequency:
+      name: ${device_name} L3 Frecuencia
+    energy:
+      name: ${device_name} L3 Energía
+    power:
+      name: "${device_name} L3 Potencia"
+    power_factor:
+      name: ${device_name} L3 Factor de potencia
+    update_interval: never
+
+light:
+  platform: neopixelbus
+  pin: GPIO2
+  num_leds: 4
+  variant: WS2812
+  id: led_strip
+  name: Energia Strip
+
+button:
+  - platform: restart
+    name: Energia Restart
+
+interval:
+  - interval: 60s
+    then:
+      - component.update: pzem1
+      - delay: 20s
+      - component.update: pzem2
+      - delay: 20s
+      - component.update: pzem3

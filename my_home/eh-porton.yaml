@@ -1,10 +1,12 @@
 ---
 esphome:
   name: eh-porton
-  platform: ESP8266
-  board: nodemcu
   includes:
     - arduino_port_expander.h
+
+esp8266:
+  board: nodemcu
+  restore_from_flash: true
 
 substitutions:
   device_name: Porton

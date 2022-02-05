@@ -1,12 +1,14 @@
 esphome:
   name: eh-estudio
-  platform: ESP8266
-  board: nodemcu
   includes:
     - arduino_port_expander.h
   on_boot:
     then:
       - fan.turn_off: extractor_banio
+
+esp8266:
+  board: esp12e
+  restore_from_flash: true
 
 wifi:
   ssid: !secret wifi_ssid

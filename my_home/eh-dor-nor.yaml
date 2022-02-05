@@ -69,8 +69,6 @@ switch:
     id: tomas_electricos
     name: "${entity_prefix} tomas electricos"
 
-
-
 binary_sensor:
   - platform: status
     name: "${entity_prefix} status"
@@ -142,7 +140,6 @@ binary_sensor:
 remote_transmitter:
   pin: GPIO14 # ribbon gray
   carrier_duty_percent: 50%
-
 # New board pinout:
 
 # ESP                     Female Header
@@ -169,7 +166,6 @@ remote_transmitter:
 # 8: orange       APE A1           switch cama ventana 2
 # 9: red          APE A0           switch cama ventana 1
 # 10: brown       +5V
-
 
 # 11 GND
 # 12 3.3V
