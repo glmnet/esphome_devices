@@ -1,0 +1,7 @@
+esphome:
+  name: test-completions
+
+
+
+esp32:
+  board: alksesp32

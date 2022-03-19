@@ -4,11 +4,7 @@ esphome:
   platform: ESP8266
   board: nodemcuv2
 
-wifi:
-  ssid: !secret wifi_ssid
-  password: !secret wifi_pass
-
-# Enable logging
+  # Enable logging
 logger:
   baud_rate: 0 # disable log by hardware UART
   level: DEBUG
@@ -22,71 +18,62 @@ api:
 ota:
 
 uart:
-#  id: sim800uart
+  id: sim800uart
   tx_pin: TX #D0
   rx_pin: RX #D1
   baud_rate: 9600
 
 sim800l:
-#  uart_id: sim800uart
+  #  uart_id: sim800uart
   id: sms
+
   on_sms_received:
     lambda: |-
       ESP_LOGD("main", "Received sms from %s: %s", sender.c_str(), message.c_str());
-      id(received_sms_from).publish_state(sender);
-      id(received_sms_body).publish_state(message);
+      // id(received_sms_from).publish_state(sender);
+      // id(received_sms_body).publish_state(message);
+  setup_priority: 32
+  uart_id: sim800uart
+  update_interval: 12s
 
+# text_sensor:
+#   - platform: template
+#     id: received_sms_from
+#   - platform: template
+#     id: received_sms_body
+
+# font:
+#   - file: "Roboto-Regular.ttf"
+#     id: my_font
+#     size: 14
+
+# i2c:
+#   sda: D3
+#   scl: D4
 binary_sensor:
-  platform: gpio
-  name: "Send sms"
-  pin: D8
-  on_press:
-    - sim800l.send_sms:
-        id: sms
-        recipient: "+5493624207774"
-        message: Hello from ESPHome yaml :P
-    # - climate.control:
-    #     id: bb
-    #     mode: COOL
-    # lambda: |-
-    #   id(sms).send_sms("+5493624207774", "Hello there from ESPHome");
-
-text_sensor:
-  - platform: template
-    id: received_sms_from
-  - platform: template
-    id: received_sms_body
-
-
-font:
-  - file: "Roboto-Regular.ttf"
-    id: my_font
-    size: 14
-
-i2c:
-  sda: D3
-  scl: D4
+  - platform: sim800l
 
 sensor:
   - platform: dht
     pin: D2
     model: DHT22
+
     temperature:
       name: "Estudio Test Temperature"
       id: estudio_test_dht_temp
     humidity:
       name: "Estudio Test Humidity"
+
     update_interval: 5s
 
-display:
-  - platform: ssd1306_i2c
-    model: "SSD1306 128x64"
-    reset_pin: D0
-    address: 0x3C
-    lambda: |-
-      it.print(0, 0, id(my_font), id(received_sms_from).state.c_str());
-      it.print(0, 14, id(my_font), id(received_sms_body).state.c_str());
-
+# display:
+#   - platform: ssd1306_i2c
+#     model: "SSD1306 128x64"
+#     reset_pin: D0
+#     address: 0x3C
+#     lambda: |-
+#       it.print(0, 0, id(my_font), id(received_sms_from).state.c_str());
+#       it.print(0, 14, id(my_font), id(received_sms_body).state.c_str());
 
 climate:
   - platform: bang_bang
@@ -100,10 +87,11 @@ climate:
     cool_action:
       lambda: |-
         return;
-# remote_transmitter:
-#   carrier_duty_percent: 50%
-#   pin: D5
 
-# climate:
-#   platform: tcl112
-#   name: 'test AC TCL'
+# # remote_transmitter:
+# #   carrier_duty_percent: 50%
+# #   pin: D5
+
+# # climate:
+# #   platform: tcl112
+# #   name: 'test AC TCL'

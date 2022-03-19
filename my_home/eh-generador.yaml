@@ -37,8 +37,11 @@ globals:
     initial_value: "0"
 
 wifi:
+  reboot_timeout: 0s
   ssid: !secret wifi_ssid
   password: !secret wifi_pass
+
+debug:
 
 uart:
   baud_rate: 9600
@@ -46,11 +49,6 @@ uart:
   rx_pin: GPIO16
 
 sim800l:
-  registered:
-    id: sim800l_registered
-    name: Generador Registrado red celular
-  rssi:
-    name: Generador RSSI
   on_sms_received:
     - logger.log:
         format: "Received '%s' from %s"
@@ -94,6 +92,7 @@ text_sensor:
     name: "Sms Message"
 
 api:
+  reboot_timeout: 0s
   services:
     - service: send_sms
       variables:
@@ -180,20 +179,24 @@ sensor:
     unit_of_measurement: Volt
     state_class: measurement
     name: ${device_name} Voltage Fuente
-    update_interval: 30s
+    update_interval: 2s # should update every 30s due to the filter
     filters:
       # 33k / 1k5  -> (33k + 1k5) / 1k5 = 23
       - multiply: 23.0
+      - sliding_window_moving_average:
+    accuracy_decimals: 3
   - platform: adc
     pin: GPIO36
     id: v_batt
     unit_of_measurement: Volt
     state_class: measurement
     name: ${device_name} Voltage Bateria
-    update_interval: 30s
+    update_interval: 2s # should update every 30s due to the filter
     filters:
       # 33k / 1k5  -> (33k + 1k5) / 1k5 = 23
       - multiply: 23.0
+      - sliding_window_moving_average:
+    accuracy_decimals: 3
 
   # # there is a pin connected to the spark plug ignition coil open terminal
   # # (used to stop the engine by grounding it)
@@ -216,7 +219,9 @@ sensor:
     lambda: return id(engine_rpm_instant).state;
     update_interval: never
 
-debug:
+  - platform: sim800l
+    rssi:
+      name: Generador RSSI
 
 script:
   - id: open_choke # Open is for normal generator run
@@ -336,6 +341,9 @@ binary_sensor:
           value: "300"
   - platform: template
     id: on_ac_power
+  - platform: sim800l
+    registered:
+      name: Generador Registrado red celular
 
 interval:
   # battery saver

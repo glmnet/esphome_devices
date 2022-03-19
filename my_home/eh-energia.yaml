@@ -1,3 +1,12 @@
+# Wiring
+#     L (volt measure)   I current measure
+#  L1  Brown              Green
+#  L2  Red                Orange
+#  L3  Black              Yellow
+#
+#  Neutral: Blue
+
+
 esphome:
   name: eh-energia
 
@@ -17,6 +26,7 @@ api:
 
 logger:
   baud_rate: 0
+
   level: DEBUG
 
 substitutions:
@@ -44,6 +54,7 @@ sensor:
     power_factor:
       name: ${device_name} L1 Factor de potencia
     update_interval: never
+
   - platform: pzemac
     id: pzem2
     address: 2
@@ -78,16 +89,17 @@ sensor:
     update_interval: never
 
 light:
-  platform: neopixelbus
-  pin: GPIO2
-  num_leds: 4
-  variant: WS2812
-  id: led_strip
-  name: Energia Strip
+  - platform: neopixelbus
+    pin: GPIO2
+    num_leds: 4
+    variant: WS2812
+    id: led_strip
+    name: Energia Strip
 
 button:
   - platform: restart
     name: Energia Restart
+
 
 interval:
   - interval: 60s
@@ -97,3 +109,4 @@ interval:
       - component.update: pzem2
       - delay: 20s
       - component.update: pzem3
+
