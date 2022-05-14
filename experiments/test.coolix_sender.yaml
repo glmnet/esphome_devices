@@ -5,7 +5,6 @@ esphome:
   platformio_options:
     upload_speed: 921600
 
-
 logger:
   level: VERY_VERBOSE
   logs:
@@ -51,7 +50,6 @@ climate:
     receiver_id: rcvr
     sensor: dallas_temp
     name: AC
-
 #binary_sensor:
 # - platform: remote_receiver
 #   name: NEC Button X

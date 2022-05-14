@@ -1,4 +1,5 @@
 substitutions:
+  num: "23"
   device: esp${num}
 
 packages:

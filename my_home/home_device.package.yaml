@@ -2,7 +2,7 @@ api:
 
 binary_sensor:
   - platform: status
-    name: "Porton Status"
+    name: "${device_name} Status"
 
 ota:
 
@@ -12,7 +12,7 @@ sensor:
   - platform: wifi_signal
     name: ${device_name} signal
 
-switch:
+button:
   - platform: restart
     name: ${device_name} restart
 

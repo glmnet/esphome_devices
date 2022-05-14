@@ -1,0 +1,25 @@
+esphome:
+  name: test_esp32
+  platform: ESP32
+  board: nodemcu-32s
+  platformio_options:
+    upload_speed: 921600
+
+wifi:
+  ssid: !secret wifi_ssid
+  password: !secret wifi_pass
+
+# Enable logging
+logger:
+
+# Enable Home Assistant API
+api:
+
+ota:
+
+text_sensor:
+  - platform: wifi_info
+    ip_address:
+      name: IP Address
+    mac_address:
+      name: MacAddress

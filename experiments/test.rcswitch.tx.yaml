@@ -19,8 +19,6 @@ api:
   password: alkjsfds
   reboot_timeout: 2s
 
-
-
 # ota:
 
 remote_transmitter:
@@ -29,117 +27,115 @@ remote_transmitter:
   carrier_duty_percent: 100%
   setup_priority: 32.3
 
-
 switch:
-- platform: template
-  id: C3_Lock
-  turn_on_action:
-    - remote_transmitter.transmit_rc_switch_raw:
-        code: '110100000011010100001100'
-        protocol: 1
-        repeat:
+  - platform: template
+    id: C3_Lock
+    turn_on_action:
+      - remote_transmitter.transmit_rc_switch_raw:
+          code: "110100000011010100001100"
+          protocol: 1
+          repeat:
             times: 5
             wait_time: 2ms
-- platform: template
-  id: C3_UnLock
-  turn_on_action:
-    - remote_transmitter.transmit_rc_switch_raw:
-        code: '110100000011010100110000'
-        protocol: 1
-        repeat:
+  - platform: template
+    id: C3_UnLock
+    turn_on_action:
+      - remote_transmitter.transmit_rc_switch_raw:
+          code: "110100000011010100110000"
+          protocol: 1
+          repeat:
             times: 5
             wait_time: 2ms
-- platform: template
-  id: C3_Bajar
-  turn_on_action:
-    - remote_transmitter.transmit_rc_switch_raw:
-        code: '110100000011010100000011'
-        protocol: 1
-        repeat:
+  - platform: template
+    id: C3_Bajar
+    turn_on_action:
+      - remote_transmitter.transmit_rc_switch_raw:
+          code: "110100000011010100000011"
+          protocol: 1
+          repeat:
             times: 5
             wait_time: 2ms
-- platform: template
-  id: C3_Subir
-  turn_on_action:
-    - remote_transmitter.transmit_rc_switch_raw:
-        code: '110100000011010111000000'
-        protocol: 1
-        repeat:
-            times: 5
-            wait_time: 2ms
-
-
-- platform: template
-  id: C4_Lock
-  turn_on_action:
-    - remote_transmitter.transmit_rc_switch_raw:
-        code: '110111010100001100001100'
-        protocol: 1
-        repeat:
-            times: 5
-            wait_time: 2ms
-- platform: template
-  id: C4_UnLock
-  turn_on_action:
-    - remote_transmitter.transmit_rc_switch_raw:
-        code: '110111010100001100110000'
-        protocol: 1
-        repeat:
-            times: 5
-            wait_time: 2ms
-- platform: template
-  id: C4_Bajar
-  turn_on_action:
-    - remote_transmitter.transmit_rc_switch_raw:
-        code: '110111010100001111000000'
-        protocol: 1
-        repeat:
-            times: 5
-            wait_time: 2ms
-- platform: template
-  id: C4_Subir
-  turn_on_action:
-    - remote_transmitter.transmit_rc_switch_raw:
-        code: '110111010100001100000011'
-        protocol: 1
-        repeat:
+  - platform: template
+    id: C3_Subir
+    turn_on_action:
+      - remote_transmitter.transmit_rc_switch_raw:
+          code: "110100000011010111000000"
+          protocol: 1
+          repeat:
             times: 5
             wait_time: 2ms
 
-- platform: template
-  id: C9_Lock
-  turn_on_action:
-    - remote_transmitter.transmit_rc_switch_raw:
-        code: '110100000011110100001100'
-        protocol: 1
-        repeat:
+  - platform: template
+    id: C4_Lock
+    turn_on_action:
+      - remote_transmitter.transmit_rc_switch_raw:
+          code: "110111010100001100001100"
+          protocol: 1
+          repeat:
             times: 5
             wait_time: 2ms
-- platform: template
-  id: C9_UnLock
-  turn_on_action:
-    - remote_transmitter.transmit_rc_switch_raw:
-        code: '110100000011110100110000'
-        protocol: 1
-        repeat:
+  - platform: template
+    id: C4_UnLock
+    turn_on_action:
+      - remote_transmitter.transmit_rc_switch_raw:
+          code: "110111010100001100110000"
+          protocol: 1
+          repeat:
             times: 5
             wait_time: 2ms
-- platform: template
-  id: C9_Bajar
-  turn_on_action:
-    - remote_transmitter.transmit_rc_switch_raw:
-        code: '110100000011110100000011'
-        protocol: 1
-        repeat:
+  - platform: template
+    id: C4_Bajar
+    turn_on_action:
+      - remote_transmitter.transmit_rc_switch_raw:
+          code: "110111010100001111000000"
+          protocol: 1
+          repeat:
             times: 5
             wait_time: 2ms
-- platform: template
-  id: C9_Subir
-  turn_on_action:
-    - remote_transmitter.transmit_rc_switch_raw:
-        code: '110100000011110111000000'
-        protocol: 1
-        repeat:
+  - platform: template
+    id: C4_Subir
+    turn_on_action:
+      - remote_transmitter.transmit_rc_switch_raw:
+          code: "110111010100001100000011"
+          protocol: 1
+          repeat:
+            times: 5
+            wait_time: 2ms
+
+  - platform: template
+    id: C9_Lock
+    turn_on_action:
+      - remote_transmitter.transmit_rc_switch_raw:
+          code: "110100000011110100001100"
+          protocol: 1
+          repeat:
+            times: 5
+            wait_time: 2ms
+  - platform: template
+    id: C9_UnLock
+    turn_on_action:
+      - remote_transmitter.transmit_rc_switch_raw:
+          code: "110100000011110100110000"
+          protocol: 1
+          repeat:
+            times: 5
+            wait_time: 2ms
+  - platform: template
+    id: C9_Bajar
+    turn_on_action:
+      - remote_transmitter.transmit_rc_switch_raw:
+          code: "110100000011110100000011"
+          protocol: 1
+          repeat:
+            times: 5
+            wait_time: 2ms
+  - platform: template
+    id: C9_Subir
+    turn_on_action:
+      - remote_transmitter.transmit_rc_switch_raw:
+          code: "110100000011110111000000"
+          protocol: 1
+          repeat:
             times: 5
             wait_time: 2ms
 

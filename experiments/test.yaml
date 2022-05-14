@@ -19,6 +19,7 @@ logger:
     uart_esp8266: DEBUG
     api.service: DEBUG
 
+api:
 
 output:
   - platform: gpio
@@ -31,7 +32,6 @@ light:
   - platform: binary
     output: led_pin
     id: led_light
-
 
 binary_sensor:
   - platform: gpio
@@ -52,5 +52,3 @@ binary_sensor:
       light.turn_on: led_light
     on_release:
       light.turn_off: led_light
-
-

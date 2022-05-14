@@ -1,0 +1,133 @@
+esphome:
+  name: test-esp32
+  platform: ESP32
+  board: esp-wrover-kit
+  build_path: builds
+  platformio_options:
+    upload_speed: 921600
+
+wifi:
+  ssid: !secret wifi_ssid
+  password: !secret wifi_pass
+  fast_connect: true
+
+logger:
+  level: DEBUG
+
+ota:
+
+api:
+  services:
+    - service: set_q
+      variables:
+        level_percent: int
+        frequency_hz: int
+      then:
+        - logger.log:
+            format: "Setting level: %d freq: %d"
+            args: [level_percent, frequency_hz]
+        - output.ledc.set_frequency:
+            id: pwm_power
+            frequency: !lambda "return frequency_hz;"
+        - output.set_level:
+            id: pwm_power
+            level: !lambda "return level_percent / 100.0;"
+
+i2c:
+  scl: GPIO13
+  sda: GPIO14
+  scan: true
+
+pcf8574:
+  - id: main
+    address: 0x3F
+  - id: aux
+    address: 0x3B
+
+ads1115:
+  address: 0x48
+
+status_led:
+  pin: GPIO12
+
+output:
+  - platform: mcp4725
+    address: 0x60
+    id: AQ0
+  - platform: mcp4725
+    address: 0x61
+    id: AQ1
+  - platform: ledc
+    id: pwm_power
+    pin: GPIO15
+
+light:
+  - platform: monochromatic
+    output: AQ0
+    name: AQ0_Light
+
+  - platform: monochromatic
+    output: AQ1
+    name: AQ1_Light
+
+sensor:
+  - platform: ads1115
+    multiplexer: A0_GND
+    gain: 6.144
+    name: AnalogA0
+    update_interval: 5s
+
+  - platform: ads1115
+    multiplexer: A1_GND
+    gain: 6.144
+    name: AnalogA1
+    update_interval: 5s
+
+  - platform: ads1115
+    multiplexer: A2_GND
+    gain: 6.144
+    name: AnalogA2
+    update_interval: 5s
+
+  - platform: ads1115
+    multiplexer: A3_GND
+    gain: 6.144
+    name: AnalogA3
+    update_interval: 5s
+
+switch:
+  - platform: gpio
+    name: Aux1Command
+    pin:
+      number: GPIO4
+      mode: OUTPUT
+  - platform: gpio
+    name: Aux2Command
+    pin:
+      number: GPIO5
+      mode: OUTPUT
+
+  - platform: gpio
+    name: PinCommand
+    pin:
+      pcf8574: aux
+      number: 0
+      mode: OUTPUT
+  - platform: gpio
+    name: LifterCommand
+    pin:
+      pcf8574: aux
+      number: 1
+      mode: OUTPUT
+  - platform: gpio
+    name: BreakCommand
+    pin:
+      pcf8574: aux
+      number: 2
+      mode: OUTPUT
+  - platform: gpio
+    name: MasterCommand
+    pin:
+      pcf8574: aux
+      number: 3
+      mode: OUTPUT
