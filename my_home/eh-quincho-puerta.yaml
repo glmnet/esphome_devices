@@ -1,0 +1,66 @@
+substitutions:
+  device_name: Quincho puerta
+
+esphome:
+  name: eh-quincho-puerta
+
+esp32:
+  board: esp32doit-devkit-v1
+  framework:
+    type: esp-idf
+
+logger:
+  level: DEBUG
+
+packages:
+  wifi: !include home_device.package.yaml
+
+binary_sensor:
+  - platform: gpio
+    pin:
+      mode:
+        input: True
+        pullup: True
+      inverted: True
+      number: GPIO23
+    name: Switch 1
+
+  - platform: gpio
+    pin:
+      mode:
+        input: True
+        pullup: True
+      inverted: True
+      number: GPIO22
+    name: Switch 2
+
+  - platform: gpio
+    pin:
+      mode:
+        input: True
+        pullup: True
+      inverted: True
+      number: GPIO21
+    name: Switch 3
+
+  - platform: gpio
+    pin:
+      mode:
+        input: True
+        pullup: True
+      inverted: True
+      number: GPIO19
+    name: Switch Ring
+
+  - platform: gpio
+    pin:
+      mode:
+        input: True
+        pullup: True
+      inverted: True
+      number: GPIO18
+    device_class: door
+    name: Puerta Quincho
+
+status_led:
+  pin: GPIO2

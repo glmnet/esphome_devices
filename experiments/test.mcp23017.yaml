@@ -18,11 +18,12 @@ wifi:
 
 i2c:
   scan: true
-  sda: GPIO21
-  scl: GPIO22
+  sda: GPIO14
+  scl: GPIO13
 
 mcp23017:
   id: mcp23017_hub
+  address: 0x21
 
 binary_sensor:
   - platform: gpio

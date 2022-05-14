@@ -1,0 +1,109 @@
+esphome:
+  name: test-esp32
+  build_path: builds
+  platformio_options:
+    upload_speed: 921600
+
+esp32:
+  board: esp32doit-devkit-v1
+  framework:
+    type: arduino
+
+wifi:
+  ssid: !secret wifi_ssid
+  password: !secret wifi_pass
+  fast_connect: true
+
+logger:
+  level: DEBUG
+
+ota:
+
+i2c:
+  scl: GPIO13
+  sda: GPIO14
+  scan: true
+
+ads1115:
+  - address: 0x48
+    id: ads0
+    continuous_mode: true
+
+  - address: 0x49
+    id: ads1
+    continuous_mode: true
+
+status_led:
+  pin: GPIO12
+
+sensor:
+  - platform: ads1115
+    ads1115_id: ads0
+    multiplexer: A0_GND
+    gain: 4.096
+    name: AnalogA0
+    update_interval: 5s
+
+  - platform: ads1115
+    ads1115_id: ads0
+    multiplexer: A1_GND
+    gain: 4.096
+    name: AnalogA1
+    update_interval: 5s
+
+  - platform: ads1115
+    ads1115_id: ads0
+    multiplexer: A2_GND
+    gain: 4.096
+    name: AnalogA2
+    update_interval: 5s
+
+  - platform: ads1115
+    ads1115_id: ads0
+    multiplexer: A3_GND
+    gain: 4.096
+    name: AnalogA3
+    update_interval: 5s
+
+  # - platform: ads1115
+  #   ads1115_id: ads1
+  #   multiplexer: A0_GND
+  #   gain: 4.096
+  #   name: AnalogB0
+  #   update_interval: 5s
+
+  # - platform: ads1115
+  #   ads1115_id: ads1
+  #   multiplexer: A1_GND
+  #   gain: 4.096
+  #   name: AnalogB1
+  #   update_interval: 5s
+
+  # - platform: ads1115
+  #   ads1115_id: ads1
+  #   multiplexer: A2_GND
+  #   gain: 4.096
+  #   name: AnalogB2
+  #   update_interval: 5s
+
+  # - platform: ads1115
+  #   ads1115_id: ads1
+  #   multiplexer: A3_GND
+  #   gain: 4.096
+  #   name: AnalogB3
+  #   update_interval: 5s
+
+  - platform: ina219
+    address: 0x40
+    shunt_resistance: 0.1 ohm
+    current:
+      name: "INA219 Current"
+    power:
+      name: "INA219 Power"
+    bus_voltage:
+      name: "INA219 Bus Voltage"
+    shunt_voltage:
+      name: "INA219 Shunt Voltage"
+    max_voltage: 32.0V
+    max_current: 3.2A
+    update_interval: 5s

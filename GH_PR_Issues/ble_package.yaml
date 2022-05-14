@@ -1,0 +1,5 @@
+logger:
+  logs:
+    esp32_ble_tracker: INFO
+
+esp32_ble_tracker:

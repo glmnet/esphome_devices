@@ -1,0 +1,45 @@
+#https://github.com/esphome/issues/issues/1628
+
+esphome:
+  name: test_esp8266
+  platform: ESP8266
+  board: nodemcuv2
+
+wifi:
+  ssid: !secret wifi_ssid
+  password: !secret wifi_pass
+  fast_connect: true
+
+# Enable logging
+logger:
+
+i2c:
+  sda: 4
+  scl: 5
+  scan: True
+
+font:
+  - file: "../Roboto-Regular.ttf"
+    id: arial
+    size: 12
+
+display:
+  - platform: ssd1306_i2c
+    model: "SSD1306 128x32"
+    address: 0x3C
+    id: display_1
+    update_interval: 10s
+    pages:
+      - id: page1
+        lambda: |-
+          it.print(0, 0, id(arial), "test1");
+
+      - id: page2
+        lambda: |-
+          it.print(0, 0, id(arial), "test2");
+
+# interval:
+#   - interval: 5s
+#     then:
+#       - display.page.show_next: display_1
+#       - component.update: display_1
