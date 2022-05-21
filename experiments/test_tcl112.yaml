@@ -1,12 +1,13 @@
 esphome:
   name: test_tcl112
-  platform: ESP8266
+  platform: esp32
   board: nodemcu
   platformio_options:
     upload_speed: 921600
 
 logger:
   level: VERBOSE
+
 
 wifi:
   ssid: !secret wifi_ssid
@@ -20,7 +21,8 @@ dallas:
   - pin: D4
     id: dallas_component
     update_interval: 60s
-  - pin: D5
+  - pin:
+
 
 sensor:
   - platform: dallas
@@ -35,6 +37,7 @@ remote_receiver:
     number: D5
     inverted: True
     mode: INPUT_PULLUP
+
   tolerance: 50%
   dump: raw
 

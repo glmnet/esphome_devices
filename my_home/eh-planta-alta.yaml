@@ -6,28 +6,9 @@ substitutions:
   # Litros cuando el flotador desactiva
   tanque_flotador_descargando: "40"
 
-esphome:
-  name: eh-planta-alta
-  platform: ESP8266
+esp8266:
   board: nodemcu
 
-  includes:
-    - arduino_port_expander.h
-  on_boot:
-    switch.turn_on: auto_pressure_pump_with_light
-  on_loop:
-    then:
-      # set the common neutral wire relay for patio lights
-      if:
-        condition:
-          or:
-            - light.is_on: luz_patio_este
-            - light.is_on: luz_patio_oeste
-            - light.is_on: luz_patio_proyectores_sureste
-        then:
-          output.turn_on: gpio_relay_5
-        else:
-          output.turn_off: gpio_relay_5
 
 wifi:
   networks:
@@ -38,8 +19,7 @@ wifi:
 
 # Enable logging
 logger:
-  baud_rate: 0 # disable log by hardware UART
-  level: VERBOSE
+  level: DEBUG
   logs:
     i2c: DEBUG
     uart: DEBUG
@@ -52,6 +32,15 @@ ota:
 i2c:
   id: i2ccomponent
 
+esphome:
+  name: eh-planta-alta
+
+  includes:
+    - arduino_port_expander.h
+  on_boot:
+    switch.turn_on: auto_pressure_pump_with_light
+
+
 custom_component:
   - id: ape1 # bornes verdes
     lambda: |-
@@ -63,28 +52,6 @@ custom_component:
       return {ape_component};
 
 binary_sensor:
-  - platform: status
-    name: "Planta Alta Status"
-    on_press:
-      then:
-        - script.execute: api_just_connected
-
-  - platform: homeassistant
-    name: "Switch Escalera 1 from HA"
-    entity_id: binary_sensor.switch_escalera_1
-    on_state:
-      then:
-        if:
-          condition:
-            not:
-              script.is_running: api_just_connected
-          then:
-            - light.toggle: luz_escalera
-
-  - platform: homeassistant
-    # water pump used to raise water from low tank to upper
-    entity_id: switch.bomba_tanque
-    id: bomba_tanque
 
   - platform: custom
     lambda: |-
@@ -178,6 +145,30 @@ binary_sensor:
 
       - name: "Tuberia casa presurizada"
 
+  - platform: status
+    name: "Planta Alta Status"
+    internal: True
+    on_press:
+      then:
+        - script.execute: api_just_connected
+
+  - platform: homeassistant
+    name: "Switch Escalera 1 from HA"
+    entity_id: binary_sensor.switch_escalera_1
+    on_state:
+      then:
+        if:
+          condition:
+            not:
+              script.is_running: api_just_connected
+          then:
+            - light.toggle: luz_escalera
+
+  - platform: homeassistant
+    # water pump used to raise water from low tank to upper
+    entity_id: switch.bomba_elevadora
+    id: bomba_tanque
+
 output:
   - platform: custom
     type: binary
@@ -232,23 +223,49 @@ light:
     id: luz_patio_este
     name: "Luz Patio Este"
     output: gpio_relay_6
+    on_turn_on:
+      script.execute: set_patio_lights_common
+    on_turn_off:
+      script.execute: set_patio_lights_common
+
   - platform: binary
     id: luz_patio_oeste
     name: "Luz Patio Oeste"
     output: gpio_relay_7
+    on_turn_on:
+      script.execute: set_patio_lights_common
+    on_turn_off:
+      script.execute: set_patio_lights_common
+
   - platform: binary
     id: luz_patio_proyectores_sureste
     name: "Patio Proyectores Sureste"
     output: gpio_relay_8
+    on_turn_on:
+      script.execute: set_patio_lights_common
+    on_turn_off:
+      script.execute: set_patio_lights_common
+
 
 script:
+  - id: set_patio_lights_common
+    then:
+      # set the common neutral wire relay for patio lights
+      if:
+        condition:
+          or:
+            - light.is_on: luz_patio_este
+            - light.is_on: luz_patio_oeste
+            - light.is_on: luz_patio_proyectores_sureste
+        then:
+          output.turn_on: gpio_relay_5
+        else:
+          output.turn_off: gpio_relay_5
   - id: api_just_connected
     then:
       - delay: 40s
 
 switch:
-  - platform: restart
-    name: "Planta Alta Restart"
   - platform: output
     output: gpio_pressure_pump
     name: Bomba Presurizadora
@@ -347,7 +364,10 @@ interval:
                 level: WARN
                 format: Apagando bomba, no hay flujo de agua
 
+
 sensor:
+  - platform: uptime
+    name: Planta alta uptime
   - platform: template
     id: tank_liters
     on_value:
@@ -360,6 +380,8 @@ sensor:
     name: Nivel Tanque Arriba
     id: tank_level
     unit_of_measurement: "%"
+
+
 #
 #
 # IO Table

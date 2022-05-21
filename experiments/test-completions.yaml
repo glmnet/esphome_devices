@@ -1,7 +1,52 @@
 esphome:
-  name: test-completions
-
-
+  name: lala
 
 esp32:
   board: alksesp32
+  framework:
+    type: esp-idf
+
+
+binary_sensor:
+  - platform: gpio
+    pin: GPIO2
+    id: bs_gpio2
+    on_click:
+      then:
+        - if:
+            condition:
+              - binary_sensor.is_on: bs_gpio2
+
+output:
+  - platform: gpio
+    id: o_gpio3
+    pin: GPIO3
+
+switch:
+  - platform: gpio
+    id: sw_1
+    pin: GPIO2
+  - platform: output
+    output: o_gpio3
+    id: sw_2
+    on_turn_on:
+      then:
+        - switch.turn_off: sw_1
+
+
+
+# TODO:
+# font:
+#   - file: "fonts/Comic Sans MS.ttf"
+#     id: my_font
+#     size: 20
+
+#   # gfonts://family[@weight]
+#   - file: "gfonts://Roboto"
+#     id: roboto
+#     size: 20
+
+
+
+
+

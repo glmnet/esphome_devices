@@ -1,0 +1,46 @@
+esphome:
+  name: test-esp32
+  platformio_options:
+    upload_speed: 921600
+
+esp32:
+  board: nodemcu-32s
+  framework:
+    type: esp-idf
+
+dallas:
+  pin: GPIO33
+  update_interval: 5s
+
+logger:
+  level: VERY_VERBOSE
+  logs:
+    scheduler: DEBUG
+    dallas.sensor: DEBUG
+
+sensor:
+  # - platform: dallas
+  #   address: 0x5221e03f12646128
+  #   name: Temp1
+  # - platform: dallas
+  #   address: 0xf176c32712646128 # pata rota
+  #   name: Temp2
+  - platform: dallas
+    index: 0
+    name: Temp3
+
+output:
+  - platform: ledc
+    pin: GPIO2
+    id: gpio2_out
+
+light:
+  - platform: monochromatic
+    output: gpio2_out
+    name: test_led
+api:
+ota:
+
+wifi:
+  ssid: !secret wifi_ssid
+  password: !secret wifi_pass

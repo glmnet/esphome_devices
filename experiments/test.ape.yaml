@@ -1,5 +1,5 @@
 esphome:
-  name: test_esp8266
+  name: test-esp8266
   platform: ESP8266
   board: nodemcu
   platformio_options:

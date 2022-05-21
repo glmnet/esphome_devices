@@ -7,7 +7,7 @@ logger:
   esp8266_store_log_strings_in_flash: False
   */
 
-//#define APE_LOGGING
+#define APE_LOGGING
 
 // take advantage of LOG_ defines to decide which code to include
 #ifdef LOG_BINARY_OUTPUT

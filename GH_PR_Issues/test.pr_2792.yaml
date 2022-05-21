@@ -1,0 +1,120 @@
+esphome:
+  name: test-esp8266
+
+# esp8266:
+#   board: nodemcuv2
+
+esp32:
+  board: esp32doit-devkit-v1
+  framework:
+    type: arduino
+
+wifi:
+  ssid: !secret wifi_ssid
+  password: !secret wifi_pass
+  fast_connect: true
+
+logger:
+  level: DEBUG
+
+sim800l:
+  id: as
+
+ota:
+
+api:
+  port: 6053
+
+time:
+  - platform: homeassistant
+    id: homeassistant_time
+    on_time_sync:
+      - delay:
+          days: 1
+
+
+# display:
+#     platform: tm1637
+#     id: tm1637_display
+#     clk_pin: D6
+#     dio_pin: D5
+#     lambda: |-
+#       it.print("0123");
+display:
+  - platform: tm1637
+    id: dsp1
+    # clk_pin: D6
+    # dio_pin: D5
+
+    clk_pin: GPIO23
+    dio_pin: GPIO22
+    update_interval: 500ms
+    lambda: |-
+        static int i = 0;
+        i++;
+        if ((i % 2) == 0)
+          it.strftime("%H.%M", id(homeassistant_time).now());
+        else
+          it.strftime("%H%M", id(homeassistant_time).now());
+
+binary_sensor:
+  - platform: tm1637
+    name: key1-00
+    key: 0
+  - platform: tm1637
+    name: key1-01
+    key: 1
+  - platform: tm1637
+    name: key1-02
+    key: 2
+  - platform: tm1637
+    name: key1-03
+    key: 3
+  - platform: tm1637
+    name: key1-04
+    key: 4
+  - platform: tm1637
+    name: key1-05
+    tm1637_id: dsp1
+    key: 5
+  - platform: tm1637
+    name: key1-06
+    tm1637_id: dsp1
+    key: 6
+  - platform: tm1637
+    name: key1-07
+    tm1637_id: dsp1
+    key: 7
+
+  - platform: tm1637
+    name: key2-00
+    tm1637_id: dsp1
+    key: 8
+  - platform: tm1637
+    name: key2-01
+    tm1637_id: dsp1
+    key: 9
+  - platform: tm1637
+    name: key2-02
+    tm1637_id: dsp1
+    key: 10
+  - platform: tm1637
+    name: key2-03
+    tm1637_id: dsp1
+    key: 11
+  - platform: tm1637
+    name: key2-04
+    tm1637_id: dsp1
+    key: 12
+  - platform: tm1637
+    name: key2-05
+    tm1637_id: dsp1
+    key: 13
+  - platform: tm1637
+    name: key2-06
+    tm1637_id: dsp1
+    key: 14
+  - platform: tm1637
+    name: key2-07
+    tm1637_id: dsp1
+    key: 15

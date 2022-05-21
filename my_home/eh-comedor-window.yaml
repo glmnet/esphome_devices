@@ -1,8 +1,5 @@
 esphome:
   name: eh-comedor-window
-  platform: ESP8266
-  board: nodemcu
-  esp8266_restore_from_flash: yes
 
 wifi:
   ssid: !secret wifi_ssid
@@ -11,6 +8,10 @@ wifi:
 api:
 
 ota:
+
+esp8266:
+  board: nodemcu
+  restore_from_flash: True
 
 logger:
   level: VERBOSE

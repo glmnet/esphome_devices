@@ -68,7 +68,8 @@ binary_sensor:
       - name: Porton Manual
         device_class: garage_door
         filters:
-          delayed_on_off: 2s
+          - delayed_on_off: 2s
+
 # Ribbon:
 # Black: VCC 3.3V
 # White: GND 0V

@@ -1,0 +1,67 @@
+---
+esphome:
+  name: eh-termotanque
+
+esp8266:
+  board: nodemcu
+
+wifi:
+  ssid: !secret wifi_ssid
+  password: !secret wifi_pass
+
+api:
+
+ota:
+
+logger:
+  level: DEBUG
+  baud_rate: 0 # use UART pins for IO
+
+output:
+  - platform: gpio
+    id: rly1
+    pin:
+      number: GPIO13
+
+switch:
+  - platform: output
+    name: "Termotanque switch"
+    id: switch_termotanque
+    output: rly1
+
+binary_sensor:
+  - platform: status
+    name: "Tanque Status"
+  - platform: gpio
+    id: flotador_vacio
+    pin:
+      inverted: true
+      number: GPIO3
+      mode: INPUT_PULLUP
+
+  - platform: gpio
+    pin:
+      number: GPIO5
+      mode: INPUT_PULLUP
+    id: gpio5
+  - platform: gpio
+    pin:
+      number: GPIO4
+      mode: INPUT_PULLUP
+    id: gpio4
+
+
+# IO Table
+# q GPIO13            Relay Pump
+# q GPIO2             Relay Outlet
+# q GPIO16            Relay Light
+# q GPIO0             Relay spare
+# i GPIO5     Green   Tank Overflow
+# i GPIO4     Brown   Tank Full
+# i GPIO3     Orange  Tank Has water (float switch)
+# i GPIO12    Gray    Water Flow
+# i GPIO14    White   Light SW
+# i GPIO1  TX Purple  Door Reed switch
+#   GND       Black
+#   VCC 3.3V  Yellow
+#   5V        Red
