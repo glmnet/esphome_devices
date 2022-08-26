@@ -2,7 +2,10 @@ esphome:
   name: pampa-cable-tool
   on_boot:
     then:
-      - rtttl.play: LaCucarac:d=4,o=6,b=127:c5,c5,c5,8f5,8a5,p,c5,c5,c5,8f5,8a5,p,f5,f5,e5,e5,d5,d5,8c5,p,p,c5,c5,c5,8e5,8g5,p,c5,c5,c5,8e5,8g5,p,c,d,c,a_5,a5,g5,8f5
+      - rtttl.play: !lambda return "LaCucarac:d=4,o=6,b=127:c5,c5,c5,8f5,8a5,p,c5,c5,c5,8f5,8a5,p,f5,f5,e5,e5,d5,d5,8c5,p,p,c5,c5,c5,8e5,8g5,p,c5,c5,c5,8e5,8g5,p,c,d,c,a_5,a5,g5,8f5";
+      - wait_until:
+          rtttl.is_playing:
+
 
 esp32:
   framework:
@@ -40,4 +43,4 @@ output:
     pin: GPIO33
 
 rtttl:
-  output: buzz_output
+  - output: buzz_output

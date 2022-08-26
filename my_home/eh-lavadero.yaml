@@ -51,7 +51,7 @@ binary_sensor:
     pin: GPIO35
     name: Tecla baño quincho
     on_state:
-      - light.toggle: luz_banio_quincho
+      - light.toggle: quincho_banio_light
 
 # CN2: 5 PIN
 # 1  +12V                         Brown
@@ -71,7 +71,7 @@ binary_sensor:
     name: Tecla lavadero 1
     on_state:
       then:
-        - light.toggle: luz_lavadero
+        - light.toggle: lavadero_light
 
   - platform: gpio
     pin: GPIO34
@@ -88,6 +88,7 @@ sensor:
   - platform: dallas
     name: Parrilla Temperatura
     index: 0
+
 
 output:
   - platform: gpio
@@ -114,25 +115,24 @@ button:
 light:
   - platform: binary
     name: Luz pasillo quincho
-    output: relay1
+    output: relay4
   - platform: binary
     name: Luz lavadero
     output: relay2
-    id: luz_lavadero
+    id: lavadero_light
+  - platform: binary
+    name: Luz Parrilla
+    output: relay1
+    icon: mdi:grill
   - platform: binary
     name: Luz baño quincho
     output: relay3
-    id: luz_banio_quincho
-  - platform: binary
-    name: Luz Parrilla
-    output: relay4
+    id: quincho_banio_light
   - platform: fastled_clockless
     pin: GPIO12
-    name: Lavadero Status LED
     num_leds: 1
     chipset: WS2812
     id: status_led
-
 
 dallas:
   pin: GPIO32

@@ -100,7 +100,6 @@ button:
   - platform: restart
     name: Energia Restart
 
-
 interval:
   - interval: 60s
     then:

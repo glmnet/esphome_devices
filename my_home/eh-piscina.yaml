@@ -51,7 +51,6 @@ binary_sensor:
       - delayed_off: 1s
 
   - platform: remote_receiver
-    receiver_id: rx_rf
     id: btn_right
     name: CS_BotonDerecho
     rc_switch_raw:
@@ -59,6 +58,7 @@ binary_sensor:
       code: "1011110110111101111000010101"
     filters:
       - delayed_off: 1s
+
 
 sensor:
   - platform: uptime

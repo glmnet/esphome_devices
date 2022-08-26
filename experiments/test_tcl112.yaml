@@ -36,7 +36,9 @@ remote_receiver:
   pin:
     number: D5
     inverted: True
-    mode: INPUT_PULLUP
+    mode:
+      input: True
+      pullup: True
 
   tolerance: 50%
   dump: raw

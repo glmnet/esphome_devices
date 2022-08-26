@@ -104,7 +104,7 @@ binary_sensor:
   - platform: remote_receiver
     id: R2
     nec:
-      address: 0xFF00
+      address: 0x00FF
       command: 0xE817
     on_press:
       then:
@@ -119,8 +119,8 @@ binary_sensor:
   - platform: remote_receiver
     id: R3
     nec:
-      address: 0xFF00
-      command: 0xBF40
+      address: 0x00FF
+      command: 0x02FD
     on_press:
       then:
         - homeassistant.service:
@@ -134,8 +134,8 @@ binary_sensor:
   - platform: remote_receiver
     id: R4
     nec:
-      address: 0xFF00
-      command: 0xF50A
+      address: 0x00FF
+      command: 0x50AF
     on_press:
       then:
         - homeassistant.service:
@@ -149,8 +149,8 @@ binary_sensor:
   - platform: remote_receiver
     id: R5
     nec:
-      address: 0xFF00
-      command: 0xE31C
+      address: 0x00FF
+      command: 0x38C7
     on_press:
       then:
         - homeassistant.service:
@@ -165,8 +165,8 @@ binary_sensor:
   - platform: remote_receiver
     id: G2
     nec:
-      address: 0xFF00
-      command: 0xED12
+      address: 0x00FF
+      command: 0x48B7
     on_press:
       then:
         - homeassistant.service:
@@ -180,8 +180,8 @@ binary_sensor:
   - platform: remote_receiver
     id: G3
     nec:
-      address: 0xFF00
-      command: 0xB34C
+      address: 0x00FF
+      command: 0x32CD
     on_press:
       then:
         - homeassistant.service:
@@ -195,8 +195,8 @@ binary_sensor:
   - platform: remote_receiver
     id: G4
     nec:
-      address: 0xFF00
-      command: 0xE11E
+      address: 0x00FF
+      command: 0x7887
     on_press:
       then:
         - homeassistant.service:
@@ -210,8 +210,8 @@ binary_sensor:
   - platform: remote_receiver
     id: G5
     nec:
-      address: 0xFF00
-      command: 0xEB14
+      address: 0x00FF
+      command: 0x28D7
     on_press:
       then:
         - homeassistant.service:
@@ -226,8 +226,8 @@ binary_sensor:
   - platform: remote_receiver
     id: B2
     nec:
-      address: 0xFF00
-      command: 0xE916
+      address: 0x00FF
+      command: 0x6897
     on_press:
       then:
         - homeassistant.service:
@@ -241,8 +241,8 @@ binary_sensor:
   - platform: remote_receiver
     id: B3
     nec:
-      address: 0xFF00
-      command: 0xFB04
+      address: 0x00FF
+      command: 0x20DF
     on_press:
       then:
         - homeassistant.service:
@@ -256,7 +256,7 @@ binary_sensor:
   - platform: remote_receiver
     id: B4
     nec:
-      address: 0xFF00
+      address: 0x00FF
       command: 0x708F
     on_press:
       then:
@@ -271,7 +271,7 @@ binary_sensor:
   - platform: remote_receiver
     id: B5
     nec:
-      address: 0xFF00
+      address: 0x00FF
       command: 0xF00F
     on_press:
       then:

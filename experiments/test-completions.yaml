@@ -1,52 +1,72 @@
+esp32:
+  board: esp32doit-devkit-v1
+  framework:
+    type: arduino
+
+
 esphome:
   name: lala
+  comment: |-
+    Testing long block of text
+    this is a block
+    quote long description
+    text
 
-esp32:
-  board: alksesp32
-  framework:
-    type: esp-idf
+    thinghy
 
+script:
+  - id: x1 # comment after text
+    then:
+      - dfplayer.play:
+          file: !lambda return 32;
+          loop: !lambda |- # comment
+            return true;
+      - dfplayer.set_volume:
+          id: df1
+          volume: !lambda return (32);
+      - media_player.play: pepex
+      - script.execute: |- # comment
+          x1
+        # this is green comment and must be brown above
+      - lambda: return id(x1).execute();
+          code // below lambda, invalid? without | or >
+      - lambda: 'return id(x1).execute();'
+      - lambda: "return id(x1)/* WOW */.execute(); // comment in " # comment out
 
-binary_sensor:
-  - platform: gpio
-    pin: GPIO2
-    id: bs_gpio2
-    on_click:
-      then:
-        - if:
-            condition:
-              - binary_sensor.is_on: bs_gpio2
+      - delay: "10s"
+      - lambda: !lambda |- # comment
+          /* Comment block
+           */
+          id(x1).execute();
+          return id(x1).execute();
+          prep: lkjasfd
 
-output:
-  - platform: gpio
-    id: o_gpio3
-    pin: GPIO3
+          lskjdf l
+          while (true) { do const int [ volatile ] };
 
-switch:
-  - platform: gpio
-    id: sw_1
-    pin: GPIO2
-  - platform: output
-    output: o_gpio3
-    id: sw_2
-    on_turn_on:
-      then:
-        - switch.turn_off: sw_1
-
-
-
-# TODO:
-# font:
-#   - file: "fonts/Comic Sans MS.ttf"
-#     id: my_font
-#     size: 20
-
-#   # gfonts://family[@weight]
-#   - file: "gfonts://Roboto"
-#     id: roboto
-#     size: 20
-
+      - lambda: >- # comment
+          return id(x1).execute();
+          // id(x1).execute();
+      - lambda: |- # comment
+          id(x1).execute();
+      - lambda: !lambda return id(x1).execute();
 
 
+media_player:
+  - platform: i2s_audio
+    dac_type: external
+    mode: stereo
+    id: pepex
+    i2s_bclk_pin: GPIO22
+    i2s_dout_pin: GPIO21
+    i2s_lrclk_pin: GPIO19
 
 
+uart:
+  - baud_rate: 9600
+    tx_pin: GPIO3
+    id: ux1
+
+dfplayer:
+  - uart_id: ux1
+    id: df1

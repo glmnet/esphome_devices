@@ -66,4 +66,4 @@ light:
     segments:
       - id: led
         from: 114
-        to: 138
+        to: 137

@@ -26,8 +26,7 @@ binary_sensor:
 
 sensor:
   - platform: dallas
-    #address: 0xF77AF93F12646128
-    index: 0
+    address: 0xF77AF93F12646128
     id: dallas_temp
     internal: true
 

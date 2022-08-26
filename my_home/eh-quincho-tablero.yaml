@@ -2,7 +2,7 @@
 #            This is also red wire on lipo batteries balancer
 
 
-# CN1: 8 PIN                               WIRE
+# CN1: 8 PIN                               WIRE UTP 8 PIN
 # 1  GND                                   Blue
 # 2  GPIO2      Tanque Flotador            White/Blue      4k7 ext pullup
 # 3  GPIO39     Tanque Lleno               Green           4k7 ext pullup
@@ -12,8 +12,16 @@
 # 7  GPIO36     TT Testigo Calientador     White/Brown     10k ext pull up
 # 8             +3.3 V                     Brown
 
+# CN2: 5 PIN                               WIRE 5 PIN
+# 1  GPIO3                                 Tan
+# 2  GPIO1                                 Brown
+# 3  GPIO4      Barrera                    White
+# 4  +12V                                  Red
+# 5  GND                                   Blue
+
 substitutions:
-  device_name: Quincho tablero
+  device_name: Tablero quincho
+
 esphome:
   name: eh-quincho-tablero
   platformio_options:
@@ -23,7 +31,6 @@ esphome:
       - light.turn_on:
           id: status_led
           effect: Status Led
-
 
 wifi:
   ssid: !secret wifi_ssid
@@ -51,8 +58,6 @@ esp32:
   board: nodemcu-32s
 
 binary_sensor:
-  - platform: status
-    name: ${device_name} Status
   - platform: gpio
     id: flotador_vacio
     pin:
@@ -93,8 +98,17 @@ binary_sensor:
     filters:
       - delayed_on_off: 2s
   - platform: template
-    name: Termotanque calentando
+    name: Calentando termotanque quincho
     id: boiler_heating
+  - platform: gpio
+    name: Barrera quincho
+    pin:
+      number: GPIO4
+      inverted: True
+      mode:
+        pullup: True
+        input: True
+
 
 sensor:
   - platform: uptime
@@ -102,8 +116,11 @@ sensor:
   - platform: wifi_signal
     name: ${device_name} Wifi Signal
   - platform: dallas
-    name: Termotanque Temperatura
+    name: Temperatura termotanque quincho
     address: 0x5221e03f12646128
+    filters:
+      - filter_out: 85.0
+
   - platform: pulse_counter
     pin: GPIO35
     name: "Flujo agua"
@@ -174,11 +191,11 @@ output:
 
 button:
   - platform: restart
-    name: ${device_name} restart
+    name: Reiniciar ${device_name}
 
 switch:
   - platform: output
-    name: Termotanque quincho
+    name: Encendido termotanque quincho
     output: relay4
     id: switchBoiler
   - platform: output
@@ -217,7 +234,6 @@ light:
 
 dallas:
   pin: GPIO33
-  update_interval: 5s
 
 interval:
   - interval: 1s

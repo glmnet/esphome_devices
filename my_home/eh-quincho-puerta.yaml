@@ -1,5 +1,5 @@
 substitutions:
-  device_name: Quincho puerta
+  device_name: Quincho interruptores puerta
 
 esphome:
   name: eh-quincho-puerta
@@ -47,7 +47,7 @@ binary_sensor:
         pullup: True
       inverted: True
       number: GPIO23
-    name: Switch 1
+    name: Switch 1 puerta quincho
 
   - platform: gpio
     pin:
@@ -56,7 +56,7 @@ binary_sensor:
         pullup: True
       inverted: True
       number: GPIO22
-    name: Switch 2
+    name: Switch 2 puerta quincho
 
   - platform: gpio
     pin:
@@ -65,7 +65,7 @@ binary_sensor:
         pullup: True
       inverted: True
       number: GPIO21
-    name: Switch 3
+    name: Switch 3 puerta quincho
 
   - platform: gpio
     pin:
@@ -74,7 +74,7 @@ binary_sensor:
         pullup: True
       inverted: True
       number: GPIO18
-    name: Switch Ring
+    name: Timbre quincho
 
   - platform: gpio
     pin:
@@ -83,7 +83,7 @@ binary_sensor:
       inverted: True
       number: GPIO5
     device_class: door
-    name: Puerta Quincho
+    name: Puerta frente quincho
 
 status_led:
   pin: GPIO2

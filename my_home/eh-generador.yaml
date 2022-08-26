@@ -2,24 +2,30 @@
 
 esphome:
   name: eh-generador
-  platform: ESP32
-  board: esp32doit-devkit-v1
   platformio_options:
     upload_speed: 921600
   on_boot:
     # make sure choke is open position, if for some reason generator starts and the thing reboots this will make it run smooth.
-    - script.execute: open_choke
+    - delay: 2s
+    - servo.write:
+        id: choke_valve
+        level: 30%
   on_loop:
     - if:
         condition:
-          lambda: |-
-            return id(log_counter) > 0 ? id(log_counter)-- : 0;
+          - lambda: |-
+             return id(log_counter) > 0 ? id(log_counter)-- : 0;
         then:
           - lambda: "id(v_batt).update();"
           - logger.log:
               level: info
               format: "%d v_batt: %.3f"
               args: [id(log_counter), id(v_batt).state]
+
+esp32:
+  board: esp32doit-devkit-v1
+  framework:
+    type: arduino
 
 substitutions:
   device_name: Generador
@@ -28,7 +34,12 @@ ota:
 
 logger:
   baud_rate: 0
-  level: DEBUG
+  level: VERBOSE
+  logs:
+    pulse_counter: INFO
+    sensor: INFO
+    adc: INFO
+
 
 globals:
   - id: log_counter
@@ -82,6 +93,20 @@ sim800l:
                     state: "Generador apagar"
               then:
                 script.execute: turn_off
+  # on_incoming_call:
+  #   - logger.log:
+  #       format: "Incoming call from '%s'"
+  #       args: ["caller_id.c_str()"]
+  #   - lambda: |-
+  #       id(caller_id_text_sensor).publish_state(caller_id);
+  #   # - delay: 1s
+  #   # - sim800l.disconnect:
+  # on_call_connected:
+  #   - logger.log:
+  #       format: "*************** call connected"
+
+  # on_call_disconnected:
+  #   - logger.log: "*************** call disconnected"
 
 text_sensor:
   - platform: template
@@ -90,6 +115,9 @@ text_sensor:
   - platform: template
     id: sms_message
     name: "Sms Message"
+  - platform: template
+    id: caller_id_text_sensor
+    name: "Caller ID"
 
 api:
   reboot_timeout: 0s
@@ -100,8 +128,8 @@ api:
         message: string
       then:
         - sim800l.send_sms:
-            recipient: !lambda "return recipient;"
-            message: !lambda "return message;"
+            recipient: !lambda return recipient;
+            message: !lambda return message;
 
     - service: dial
       variables:
@@ -109,6 +137,13 @@ api:
       then:
         sim800l.dial:
           recipient: !lambda "return recipient;"
+    # - service: connect
+    #   then:
+    #     - sim800l.connect:
+    # - service: disconnect
+    #   then:
+    #     - sim800l.disconnect:
+
     - service: turn_on
       then:
         - script.execute: turn_on
@@ -126,7 +161,15 @@ api:
       then:
         servo.write:
           id: choke_valve
-          level: !lambda "return servo_percent / 100.0;"
+          level: !lambda |-
+            // this is a c comment
+            return servo_percent / 100.0;
+    - service: open_choke
+      then:
+        - script.execute: open_choke
+    - service: close_choke
+      then:
+        - script.execute: close_choke
 
 dallas:
   pin: GPIO22
@@ -160,6 +203,8 @@ servo:
   id: choke_valve
   output: choke_valve_output
   auto_detach_time: 1s
+  transition_length: 400ms
+
 
 sensor:
   - platform: uptime
@@ -216,7 +261,7 @@ sensor:
     name: ${device_name} Motor RPM
     unit_of_measurement: RPM
     state_class: measurement
-    lambda: return id(engine_rpm_instant).state;
+    lambda: !lambda return id(engine_rpm_instant).state;
     update_interval: never
 
   - platform: sim800l
@@ -246,7 +291,7 @@ script:
       - servo.write:
           id: choke_valve
           level: 15%
-      - delay: 300ms
+      - delay: 400ms
       - servo.write:
           id: choke_valve
           level: 30%
@@ -334,7 +379,7 @@ binary_sensor:
     id: start_switch
     on_press:
       - logger.log:
-          level: info
+          level: INFO
           format: "start switch"
       - globals.set:
           id: log_counter
@@ -386,3 +431,7 @@ interval:
           sensor.template.publish:
             id: engine_rpm_instant_public
             state: !lambda return id(engine_rpm_instant).state;
+
+button:
+  - platform: restart
+    name: Reiniciar generador
