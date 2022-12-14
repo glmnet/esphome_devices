@@ -1,7 +1,6 @@
 # JST PIN 1: Looking at the socket horizontally on the PCB, when the notches where latches are inseterd (cutoffs) are at the top, the pin one is at the left.
 #            This is also red wire on lipo batteries balancer
 
-
 # CN1: 8 PIN                               WIRE UTP 8 PIN
 # 1  GND                                   Blue
 # 2  GPIO2      Tanque Flotador            White/Blue      4k7 ext pullup
@@ -21,6 +20,7 @@
 
 substitutions:
   device_name: Tablero quincho
+  tank_max_level: "1000" # liters
 
 esphome:
   name: eh-quincho-tablero
@@ -109,7 +109,6 @@ binary_sensor:
         pullup: True
         input: True
 
-
 sensor:
   - platform: uptime
     name: ${device_name} uptime
@@ -138,20 +137,23 @@ sensor:
             new_level += x;
             if (new_level > 900.0 && id(flotador_vacio).state)
               return 900;
-            if (new_level > 1000) return 1000;
+            if (new_level > ${tank_max_level}) return ${tank_max_level};
             return new_level;
+    total:
+      name: "Agua total"
+      filters:
+        - multiply: 0.00222222222 # x / 450
+        - multiply: 0.001 # x / 1000
+      unit_of_measurement: m³
+      device_class: water
+      state_class: total_increasing
+      icon: mdi:water
+      accuracy_decimals: 3
+
   - platform: template
     id: tank_liters
-    on_value:
-      - sensor.template.publish:
-          id: tank_level
-          # tank max is 1000 liters, convert to %
-          state: !lambda "return x/10.0;"
-    unit_of_measurement: litre
-  - platform: template
+    unit_of_measurement: l
     name: Nivel Tanque Abajo
-    id: tank_level
-    unit_of_measurement: "%"
   - platform: adc
     pin: GPIO36
     name: Termotanque calentando LDR

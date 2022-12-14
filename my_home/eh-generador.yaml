@@ -14,7 +14,7 @@ esphome:
     - if:
         condition:
           - lambda: |-
-             return id(log_counter) > 0 ? id(log_counter)-- : 0;
+              return id(log_counter) > 0 ? id(log_counter)-- : 0;
         then:
           - lambda: "id(v_batt).update();"
           - logger.log:
@@ -33,13 +33,11 @@ substitutions:
 ota:
 
 logger:
-  baud_rate: 0
-  level: VERBOSE
+  level: DEBUG
   logs:
     pulse_counter: INFO
     sensor: INFO
     adc: INFO
-
 
 globals:
   - id: log_counter
@@ -52,14 +50,18 @@ wifi:
   ssid: !secret wifi_ssid
   password: !secret wifi_pass
 
-debug:
-
 uart:
-  baud_rate: 9600
-  tx_pin: GPIO17
-  rx_pin: GPIO16
+  - id: sim800l_uart
+    baud_rate: 9600
+    tx_pin: GPIO17
+    rx_pin: GPIO16
+  - id: pm_uart
+    baud_rate: 9600
+    tx_pin: GPIO10
+    rx_pin: GPIO14
 
 sim800l:
+  uart_id: sim800l_uart
   on_sms_received:
     - logger.log:
         format: "Received '%s' from %s"
@@ -93,20 +95,39 @@ sim800l:
                     state: "Generador apagar"
               then:
                 script.execute: turn_off
-  # on_incoming_call:
-  #   - logger.log:
-  #       format: "Incoming call from '%s'"
-  #       args: ["caller_id.c_str()"]
-  #   - lambda: |-
-  #       id(caller_id_text_sensor).publish_state(caller_id);
-  #   # - delay: 1s
-  #   # - sim800l.disconnect:
-  # on_call_connected:
-  #   - logger.log:
-  #       format: "*************** call connected"
+  on_incoming_call:
+    - logger.log:
+        format: "Incoming call from '%s'"
+        args: ["caller_id.c_str()"]
+    - lambda: |-
+        id(caller_id_text_sensor).publish_state(caller_id);
+    - delay: 1s
+    - sim800l.disconnect:
+  on_call_connected:
+    - logger.log:
+        format: "*************** call connected"
+    - if:
+        condition:
+          - switch.is_on: auto_disconnect_call
+        then:
+          - logger.log:
+              format: "*************** auto disconnecting..."
+          - sim800l.disconnect
 
-  # on_call_disconnected:
-  #   - logger.log: "*************** call disconnected"
+  on_call_disconnected:
+    - logger.log: "*************** call disconnected"
+  on_ussd_received:
+    - logger.log:
+        format: "Received '%s'"
+        args: ["ussd.c_str()"]
+    - lambda: |-
+        id(ussd_message).publish_state(ussd);
+
+switch:
+  - platform: template
+    name: "Auto disconnect call"
+    id: auto_disconnect_call
+    optimistic: True
 
 text_sensor:
   - platform: template
@@ -118,6 +139,9 @@ text_sensor:
   - platform: template
     id: caller_id_text_sensor
     name: "Caller ID"
+  - platform: template
+    id: ussd_message
+    name: "Ussd Code"
 
 api:
   reboot_timeout: 0s
@@ -137,12 +161,16 @@ api:
       then:
         sim800l.dial:
           recipient: !lambda "return recipient;"
-    # - service: connect
+    - service: connect
+      then:
+        - sim800l.connect:
+    - service: disconnect
+      then:
+        - sim800l.disconnect:
+    # - service: send_ussd
     #   then:
-    #     - sim800l.connect:
-    # - service: disconnect
-    #   then:
-    #     - sim800l.disconnect:
+    #     - sim800l.send_ussd:
+    #         ussd: "*111#"
 
     - service: turn_on
       then:
@@ -205,7 +233,6 @@ servo:
   auto_detach_time: 1s
   transition_length: 400ms
 
-
 sensor:
   - platform: uptime
     name: ${device_name} Uptime
@@ -213,10 +240,6 @@ sensor:
   - platform: dallas
     index: 0
     name: ${device_name} Temperatura Motor
-
-  # - platform: pulse_counter
-  #   id: pc
-  #   pin: GPIO16
 
   - platform: adc
     pin: GPIO39
@@ -242,11 +265,10 @@ sensor:
       - multiply: 23.0
       - sliding_window_moving_average:
     accuracy_decimals: 3
+  # there is a pin connected to the spark plug ignition coil open terminal
+  # (used to stop the engine by grounding it)
 
-  # # there is a pin connected to the spark plug ignition coil open terminal
-  # # (used to stop the engine by grounding it)
-
-  # # via optocoupler pulses low on every spark
+  # via optocoupler pulses low on every spark
 
   - platform: pulse_counter
     pin: GPIO34
@@ -267,6 +289,26 @@ sensor:
   - platform: sim800l
     rssi:
       name: Generador RSSI
+  - platform: pzemac
+    id: pzem1
+    address: 0xF8
+    voltage:
+      name: Generador voltage
+    current:
+      name: Generador corriente
+    energy:
+      name: Generador energia
+    power:
+      name: Generador potencia
+    frequency:
+      name: Generador frecuencia
+    power_factor:
+      name: Generador factor potencia
+    update_interval: 10s
+
+modbus:
+  # used by pzemac
+  - uart_id: pm_uart
 
 script:
   - id: open_choke # Open is for normal generator run
@@ -435,3 +477,8 @@ interval:
 button:
   - platform: restart
     name: Reiniciar generador
+  - platform: template
+    name: Generador reiniciar contador energia
+    on_press:
+      then:
+        - pzemac.reset_energy: pzem1

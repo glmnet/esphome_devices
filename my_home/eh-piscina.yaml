@@ -3,6 +3,11 @@ esphome:
   platformio_options:
     upload_speed: 921600
 
+esp32:
+  framework:
+    type: esp-idf
+  board: nodemcu-32s
+
 wifi:
   ssid: !secret wifi_ssid
   password: !secret wifi_pass
@@ -20,11 +25,6 @@ ota:
 #   phy_addr: 1
 #   power_pin: GPIO17
 #   #enable_mdns: true
-
-esp32:
-  framework:
-    type: esp-idf
-  board: nodemcu-32s
 
 binary_sensor:
   - platform: status
@@ -59,15 +59,34 @@ binary_sensor:
     filters:
       - delayed_off: 1s
 
-
 sensor:
   - platform: uptime
     name: Piscina uptime
   - platform: wifi_signal
     name: Piscina Wifi Signal
   - platform: dallas
-    name: Piscina Temperatura
+    name: Piscina Temperatura sensor en tubo
+    id: pipe_temperature_sensor
+    entity_category: diagnostic
     index: 0
+    on_value:
+      then:
+        - if:
+            condition:
+              and:
+                - switch.is_on: switch_pool_pump
+                - not:
+                    - script.is_running: update_pool_temperature_await
+            then:
+              - sensor.template.publish:
+                  id: pool_temperature_sensor
+                  state: !lambda return x;
+
+  - platform: template
+    name: Piscina Temperatura
+    id: pool_temperature_sensor
+    device_class: temperature
+    unit_of_measurement: ºC
 
 status_led:
   pin: GPIO12
@@ -91,9 +110,12 @@ switch:
       number: GPIO5
       inverted: true
     on_turn_on:
+      - script.execute: update_pool_temperature_await
       # auto turn off after 3 hours
       - delay: 3h
       - switch.turn_off: switch_pool_pump
+    on_turn_off:
+      - script.stop: update_pool_temperature_await
 
   - platform: gpio
     name: Bomba riego
@@ -127,3 +149,10 @@ remote_receiver:
 dallas:
   pin: GPIO32
   update_interval: 5s
+
+script:
+  - id: update_pool_temperature_await
+    mode: single
+    then:
+      - delay:
+          minutes: 5

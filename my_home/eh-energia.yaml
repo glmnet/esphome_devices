@@ -6,7 +6,6 @@
 #
 #  Neutral: Blue
 
-
 esphome:
   name: eh-energia
 
@@ -14,9 +13,8 @@ esp8266:
   board: esp12e
   restore_from_flash: true
 
-wifi:
-  password: !secret wifi_pass
-  ssid: !secret wifi_ssid
+packages:
+  wifi: !include ../package.wifi.yaml
 
 captive_portal:
 
@@ -26,8 +24,7 @@ api:
 
 logger:
   baud_rate: 0
-
-  level: DEBUG
+  level: VERY_VERBOSE
 
 substitutions:
   device_name: Energia
@@ -36,6 +33,7 @@ uart:
   baud_rate: 9600
   tx_pin: TX
   rx_pin: RX
+  #stop_bits: 2
 
 sensor:
   - platform: pzemac
@@ -49,6 +47,13 @@ sensor:
       name: ${device_name} L1 Frecuencia
     energy:
       name: ${device_name} L1 Energía
+      filters:
+        - lambda: |-
+            if (x < 40000000.0)
+              return x;
+            else
+              return {};
+
     power:
       name: "${device_name} L1 Potencia"
     power_factor:
@@ -91,21 +96,40 @@ sensor:
 light:
   - platform: neopixelbus
     pin: GPIO2
-    num_leds: 4
+    num_leds: 3
     variant: WS2812
     id: led_strip
     name: Energia Strip
+    effects:
+      - addressable_lambda:
+          name: Voltage
+          update_interval: 1s
+          lambda: |-
+            it[0] = Color(255, 127, 0);
+            it[1] = Color(0, 127, 255);
+            it[2] = Color(0, 127, 0);
+      - addressable_lambda:
+          name: Random
+          update_interval: 1s
+          lambda: |-
+            it[0] = Color::random_color();
+            it[1] = Color::random_color();
+            it[2] = Color::random_color();
 
 button:
   - platform: restart
     name: Energia Restart
+  # - platform: template
+  #   name: Reset PZEM
+  #   on_press:
+  #     then:
+  #       - pzemac.reset_energy: pzem1
 
 interval:
-  - interval: 60s
+  - interval: 30s
     then:
       - component.update: pzem1
-      - delay: 20s
+      - delay: 10s
       - component.update: pzem2
-      - delay: 20s
+      - delay: 10s
       - component.update: pzem3
-

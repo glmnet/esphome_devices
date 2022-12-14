@@ -9,9 +9,9 @@ esp8266:
 
 wifi:
   networks:
-    #ssid: !secret wifi_ssid
+    ssid: !secret wifi_ssid
     password: !secret wifi_pass
-    bssid: !secret bssid_airport_express
+    #bssid: !secret bssid_airport_express
 
 captive_portal:
 

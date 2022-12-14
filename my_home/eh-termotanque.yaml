@@ -20,15 +20,13 @@ logger:
 output:
   - platform: gpio
     id: rly1
-    pin:
-      number: GPIO13
+    pin: GPIO13
 
 switch:
   - platform: output
     name: "Encendido termotanque casa"
     id: switchBoiler
     output: rly1
-    restore_mode: ALWAYS_ON
 
 binary_sensor:
   - platform: template
@@ -42,9 +40,10 @@ sensor:
   - platform: dallas
     name: Temperatura termotanque casa
     address: 0xf176c32712646128
+    id: temperature_sensor
   - platform: adc
     pin: A0
-    name: LDR Termotanque casa
+    id: ldr
     entity_category: diagnostic
     update_interval: 10s
     on_value:
@@ -52,3 +51,29 @@ sensor:
         - lambda: |-
             id(boiler_heating).publish_state(x < 0.2);
 
+climate:
+  - platform: thermostat
+    name: Termotanque casa
+    sensor: temperature_sensor
+    min_heating_off_time: 60s
+    min_heating_run_time: 60s
+    min_idle_time: 30s
+    heat_action:
+      - switch.turn_on: switchBoiler
+    idle_action:
+      - switch.turn_off: switchBoiler
+    heat_deadband: 1
+    heat_overrun: 1
+    visual:
+      max_temperature: 60
+      min_temperature: 10
+      temperature_step: 1
+    icon: mdi:water-boiler
+    default_preset: Normal
+    preset:
+      - name: Normal
+        default_target_temperature_low: 45
+        mode: HEAT
+      - name: Eco
+        default_target_temperature_low: 30
+        mode: HEAT

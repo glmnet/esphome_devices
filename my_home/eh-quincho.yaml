@@ -1,0 +1,49 @@
+esphome:
+  name: eh-quincho
+
+esp32:
+  board: esp32doit-devkit-v1
+  framework:
+    type: esp-idf
+api:
+
+ota:
+
+wifi:
+  ssid: !secret wifi_ssid
+  password: !secret wifi_pass
+
+logger:
+  level: DEBUG
+
+output:
+  - platform: gpio
+    pin: GPIO13
+    id: relay1
+    inverted: true
+  - platform: gpio
+    pin: GPIO16
+    id: relay2
+    inverted: true
+  - platform: gpio
+    pin: GPIO32
+    id: relay3
+    inverted: true
+  - platform: gpio
+    pin: GPIO14
+    id: relay4
+    inverted: true
+
+light:
+  - platform: binary
+    output: relay1
+    name: Luz Quincho SO
+  - platform: binary
+    output: relay2
+    name: Luz Quincho NE
+  - platform: binary
+    output: relay3
+    name: Quincho Parlantes
+
+status_led:
+  pin: GPIO2

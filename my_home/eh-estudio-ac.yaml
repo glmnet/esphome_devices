@@ -28,7 +28,7 @@ sensor:
   - platform: dallas
     address: 0xF77AF93F12646128
     id: dallas_temp
-    internal: true
+    name: Temperatura estudio
 
 remote_receiver:
   id: rcvr
