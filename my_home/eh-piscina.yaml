@@ -39,6 +39,9 @@ binary_sensor:
     #            1011110110111101111000110
     filters:
       - delayed_off: 1s
+    on_press:
+      then:
+        - switch.toggle: switch_pool_pump
 
   - platform: remote_receiver
     receiver_id: rx_rf
@@ -58,6 +61,9 @@ binary_sensor:
       code: "1011110110111101111000010101"
     filters:
       - delayed_off: 1s
+    on_press:
+      then:
+        - switch.toggle: switch_pump_watering
 
 sensor:
   - platform: uptime
@@ -118,6 +124,7 @@ switch:
       - script.stop: update_pool_temperature_await
 
   - platform: gpio
+    id: switch_pump_watering
     name: Bomba riego
     pin:
       number: GPIO15
