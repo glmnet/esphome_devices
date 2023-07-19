@@ -29,6 +29,6 @@ output:
 
 # Example usage in a light
 light:
-- platform: monochromatic
-  output: pwm_output
-  name: "ESP Light"
+  - platform: monochromatic
+    output: pwm_output
+    name: "ESP Light"

@@ -1,0 +1,5 @@
+esphome:
+  name: rp2040_1
+
+rp2040:
+  board: pico

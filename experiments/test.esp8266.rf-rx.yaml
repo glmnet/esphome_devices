@@ -1,96 +1,56 @@
 esphome:
-  platform: esp8266
   name: test-esp8266
-  board: nodemcuv2
-  platformio_options:
-    upload_speed: 921600
+  # includes:
+  #   - arduino_port_expander.h
+
+esp8266:
+  board: esp12e
+  restore_from_flash: true
+
+wifi:
+  networks:
+    ssid: !secret wifi_ssid
+    password: !secret wifi_pass
+    #bssid: !secret bssid_airport_express
+
+captive_portal:
 
 ota:
 
 api:
 
 logger:
-  level: VERBOSE
-  logs:
-    api.service: DEBUG
+  level: DEBUG
 
-wifi:
-  ssid: !secret wifi_ssid
-  password: !secret wifi_pass
+dallas:
+  pin: GPIO14
+  update_interval: 60s
 
-output:
-  - platform: gpio
-    pin: GPIO2
-    id: led_output
+sensor:
+  - platform: dallas
+    address: 0x2771C02712646128
+    name: Temperatura Patio
+###
+# module info:
+# Male Header:
+# DI3   |  DI2  |  DI8 | T13   |  5V
+# 12V   |  NC   |  NC  | GND   |  A0
 
-light:
-  platform: binary
-  output: led_output
-  id: led
+# Female Header
+# GND  |  3.3V
+# DI9  |  DI10
+# A1   |  DI11
+# DI12 |  NC
 
-binary_sensor:
-  - platform: gpio
-    id: flash_btn
-    pin: GPIO0
-    on_press:
-      - light.toggle: led
-  - platform: remote_receiver
-    id: btn_top
-    name: CS_BotonArriba
-    rc_switch_raw:
-      protocol: 6
-      code: "1011110110111101111000110101"
+# DI8 Puerta Frente
+# DI9 Puerta cocina
+# DI10 Puerta estudio
+# DI11 Switch Galeria Patio
+# DI12 Switch Galeria Proyectores
+# DI0 Movimiento Galeria
+# A1 # 15 # Switch Galeria 1
 
-    filters:
-      - delayed_off: 1s
-    on_press:
-      - light.turn_on: led
-      - delay: 200ms
-      - light.turn_off: led
+# DI3 Cortina
+# DI2 Cortina
+# A0 Cortina
 
-  - platform: remote_receiver
-    id: btn_bottom_left
-    name: CS_BotonIzq
-    rc_switch_raw:
-      protocol: 6
-      code: "1011110110111101111000100101"
-    filters:
-      - delayed_off: 1s
-    on_press:
-      - light.turn_on: led
-      - delay: 200ms
-      - light.turn_off: led
-      - delay: 200ms
-      - light.turn_on: led
-      - delay: 200ms
-      - light.turn_off: led
-
-  - platform: remote_receiver
-    id: btn_right
-    name: CS_BotonDerecho
-    rc_switch_raw:
-      protocol: 6
-      code: "1011110110111101111000010101"
-    filters:
-      - delayed_off: 1s
-    on_press:
-      - light.turn_on: led
-      - delay: 200ms
-      - light.turn_off: led
-      - delay: 200ms
-      - light.turn_on: led
-      - delay: 200ms
-      - light.turn_off: led
-      - delay: 200ms
-      - light.turn_on: led
-      - delay: 200ms
-      - light.turn_off: led
-
-remote_receiver:
-  pin: D1
-
-  # Settings to optimize recognition of RF devices
-  tolerance: 50%
-  filter: 250us
-  idle: 7ms
-  buffer_size: 2kb

@@ -87,7 +87,6 @@ binary_sensor:
           then:
             - light.toggle: luz_mesa_cocina
       - name: "Switch Cocina puerta 3"
-        internal: true
         filters:
           delayed_on_off: 100ms
         on_state:

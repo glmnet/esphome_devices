@@ -45,5 +45,25 @@ light:
     output: relay3
     name: Quincho Parlantes
 
-status_led:
-  pin: GPIO2
+binary_sensor:
+  - platform: status
+    name: Quincho Status
+
+  - platform: gpio
+    pin: GPIO33 #1
+    name: Puerta quincho parrilla
+    filters:
+      - invert:
+    device_class: door
+  - platform: gpio
+    pin: GPIO39 #2
+    name: Puerta quincho sala
+    filters:
+      - invert:
+    device_class: door
+  - platform: gpio
+    pin: GPIO35 #3
+    id: spare_gpio3
+  - platform: gpio
+    pin: GPIO36 #4
+    id: spare_gpio4

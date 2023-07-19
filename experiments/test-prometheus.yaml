@@ -1,0 +1,23 @@
+esphome:
+    name: xx
+
+esp8266:
+    board: d1
+
+wifi:
+    ssid: !secret wifi_ssid
+
+sensor:
+    - platform: template
+      id: sensor_x
+
+    - platform: template
+      id: sensor_z4
+
+
+prometheus:
+    relabel:
+        sensor_x:
+            id: new_id
+        sensor_z4:
+            name: new_id

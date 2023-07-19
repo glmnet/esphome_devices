@@ -56,20 +56,30 @@ light:
     id: galeria
     name: "Galeria"
     output: gpio_relay_1
+    effects:
+      - strobe:
+          name: Strobe
   - platform: binary
     id: patio_proyector_este
     name: "Patio Proyector Este"
     output: gpio_relay_2
+    effects:
+      - strobe:
+          name: Strobe
   - platform: binary
     id: patio_proyector_oeste
     name: "Patio Proyector Oeste"
     output: gpio_relay_3
+    effects:
+      - strobe:
+          name: Strobe
   - platform: binary
     id: sirena_led
     name: "LED Sirena"
     output: ardu_13_npn
     effects:
       - strobe:
+          name: Strobe
       - strobe:
           name: Flash
           colors:
@@ -89,6 +99,9 @@ switch:
     id: sirena
     name: "Sirena"
     output: gpio_relay_4
+    on_turn_on:
+      then:
+        - script.execute: auto_off_siren
   - platform: restart
     name: "Patio Restart"
 
@@ -219,7 +232,7 @@ globals:
     initial_value: "false"
 
 cover:
-  - platform: time_based
+  - platform: feedback
     device_class: shutter
     name: "Cortina 9 Muro"
     id: cover_muro
@@ -242,8 +255,12 @@ cover:
       - switch.turn_on: C9_UnLock
     has_built_in_endstop: true
     assumed_state: false
+    close_endstop: bs_muro
+    max_duration: 50s
+    direction_change_wait_time: 2s
+    acceleration_wait_time: 800ms
 
-  - platform: time_based
+  - platform: feedback
     device_class: shutter
     name: "Cortina 4 Centro"
     id: cover_centro
@@ -265,8 +282,12 @@ cover:
       - switch.turn_on: C4_UnLock
     has_built_in_endstop: true
     assumed_state: false
+    close_endstop: bs_centro
+    max_duration: 50s
+    direction_change_wait_time: 2s
+    acceleration_wait_time: 900ms
 
-  - platform: time_based
+  - platform: feedback
     device_class: shutter
     name: "Cortina 3 Pasillo"
     id: cover_pasillo
@@ -288,6 +309,10 @@ cover:
       - switch.turn_on: C3_UnLock
     has_built_in_endstop: true
     assumed_state: false
+    close_endstop: bs_pasillo
+    max_duration: 50s
+    direction_change_wait_time: 2s
+    acceleration_wait_time: 900ms
 
 binary_sensor:
   - platform: status
@@ -346,17 +371,59 @@ binary_sensor:
         id: bs_pasillo
         device_class: opening
         filters:
-          delayed_on_off: 2s
-      - name: "Cortina Centro"
-        id: bs_centro
-        device_class: opening
+          - invert:
+          - delayed_on_off: 2s
+        internal: true
+      - id: bs_centro
         filters:
-          delayed_on_off: 2s
+          - invert:
+          - delayed_on_off: 2s
+        internal: true
       - name: "Cortina Muro"
         id: bs_muro
         device_class: opening
         filters:
-          delayed_on_off: 2s
+          - invert:
+          - delayed_on_off: 2s
+        internal: true
+  - platform: template
+    name: "Cortina Centro"
+    device_class: opening
+    id: bs_centro_ha
+    lambda: return !id(bs_centro).state;
+  - platform: template
+    name: "Cortina Muro"
+    device_class: opening
+    id: bs_muro_ha
+    lambda: return !id(bs_muro).state;
+  - platform: template
+    name: "Cortina Pasillo"
+    device_class: opening
+    id: bs_pasillo_ha
+    lambda: return !id(bs_pasillo).state;
+  - platform: homeassistant
+    entity_id: input_boolean.alarma_luces
+    id: alarma_luces
+    on_press:
+      then:
+        - light.turn_on:
+            id: galeria
+            effect: Strobe
+        - light.turn_on:
+            id: patio_proyector_este
+            effect: Strobe
+        - light.turn_on:
+            id: patio_proyector_oeste
+            effect: Strobe
+        - light.turn_on:
+            id: sirena_led
+            effect: Strobe
+    on_release:
+      then:
+        - light.turn_off: galeria
+        - light.turn_off: patio_proyector_este
+        - light.turn_off: patio_proyector_oeste
+        - light.turn_off: sirena_led
 
 script:
   - id: toggle_proyectores
@@ -375,6 +442,11 @@ script:
             ESP_LOGD("main", "Este switch %d, turning off", esteStatus);
             id(patio_proyector_oeste).turn_off().perform();
           }
+  - id: auto_off_siren
+    mode: restart
+    then:
+      - delay: 10min
+      - switch.turn_off: sirena
 
   # - id: verify_muro_cover_state
   #   then:
@@ -417,3 +489,4 @@ sensor:
 # DI3 Cortina
 # DI2 Cortina
 # A0 Cortina
+

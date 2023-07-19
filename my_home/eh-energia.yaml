@@ -8,6 +8,12 @@
 
 esphome:
   name: eh-energia
+  on_boot:
+    then:
+      - delay: 2s
+      - light.turn_on:
+          id: led_strip
+          effect: "Voltage"
 
 esp8266:
   board: esp12e
@@ -24,7 +30,7 @@ api:
 
 logger:
   baud_rate: 0
-  level: VERY_VERBOSE
+  level: DEBUG
 
 substitutions:
   device_name: Energia
@@ -38,10 +44,11 @@ uart:
 sensor:
   - platform: pzemac
     id: pzem1
-    address: 1
+    address: 0x01
     current:
       name: ${device_name} L1 Corriente
     voltage:
+      id: l1_volt
       name: ${device_name} L1 Voltage
     frequency:
       name: ${device_name} L1 Frecuencia
@@ -66,11 +73,19 @@ sensor:
     current:
       name: ${device_name} L2 Corriente
     voltage:
+      id: l2_volt
       name: ${device_name} L2 Voltage
     frequency:
       name: ${device_name} L2 Frecuencia
     energy:
       name: ${device_name} L2 Energía
+      filters:
+        - lambda: |-
+            if (x < 40000000.0)
+              return x;
+            else
+              return {};
+
     power:
       name: "${device_name} L2 Potencia"
     power_factor:
@@ -82,11 +97,19 @@ sensor:
     current:
       name: ${device_name} L3 Corriente
     voltage:
+      id: l3_volt
       name: ${device_name} L3 Voltage
     frequency:
       name: ${device_name} L3 Frecuencia
     energy:
       name: ${device_name} L3 Energía
+      filters:
+        - lambda: |-
+            if (x < 40000000.0)
+              return x;
+            else
+              return {};
+
     power:
       name: "${device_name} L3 Potencia"
     power_factor:
@@ -105,9 +128,21 @@ light:
           name: Voltage
           update_interval: 1s
           lambda: |-
-            it[0] = Color(255, 127, 0);
-            it[1] = Color(0, 127, 255);
-            it[2] = Color(0, 127, 0);
+            struct EnergyLEDCallbacks {
+              static auto voltage_color(float voltage) {
+                if (voltage < 20)
+                  return Color(0, 0, 0); // Off: line down
+                if (voltage < 220)
+                  return Color(220, 0, 0); // Red: low
+                if (voltage < 240)
+                  return Color(0, 170, 0); // Green: about right 215-240 VAC
+                return Color(170, 170, 0); // Yellow: over voltage
+              }
+            };
+
+            it[0] = EnergyLEDCallbacks::voltage_color(id(l1_volt).state);
+            it[1] = EnergyLEDCallbacks::voltage_color(id(l2_volt).state);
+            it[2] = EnergyLEDCallbacks::voltage_color(id(l3_volt).state);
       - addressable_lambda:
           name: Random
           update_interval: 1s
@@ -119,17 +154,36 @@ light:
 button:
   - platform: restart
     name: Energia Restart
-  # - platform: template
-  #   name: Reset PZEM
-  #   on_press:
-  #     then:
-  #       - pzemac.reset_energy: pzem1
+  - platform: template
+    name: Reset PZEM
+    on_press:
+      then:
+        globals.set:
+          id: reset_pzem
+          value: !lambda return true;
+
+globals:
+  - id: reset_pzem
+    type: boolean
 
 interval:
-  - interval: 30s
+  - interval: 6s
     then:
       - component.update: pzem1
-      - delay: 10s
+      - delay: 2s
       - component.update: pzem2
-      - delay: 10s
+      - delay: 2s
       - component.update: pzem3
+      - if:
+          condition:
+            lambda: !lambda return id(reset_pzem);
+          then:
+            - globals.set:
+                id: reset_pzem
+                value: !lambda return false;
+            - delay: 30ms
+            - pzemac.reset_energy: pzem1
+            - delay: 300ms
+            - pzemac.reset_energy: pzem2
+            - delay: 300ms
+            - pzemac.reset_energy: pzem3
