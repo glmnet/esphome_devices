@@ -116,6 +116,9 @@ sensor:
       name: ${device_name} L3 Factor de potencia
     update_interval: never
 
+  - platform: uptime
+    name: Energia Uptime
+
 light:
   - platform: neopixelbus
     pin: GPIO2
@@ -187,3 +190,5 @@ interval:
             - pzemac.reset_energy: pzem2
             - delay: 300ms
             - pzemac.reset_energy: pzem3
+
+web_server:

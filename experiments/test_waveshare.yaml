@@ -1,0 +1,37 @@
+esphome:
+  name: test
+  on_boot:
+    then:
+      - delay: 20s
+      - component.update: display_1
+
+esp32:
+  board: node32s
+
+spi:
+  clk_pin: GPIO22
+  mosi_pin: GPIO23
+logger:
+
+font:
+  - file:
+      type: gfonts
+      family: Roboto
+      weight: 900
+    id: font1
+    size: 16
+
+display:
+  - platform: waveshare_epaper
+    id: display_1
+    model: 4.20in
+    cs_pin: GPIO21
+    dc_pin: GPIO19
+    busy_pin: GPIO18
+    reset_pin: GPIO5
+    rotation: 270
+    reset_duration: 2ms
+    #full_update_every: 30
+    lambda: |-
+      it.print(0, 0, id(font1), "GUILLOTE 2!");
+    #update_interval: never

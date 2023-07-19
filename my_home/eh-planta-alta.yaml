@@ -1,4 +1,5 @@
 substitutions:
+  device_name: Planta Alta
   # Capacidad del tanque
   tanque_lleno_l: "550"
   # Litros cuando el flotador activa
@@ -124,7 +125,7 @@ binary_sensor:
         id: top_tank_full
         filters:
           - invert:
-          - delayed_on_off: 15s
+          - delayed_on_off: 2s
         on_press:
           - sensor.template.publish:
               id: tank_liters
@@ -318,7 +319,7 @@ switch:
     id: pressure_pump
 
   - platform: template
-    restore_state: false
+    restore_mode: ALWAYS_OFF
     optimistic: true
     name: Presurizadora Automatico
     id: auto_pressure_pump_manual
@@ -425,6 +426,8 @@ sensor:
     name: Nivel Tanque Arriba
     id: tank_level
     unit_of_measurement: "%"
+
+web_server:
 #
 #
 # IO Table
