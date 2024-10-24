@@ -1,20 +1,13 @@
----
-esphome:
-  name: eh-termotanque
+substitutions:
+  device_name: eh-termotanque
+  friendly_name: Termotanque casa
 
-esp8266:
-  board: nodemcu
-
-wifi:
-  ssid: !secret wifi_ssid
-  password: !secret wifi_pass
-
-api:
-
-ota:
-
+packages:
+  home: !include .pkg.home.yaml
+  wifi: !include .pkg.wifi.yaml
+  board: !include .pkg.esp8266.yaml
+  
 logger:
-  level: DEBUG
   baud_rate: 0 # use UART pins for IO
 
 output:
@@ -44,6 +37,7 @@ sensor:
   - platform: adc
     pin: A0
     id: ldr
+    name: LDR Termotanque casa
     entity_category: diagnostic
     update_interval: 10s
     on_value:
@@ -77,3 +71,4 @@ climate:
       - name: Eco
         default_target_temperature_low: 30
         mode: HEAT
+

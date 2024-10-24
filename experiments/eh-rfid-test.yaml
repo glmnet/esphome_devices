@@ -1,0 +1,206 @@
+substitutions:
+  device_name: eh-rfid-test
+  friendly_name: RFID Board
+
+esp32:
+  board: nodemcu-32s
+  framework:
+    type: esp-idf
+
+esphome:
+  name: "${device_name}"
+  platformio_options:
+    upload_speed: 921600
+
+binary_sensor:
+  - platform: status
+    name: "${friendly_name} Status"
+  - platform: gpio
+    pin: GPIO36
+    name: GPIO36 NCL
+  - platform: gpio
+    pin: GPIO39
+    name: GPIO39 NCM
+
+ota:
+  - platform: esphome
+
+ethernet:
+  type: LAN8720
+  mdc_pin: GPIO23
+  mdio_pin: GPIO18
+  clk_mode: GPIO0_IN
+  phy_addr: 1
+  power_pin:
+    number: GPIO17
+    allow_other_uses: true
+
+  #enable_mdns: true
+
+# Example configuration entry
+i2c:
+  sda: GPIO14
+  scl: GPIO13
+
+text_sensor:
+  - platform: ethernet_info
+    ip_address:
+      name: ESP IP Address
+      address_0:
+        name: ESP IP Address 0
+        id: eth_ip
+
+display:
+  - platform: ssd1306_i2c
+    model: "SSD1306 128x64"
+    #reset_pin: D0
+    address: 0x3C
+    rotation: 180
+    lambda: |-
+      it.print(0, 0, id(roboto), "Pampa Tech");
+      it.print(0, 20, id(roboto), "");
+      it.print(0, 40, id(roboto), id(eth_ip).state.c_str());
+font:
+  - file: "gfonts://Roboto"
+    id: roboto
+    size: 20
+
+  - file:
+      type: gfonts
+      family: Roboto
+      weight: 900
+    id: font2
+    size: 16
+
+rtttl:
+  output: rtttl_out
+  id: my_rtttl
+  gain: 60%
+
+interval:
+  - interval: 100ms
+    then:
+      - lambda: >
+          static int ip_length;
+          int new_ip_length = id(eth_ip).state.length();
+          if (new_ip_length != ip_length)
+            id(my_rtttl).play("scale_up:d=32,o=5,b=100:c,c#,d#,e,f#,g#,a#,b");
+          ip_length = new_ip_length;
+
+switch:
+  - platform: gpio
+    pin: GPIO16
+    name: GPIO16 Solid State Relay
+  - platform: gpio
+    pin: GPIO12
+    restore_mode: RESTORE_DEFAULT_ON
+    name: GPIO12 LED
+
+output:
+  - platform: ledc
+    id: rtttl_out
+    pin:
+      number: GPIO15
+  - platform: gpio
+    id: GIPIO17_output
+    pin:
+      number: GPIO17
+      allow_other_uses: true
+
+web_server:
+  version: 3
+  js_url: https://oi.esphome.io/v3/www.js
+
+ads1115:
+  - address: 0x48
+sensor:
+  - platform: ads1115
+    multiplexer: "A0_GND"
+    gain: 6.144
+    name: "ADS1115 Channel A0-GND"
+  - platform: ads1115
+    multiplexer: "A1_GND"
+    gain: 6.144
+    name: "ADS1115 Channel A1-GND"
+  - platform: ads1115
+    multiplexer: "A2_GND"
+    gain: 6.144
+    name: "ADS1115 Channel A2-GND"
+  - platform: ads1115
+    multiplexer: "A3_GND"
+    gain: 6.144
+    name: "ADS1115 Channel A3-GND"
+
+  - platform: ina219
+    address: 0x40
+    shunt_resistance: 0.1 ohm
+    current:
+      name: "INA219 Current"
+    power:
+      name: "INA219 Power"
+    bus_voltage:
+      name: "INA219 Bus Voltage"
+    shunt_voltage:
+      name: "INA219 Shunt Voltage"
+    max_voltage: 32.0V
+    max_current: 3.2A
+    update_interval: 5s
+
+  - platform: uptime
+    name: ${friendly_name} uptime
+
+uart:
+  - id: uart_1
+    baud_rate: 9600
+    rx_pin: GPIO35
+    tx_pin: GPIO33
+    debug:
+      direction: RX
+      dummy_receiver: true
+      after:
+        delimiter: "\r"
+      sequence:
+        - lambda: UARTDebug::log_string(direction, bytes);
+
+button:
+  - platform: restart
+    on_press:
+      then:
+        - output.turn_off: GIPIO17_output
+    name: ${friendly_name} restart
+
+  - platform: template
+    name: "[I] info"
+    on_press:
+      then:
+        uart.write: "[I]"
+
+  - platform: template
+    name: "[S] single mode"
+    on_press:
+      then:
+        uart.write: "[S]"
+
+  - platform: template
+    name: "[D] duplicate mode"
+    on_press:
+      then:
+        uart.write: "[D]"
+
+  - platform: template
+    name: "[W100]"
+    on_press:
+      then:
+        uart.write: "[W100]"
+
+  - platform: template
+    name: "[W101]"
+    on_press:
+      then:
+        uart.write: "[W101]"
+
+logger:
+  logs:
+    component: ERROR
+
+api:

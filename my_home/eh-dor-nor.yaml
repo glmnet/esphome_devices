@@ -1,141 +1,144 @@
-esphome:
-  name: eh-dor-nor
-  platform: ESP8266
-  board: nodemcu
-  includes:
-    - arduino_port_expander.h
-  on_boot:
-    - switch.turn_on: tomas_electricos
-
 substitutions:
-  entity_prefix: "Dormitorio Norte"
+  device_name: eh-dor-nor
+  friendly_name: Dormitorio Norte
 
-wifi:
-  ssid: !secret wifi_ssid
-  password: !secret wifi_pass
-
-# Enable logging
-logger:
-  level: VERBOSE
-
-# Enable Home Assistant API
-api:
-
-ota:
-
-i2c:
-  id: i2ccomponent
-
-custom_component:
-  - id: ape
-    lambda: |-
-      auto ape_component = new ArduinoPortExpander(i2ccomponent, 0x08);
-      return {ape_component};
-
-output:
-  - platform: custom
-    type: binary
-    lambda: |-
-      return {ape_binary_output(ape, 7),
-              ape_binary_output(ape, 6),
-              ape_binary_output(ape, 5),
-              ape_binary_output(ape, 4)};
-    outputs:
-      - id: gpio_relay_1
-        inverted: true
-      - id: gpio_relay_2
-        inverted: true
-      - id: gpio_relay_3
-        inverted: true
-      - id: gpio_relay_4
+packages:
+  home: !include .pkg.home.yaml
+  wifi: !include .pkg.wifi.yaml
+  board: !include .pkg.esp8266.yaml
+  ape: !include .pkg.ape.yaml
 
 light:
   - platform: binary
     id: techo
-    name: "${entity_prefix} luz techo"
-    output: gpio_relay_1
+    name: "${friendly_name} luz techo"
+    output: ape_relay_1
   - platform: binary
     id: cama_pared
-    name: "${entity_prefix} luz cama pared"
-    output: gpio_relay_2
+    name: "${friendly_name} luz cama pared"
+    output: ape_relay_2
   - platform: binary
     id: cama_ventana
-    name: "${entity_prefix} luz cama ventana"
-    output: gpio_relay_3
+    name: "${friendly_name} luz cama ventana"
+    output: ape_relay_3
 
 switch:
   - platform: output
-    output: gpio_relay_4
+    output: ape_relay_4
     id: tomas_electricos
-    name: "${entity_prefix} tomas electricos"
+    name: "${friendly_name} tomas electricos"
+    restore_mode: ALWAYS_ON
 
 binary_sensor:
-  - platform: status
-    name: "${entity_prefix} status"
-  - platform: custom
-    lambda: |-
-      return {ape_binary_sensor(ape, 2),
-              ape_binary_sensor(ape, 3),
-              ape_binary_sensor(ape, 8),
-              ape_binary_sensor(ape, 11),
-              ape_binary_sensor(ape, 12),
-              ape_binary_sensor(ape, 14),
-              ape_binary_sensor(ape, 15),
-              ape_binary_sensor(ape, 9)};
-    binary_sensors:
-      - name: "${entity_prefix} switch puerta 1"
-        filters:
-          delayed_on_off: 100ms
-        on_state:
+  - platform: gpio
+    pin:
+      arduino_port_expander: ape
+      number: 2
+      mode:
+        input: true
+        pullup: true
+    name: "${friendly_name} switch puerta 1"
+    filters:
+      delayed_on_off: 100ms
+    on_state:
+      then:
+        - light.toggle: techo
+  - platform: gpio
+    pin:
+      arduino_port_expander: ape
+      number: 3
+      mode:
+        input: true
+        pullup: true
+    name: "${friendly_name} switch puerta 2"
+    filters:
+      delayed_on_off: 200ms
+    on_state:
+      then:
+        if:
+          condition:
+            or:
+              - light.is_on: cama_ventana
+              - light.is_on: cama_pared
           then:
-            - light.toggle: techo
-      - name: "${entity_prefix} switch puerta 2"
-        filters:
-          delayed_on_off: 200ms
-        on_state:
-          then:
-            if:
-              condition:
-                or:
-                  - light.is_on: cama_ventana
-                  - light.is_on: cama_pared
-              then:
-                - light.turn_off: cama_ventana
-                - light.turn_off: cama_pared
-              else:
-                - light.turn_on: cama_ventana
-                - light.turn_on: cama_pared
-      - name: "${entity_prefix} switch puerta 3"
-        filters:
-          delayed_on_off: 100ms
-      - name: "${entity_prefix} switch cama pared 1"
-        filters:
-          delayed_on_off: 100ms
-        on_state:
-          then:
-            - light.toggle: cama_pared
-      - name: "${entity_prefix} switch cama pared 2"
-        filters:
-          delayed_on_off: 100ms
-        on_state:
-          then:
-            - light.toggle: techo
-      - name: "${entity_prefix} switch cama ventana 1"
-        filters:
-          delayed_on_off: 100ms
-        on_state:
-          then:
-            - light.toggle: cama_ventana
-      - name: "${entity_prefix} switch cama ventana 2"
-        filters:
-          delayed_on_off: 100ms
-        on_state:
-          then:
-            - light.toggle: techo
-      - name: "${entity_prefix} ventana"
-        filters:
-          delayed_on_off: 100ms
-        device_class: window
+            - light.turn_off: cama_ventana
+            - light.turn_off: cama_pared
+          else:
+            - light.turn_on: cama_ventana
+            - light.turn_on: cama_pared
+  - platform: gpio
+    pin:
+      arduino_port_expander: ape
+      number: 8
+      mode:
+        input: true
+        pullup: true
+    name: "${friendly_name} switch puerta 3"
+    filters:
+      delayed_on_off: 100ms
+  - platform: gpio
+    pin:
+      arduino_port_expander: ape
+      number: 11
+      mode:
+        input: true
+        pullup: true
+    name: "${friendly_name} switch cama pared 1"
+    filters:
+      delayed_on_off: 100ms
+    on_state:
+      then:
+        - light.toggle: cama_pared
+  - platform: gpio
+    pin:
+      arduino_port_expander: ape
+      number: 12
+      mode:
+        input: true
+        pullup: true
+    name: "${friendly_name} switch cama pared 2"
+    filters:
+      delayed_on_off: 100ms
+    on_state:
+      then:
+        - light.toggle: techo
+  - platform: gpio
+    pin:
+      arduino_port_expander: ape
+      number: 14
+      mode:
+        input: true
+        pullup: true
+    name: "${friendly_name} switch cama ventana 1"
+    filters:
+      delayed_on_off: 100ms
+    on_state:
+      then:
+        - light.toggle: cama_ventana
+  - platform: gpio
+    pin:
+      arduino_port_expander: ape
+      number: 15
+      mode:
+        input: true
+        pullup: true
+    name: "${friendly_name} switch cama ventana 2"
+    filters:
+      delayed_on_off: 100ms
+    on_state:
+      then:
+        - light.toggle: techo
+  - platform: gpio
+    pin:
+      arduino_port_expander: ape
+      number: 9
+      mode:
+        input: true
+        pullup: true
+    name: "${friendly_name} ventana"
+    filters:
+      delayed_on_off: 100ms
+    device_class: window
 
 remote_transmitter:
   pin: GPIO14 # ribbon gray

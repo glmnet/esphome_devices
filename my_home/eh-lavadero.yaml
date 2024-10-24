@@ -1,41 +1,15 @@
 # JST PIN 1: Looking at the socket horizontally on the PCB, when the notches where latches are inseterd (cutoffs) are at the top, the pin one is at the left.
 #            This is also red wire on lipo batteries balancer
-
 substitutions:
-  device_name: Lavadero
+  device_name: eh-lavadero
+  friendly_name: Lavadero
 
-esphome:
-  name: eh-lavadero
-  platformio_options:
-    upload_speed: 921600
-
-wifi:
-  ssid: !secret wifi_ssid
-  password: !secret wifi_pass
-
-logger:
-
-api:
-
-ota:
-# ethernet:
-#   type: LAN8720
-#   mdc_pin: GPIO23
-#   mdio_pin: GPIO18
-#   clk_mode: GPIO0_IN
-#   phy_addr: 1
-#   power_pin: GPIO17
-#   #enable_mdns: true
-
-esp32:
-  framework:
-    type: arduino
-  board: nodemcu-32s
+packages:
+  board: !include .pkg.esp32.arduino.yaml
+  home: !include .pkg.home.yaml
+  wifi: !include .pkg.wifi.yaml  
 
 binary_sensor:
-  - platform: status
-    name: ${device_name} Status
-
 # CN1: 3 PIN                        WIRE
 # 1  +12V                         Brown
 # 2  GPIO33 Puerta baño quincho   White/Blue
@@ -51,7 +25,7 @@ binary_sensor:
     pin: GPIO35
     name: Tecla baño quincho
     on_state:
-      - light.toggle: quincho_banio_light
+      - light.toggle: luz_banio_quincho
 
 # CN2: 5 PIN
 # 1  +12V                         Brown
@@ -71,7 +45,7 @@ binary_sensor:
     name: Tecla lavadero 1
     on_state:
       then:
-        - light.toggle: lavadero_light
+        - light.toggle: luz_lavadero
 
   - platform: gpio
     pin: GPIO34
@@ -81,18 +55,13 @@ binary_sensor:
     name: Tecla lavadero 3
 
 sensor:
-  - platform: uptime
-    name: ${device_name} uptime
-  - platform: wifi_signal
-    name: ${device_name} Wifi Signal
-  - platform: dallas
-    name: Parrilla Temperatura
-    index: 0
-
+  # - platform: dallas
+  #   name: Parrilla Temperatura
+  #   index: 0
 
 output:
   - platform: gpio
-    pin: GPIO0
+    pin: GPIO2
     id: relay1
     inverted: true
   - platform: gpio
@@ -104,37 +73,35 @@ output:
     id: relay3
     inverted: true
   - platform: gpio
-    pin: GPIO2
+    pin: GPIO0
     id: relay4
     inverted: true
 
-button:
-  - platform: restart
-    name: ${device_name} restart
 
 light:
   - platform: binary
     name: Luz pasillo quincho
-    output: relay4
+    output: relay1
   - platform: binary
     name: Luz lavadero
     output: relay2
-    id: lavadero_light
-  - platform: binary
-    name: Luz Parrilla
-    output: relay1
-    icon: mdi:grill
+    id: luz_lavadero
   - platform: binary
     name: Luz baño quincho
     output: relay3
-    id: quincho_banio_light
+    id: luz_banio_quincho
+  - platform: binary
+    name: Luz Parrilla
+    output: relay4
   - platform: fastled_clockless
     pin: GPIO12
+    # name: Lavadero Status LED
     num_leds: 1
     chipset: WS2812
     id: status_led
 
-dallas:
-  pin: GPIO32
-  update_interval: 5s
 
+# dallas:
+#   pin: GPIO32
+#   update_interval: 5s 
+  

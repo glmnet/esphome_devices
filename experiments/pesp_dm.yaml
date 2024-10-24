@@ -1,0 +1,430 @@
+esphome:
+  name: pesp-dm
+  platform: ESP32
+  board: esp-wrover-kit
+  build_path: builds
+  platformio_options:
+    upload_speed: 921600
+
+# wifi:
+#   ssid: !secret wifi_ssid
+#   password: !secret wifi_pass
+#   fast_connect: true
+
+ethernet:
+  type: LAN8720
+  mdc_pin: GPIO23
+  mdio_pin: GPIO18
+  clk_mode: GPIO0_IN
+  phy_addr: 1
+  power_pin: GPIO17
+  #enable_mdns: true
+
+logger:
+  level: DEBUG
+
+ota:
+  - platform: esphome
+
+web_server:
+  version: 3
+  js_url: https://oi.esphome.io/v3/www.js
+
+i2c:
+  - id: i2c_0
+    scl: GPIO4
+    sda: GPIO5
+    scan: true
+  - id: i2c_1
+    scl: GPIO13
+    sda: GPIO14
+    scan: true
+
+ads1115:
+  - address: 0x49
+    i2c_id: i2c_0
+    id: ads1115_1
+  - address: 0x48
+    i2c_id: i2c_1
+    id: ads1115_0
+  - address: 0x4B
+    i2c_id: i2c_1
+    id: ads1115_3
+
+# Example configuration entry
+pca9554:
+  - id: pca_0
+    i2c_id: i2c_0
+    pin_count: 16
+    address: 0x20
+
+  - id: pca_1
+    i2c_id: i2c_1
+    pin_count: 16
+    address: 0x21
+
+  - id: pca_2
+    i2c_id: i2c_1
+    pin_count: 16
+    address: 0x22
+
+  - id: pca_3
+    i2c_id: i2c_1
+    pin_count: 16
+    address: 0x23
+
+mcp4728:
+  - id: mcp4728_0
+    i2c_id: i2c_0
+
+output:
+  - platform: ledc
+    pin:
+      number: GPIO2
+    id: pwm_gpio2
+  - platform: mcp4728
+    id: mcp4728_0_vout_a
+    mcp4728_id: mcp4728_0
+    channel: A
+    vref: vdd
+    power_down: gnd_1k # default
+  - platform: mcp4728
+    id: mcp4728_0_vout_b
+    mcp4728_id: mcp4728_0
+    channel: B
+    vref: vdd
+    power_down: gnd_1k
+
+light:
+  - platform: monochromatic
+    output: pwm_gpio2
+    name: PWM_GPIO12
+    restore_mode: RESTORE_DEFAULT_OFF
+  - platform: monochromatic
+    output: mcp4728_0_vout_a
+    name: mcp4728_0_vout_a
+    restore_mode: RESTORE_DEFAULT_OFF
+  - platform: monochromatic
+    output: mcp4728_0_vout_b
+    name: mcp4728_0_vout_b
+    restore_mode: RESTORE_DEFAULT_OFF
+
+sensor:
+  - platform: ina260
+    i2c_id: i2c_1
+    address: 0x40
+    current:
+      name: "INA260 Batt Current"
+    power:
+      name: "INA260 Batt Power"
+    bus_voltage:
+      name: "INA260 Batt Bus Voltage"
+    update_interval: 5s
+
+  - platform: ina260
+    i2c_id: i2c_1
+    address: 0x41
+    current:
+      name: "INA260 Brake Left Current"
+    power:
+      name: "INA260 Brake Left Power"
+    bus_voltage:
+      name: "INA260 Brake Left Bus Voltage"
+    update_interval: 5s
+
+  - platform: ina260
+    i2c_id: i2c_1
+    address: 0x44
+    current:
+      name: "INA260 Brake Right Current"
+    power:
+      name: "INA260 Brake Right Power"
+    bus_voltage:
+      name: "INA260 Brake Right Bus Voltage"
+    update_interval: 5s
+
+  - platform: ina260
+    i2c_id: i2c_1
+    address: 0x45
+    current:
+      name: "INA260 DC24 Current"
+    power:
+      name: "INA260 DC24 Power"
+    bus_voltage:
+      name: "INA260 DC24 Bus Voltage"
+    update_interval: 5s
+  - platform: ads1115
+    ads1115_id: ads1115_1
+    multiplexer: "A0_GND"
+    gain: 6.144
+    name: "ADS1115 1 Channel A0-GND Left Speed"
+    filters:
+      lambda: return x * (10000.f+10000.f)/10000.f;
+  - platform: ads1115
+    ads1115_id: ads1115_1
+    multiplexer: "A1_GND"
+    gain: 6.144
+    name: "ADS1115 1 Channel A0-GND Right Speed"
+    filters:
+      lambda: return x * (10000+10000)/10000.f;
+  - platform: ads1115
+    ads1115_id: ads1115_1
+    multiplexer: "A2_GND"
+    gain: 6.144
+    name: "ADS1115 1 Channel A0-GND Front Angle"
+    filters:
+      lambda: return x * (22000+3300)/3300.f;
+  - platform: ads1115
+    ads1115_id: ads1115_1
+    multiplexer: "A3_GND"
+    gain: 6.144
+    name: "ADS1115 1 Channel A0-GND Rear Angle"
+    filters:
+      lambda: return x * (22000+3300)/3300.f;
+
+  - platform: ads1115
+    ads1115_id: ads1115_0
+    multiplexer: "A0_GND"
+    gain: 6.144
+    name: "ADS1115 0 Channel A0-GND VBatt"
+    filters:
+      lambda: return x * (33000+3300)/3300.f;
+  - platform: ads1115
+    ads1115_id: ads1115_0
+    multiplexer: "A1_GND"
+    gain: 6.144
+    name: "ADS1115 0 Channel A1-GND VZ"
+    filters:
+      lambda: return x * (33000+3300)/3300.f;
+  - platform: ads1115
+    ads1115_id: ads1115_0
+    multiplexer: "A2_GND"
+    gain: 6.144
+    name: "ADS1115 0 Channel A2-GND +5VP"
+    filters:
+      lambda: return x * (4700+3300)/3300.f;
+  - platform: ads1115
+    ads1115_id: ads1115_3
+    multiplexer: "A0_GND"
+    gain: 6.144
+    name: "ADS1115 2 Channel A0-GND +V"
+    filters:
+      lambda: return x * (4700+3300)/3300.f;
+  - platform: ads1115
+    ads1115_id: ads1115_3
+    multiplexer: "A1_GND"
+    gain: 6.144
+    name: "ADS1115 2 Channel A1-GND +24V Device"
+    filters:
+      lambda: return x * (4700+3300)/3300.f;
+  - platform: ads1115
+    ads1115_id: ads1115_3
+    multiplexer: "A2_GND"
+    gain: 6.144
+    name: "ADS1115 2 Channel A2-GND +5V"
+    filters:
+      lambda: return x * (4700+3300)/3300.f;
+  - platform: ads1115
+    ads1115_id: ads1115_3
+    multiplexer: "A3_GND"
+    gain: 6.144
+    name: "ADS1115 2 Channel A3-GND +3V3"
+    filters:
+      lambda: return x * (4700+3300)/3300.f;
+
+switch:
+  - platform: gpio
+    name: GPIO12 Led Yellow
+    pin:
+      number: GPIO12
+      mode:
+        output: true
+  - platform: gpio
+    name: PCA0_Led Green
+    pin:
+      pca9554: pca_0
+      number: 15
+      mode:
+        output: true
+  - platform: gpio
+    name: PCA3_RFID_Power_On
+    pin:
+      pca9554: pca_3
+      number: 8
+      mode:
+        output: true
+  - platform: gpio
+    name: PCA3_Track_Power_On
+    pin:
+      pca9554: pca_3
+      number: 9
+      mode:
+        output: true
+  - platform: gpio
+    name: PCA3_Position_Sensor_Power_on
+    pin:
+      pca9554: pca_3
+      number: 10
+      mode:
+        output: true
+
+# Individual outputs
+binary_sensor:
+  - platform: gpio
+    name: "PCA0_Track_Front_CH1"
+    pin:
+      pca9554: pca_0
+      number: 0
+      mode:
+        input: true
+      inverted: false
+  - platform: gpio
+    name: "PCA0_Track_Front_CH2"
+    pin:
+      pca9554: pca_0
+      number: 1
+      mode:
+        input: true
+      inverted: false
+  - platform: gpio
+    name: "PCA0_Track_Front_CH3"
+    pin:
+      pca9554: pca_0
+      number: 2
+      mode:
+        input: true
+      inverted: false
+  - platform: gpio
+    name: "PCA0_Track_Front_CH4"
+    pin:
+      pca9554: pca_0
+      number: 3
+      mode:
+        input: true
+      inverted: false
+
+  - platform: gpio
+    name: "PCA0_Track_Front_CH5"
+    pin:
+      pca9554: pca_0
+      number: 4
+      mode:
+        input: true
+      inverted: false
+
+  - platform: gpio
+    name: "PCA0_Track_Front_CH6"
+    pin:
+      pca9554: pca_0
+      number: 5
+      mode:
+        input: true
+      inverted: false
+
+  - platform: gpio
+    name: "PCA0_Track_Front_CH7"
+    pin:
+      pca9554: pca_0
+      number: 6
+      mode:
+        input: true
+      inverted: false
+
+  - platform: gpio
+    name: "PCA0_Track_Front_CH8"
+    pin:
+      pca9554: pca_0
+      number: 7
+      mode:
+        input: true
+      inverted: false
+
+  - platform: gpio
+    name: "PCA0_Position_Sensor_1"
+    pin:
+      pca9554: pca_0
+      number: 8
+      mode:
+        input: true
+      inverted: false
+
+  - platform: gpio
+    name: "PCA0_Position_Sensor_2"
+    pin:
+      pca9554: pca_0
+      number: 9
+      mode:
+        input: true
+      inverted: false
+  - platform: gpio
+    name: "PCA0_Position_Sensor_3"
+    pin:
+      pca9554: pca_0
+      number: 10
+      mode:
+        input: true
+      inverted: false
+  - platform: gpio
+    name: "PCA0_Position_Sensor_4"
+    pin:
+      pca9554: pca_0
+      number: 11
+      mode:
+        input: true
+      inverted: false
+  - platform: gpio
+    name: "PCA0_Position_Sensor_5"
+    pin:
+      pca9554: pca_0
+      number: 12
+      mode:
+        input: true
+      inverted: false
+
+      # PCA3
+  - platform: gpio
+    name: "PCA3_RFID_Tag_Present"
+    pin:
+      pca9554: pca_3
+      number: 0
+      mode:
+        input: true
+      inverted: false
+  - platform: gpio
+    name: "PCA3_External_Stop_Sensor_S0"
+    pin:
+      pca9554: pca_3
+      number: 1
+      mode:
+        input: true
+      inverted: false
+  - platform: gpio
+    name: "PCA3_External_Stop_Sensor_S1"
+    pin:
+      pca9554: pca_3
+      number: 2
+      mode:
+        input: true
+      inverted: false
+
+# sensor:
+#   - platform: ina210
+#     i2c: i2c_0
+
+button:
+  - platform: restart
+    name: Restart
+
+  - platform: template
+    name: Test Send CAN
+    on_press:
+      then:
+        - canbus.send:
+            data: [0x10, 0x20, 0x30]
+
+canbus:
+  - platform: esp32_can
+    tx_pin: GPIO16
+    rx_pin: GPIO15
+    can_id: 45
+    bit_rate: 500kbps

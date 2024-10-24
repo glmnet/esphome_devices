@@ -1,21 +1,10 @@
-esphome:
-  name: $esphome_name
-  platform: ESP8266
+packages: 
+  home: !include .pkg.home.yaml
+  wifi: !include .pkg.wifi.yaml
+
+esp8266:
   board: esp01_1m
-
-wifi:
-  ssid: !secret wifi_ssid
-  password: !secret wifi_pass
-
-logger:
-  level: DEBUG
-
-api:
-ota:
-
-binary_sensor:
-  - platform: status
-    name: "${node_name} Status"
+  restore_from_flash: true
 
 output:
   - platform: esp8266_pwm
@@ -51,7 +40,7 @@ output:
 
 light:
   - platform: rgb
-    name: $node_name
+    name: $friendly_name
     red: pwm_r
     green: pwm_g
     blue: pwm_b
@@ -156,8 +145,4 @@ light:
   # - platform: monochromatic
   #   name: "LED Green"
   #   output: output_pin1
-
-# status_led:
-#   pin:
-#     number: 1
-#     inverted: True
+ 

@@ -1,18 +1,15 @@
-esphome:
-  name: eh-comedor-window
+substitutions:
+  device_name: eh-comedor-window
+  friendly_name: Comedor Ventana
 
-wifi:
-  ssid: !secret wifi_ssid
-  password: !secret wifi_pass
-
-api:
-
-ota:
+packages:
+  board: !include .pkg.esp8266.yaml
+  home: !include .pkg.home.yaml
+  wifi: !include .pkg.wifi.yaml
 
 esp8266:
   board: nodemcu
-  restore_from_flash: True
-
+  
 logger:
   level: VERBOSE
 
@@ -44,7 +41,3 @@ cover:
       - lambda: |-
           id(ob_tilt).write((1 - tilt) * 2 - 1);
           id(tilt_pos) = tilt;
-
-binary_sensor:
-  - platform: status
-    name: "Comedor Ventana Status"

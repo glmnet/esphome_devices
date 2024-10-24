@@ -1,0 +1,55 @@
+substitutions:
+  device_name: eh-test-ac-ml
+  friendly_name: Test Mem Leak
+
+packages:
+  board: !include .pkg.esp8266.yaml
+  home: !include .pkg.home.yaml
+  wifi: !include .pkg.wifi.yaml
+  bmp280: !include
+    file: .pkg.bmp280.yaml
+    vars:
+      name: Dormitorio Norte
+  ir_ac_hack: !include
+    file: .pkg.ir_ac_hack.yaml
+    vars:
+      pin_number: GPIO14
+  rgb_receiver: !include
+    file: .pkg.rgb_receiver.yaml
+    vars:
+      rgb_receiver_light_entity: light.dormitorio_norte_rgb
+
+logger:
+
+remote_transmitter:
+  - id: ir_LED
+    carrier_duty_percent: 50%
+    pin: GPIO12
+
+climate:
+  - platform: coolix
+    sensor: bmp280_temperature
+    name: "AC Dormitorio Norte"
+    supports_heat: True
+    supports_cool: True
+    receiver_id: ir_hack_rx
+    transmitter_id: ir_hack_tx
+
+switch:
+  - platform: template
+    name: Dor Nor Netflix
+    turn_on_action:
+      - remote_transmitter.transmit_nec:
+          transmitter_id: ir_LED
+          address: 0xFD
+          command: 0xC23D # 0x43
+  - platform: template
+    name: Dor Nor TV Power
+
+    turn_on_action:
+      - remote_transmitter.transmit_nec:
+          transmitter_id: ir_LED
+          address: 0xbf00 # fd00 -> 00bf
+          command: 0xfC03 # 3fc0 -> 03fc
+
+debug:

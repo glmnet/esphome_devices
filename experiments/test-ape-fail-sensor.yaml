@@ -1,0 +1,41 @@
+esphome:
+  name: test-ape
+
+esp8266:
+  board: nodemcuv2
+
+external_components:
+  - source: github://glmnet/esphome-components
+    components: [arduino_port_expander]
+    refresh: 0s
+
+i2c:
+
+logger:
+
+arduino_port_expander:
+  id: ape1
+
+binary_sensor:
+  - platform: gpio
+    pin:
+      arduino_port_expander: ape1
+      number: 12
+      mode:
+        input: True
+        pullup: True
+    name: bs-12
+    id: ape_12
+
+wifi:
+  ssid: !secret wifi_ssid
+  password: !secret wifi_pass
+
+sensor:
+  - platform: wifi_signal
+    name: wifi
+  - platform: arduino_port_expander
+    id: sx
+    pin: A0
+    name: Ardu A0
+    update_interval: 10s

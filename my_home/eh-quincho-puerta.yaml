@@ -1,45 +1,17 @@
 substitutions:
-  device_name: Quincho interruptores puerta
+  device_name: eh-quincho-puerta
+  friendly_name: Quincho interruptores puerta
 
-esphome:
-  name: eh-quincho-puerta
-
-esp32:
-  board: esp32doit-devkit-v1
-  framework:
-    type: esp-idf
-api:
-
-ota:
-
-sensor:
-  - platform: uptime
-    name: ${device_name} uptime
-  - platform: wifi_signal
-    name: ${device_name} signal
-
-button:
-  - platform: restart
-    name: ${device_name} restart
-
-text_sensor:
-  - platform: wifi_info
-    bssid:
-      name: ${device_name} BSSID
+packages:
+  home: !include .pkg.home.yaml
+  wifi: !include .pkg.wifi.yaml
+  board: !include .pkg.esp32.idf.yaml
+  
 
 wifi:
-  ssid: !secret wifi_ssid
-  password: !secret wifi_pass
   power_save_mode: NONE
 
-
-logger:
-  level: DEBUG
-
 binary_sensor:
-  - platform: status
-    name: "${device_name} Status"
-
   - platform: gpio
     pin:
       mode:

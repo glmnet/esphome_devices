@@ -1,68 +1,28 @@
-esphome:
-  name: eh-dor-este-ac
-  platform: ESP8266
-  board: nodemcu
-  on_boot:
-    - delay: 5s
-    - lambda: |-
-        pinMode(D5, INPUT_PULLUP);
-
-wifi:
-  ssid: !secret wifi_ssid
-  password: !secret wifi_pass
-
 substitutions:
-  node_name: Dormitorio Este
+  device_name: eh-dor-este-ac
+  friendly_name: Dormitorio Este AC
 
-api:
-
-ota:
+packages:
+  board: !include .pkg.esp8266.yaml
+  home: !include .pkg.home.yaml
+  wifi: !include .pkg.wifi.yaml
+  bmp280: !include
+    file: .pkg.bmp280.yaml
+    vars:
+      name: Dormitorio Norte
+  ir_ac_hack: !include
+    file: .pkg.ir_ac_hack.yaml
+    vars:
+      pin_number: GPIO14
 
 logger:
-  level: DEBUG
-
-remote_receiver:
-  pin:
-    number: D5
-    inverted: True
-    mode: INPUT_PULLUP
-  tolerance: 45%
-  id: ir_receiver
-
-remote_transmitter:
-  carrier_duty_percent: 100%
-  pin:
-    number: D5
-    inverted: true
-    mode: OUTPUT_OPEN_DRAIN
+  baud_rate: 0
 
 climate:
   - platform: coolix
-    sensor: temp_norte
-    name: "${node_name} AC"
+    sensor: bmp280_temperature
+    name: "AC Dormitorio Este"
     supports_heat: True
     supports_cool: True
-    receiver_id: ir_receiver
-
-switch:
-  - platform: restart
-    name: " ${node_name} Ac Restart"
-
-i2c:
-  id: i2c_component
-
-sensor:
-  - platform: bmp280
-    temperature:
-      id: temp_norte
-      name: "${node_name} Temperatura"
-      oversampling: 1x
-    pressure:
-      name: "${node_name} Presion"
-      oversampling: 1x
-    address: 0x76
-    update_interval: 60s
-
-binary_sensor:
-  - platform: status
-    name: "${node_name} AC Status"
+    receiver_id: ir_hack_rx
+    transmitter_id: ir_hack_tx

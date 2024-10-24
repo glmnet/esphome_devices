@@ -1,5 +1,4 @@
 substitutions:
   cam_number: "4"
 
-
-<<: !include eh-camera-package.yaml
+<<: !include .camera_base.yaml

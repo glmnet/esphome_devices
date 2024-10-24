@@ -1,10 +1,9 @@
-
 esphome:
-    name: eh-camera-${cam_number}
-    platform: ESP32
-    board: nodemcu-32s
-    platformio_options:
-        upload_speed: 921600
+  name: eh-camera-${cam_number}
+  platform: ESP32
+  board: nodemcu-32s
+  platformio_options:
+    upload_speed: 921600
 
 wifi:
   ssid: !secret wifi_ssid
@@ -39,13 +38,11 @@ esp32_camera:
   max_framerate: 10Hz
   jpeg_quality: 20
 
-
 esp32_camera_web_server:
   - port: 8080
     mode: stream
   - port: 8081
     mode: snapshot
-
 
 output:
   - platform: gpio
@@ -60,5 +57,3 @@ light:
 button:
   - platform: restart
     name: Camera ESP32 ${cam_number} Restart
-
-

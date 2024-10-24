@@ -1,0 +1,17 @@
+wifi:
+  ssid: !secret wifi_ssid
+  password: !secret wifi_pass
+  ap:
+    ssid: esp-${device_name}
+    password: !secret wifi_pass
+
+sensor:
+  - platform: wifi_signal
+    name: ${friendly_name} signal
+
+text_sensor:
+  - platform: wifi_info
+    bssid:
+      name: ${friendly_name} BSSID
+
+captive_portal:

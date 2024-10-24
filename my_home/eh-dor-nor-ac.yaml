@@ -1,58 +1,41 @@
-esphome:
-  name: eh-dor-nor-ac
-  platform: ESP8266
-  board: nodemcu
-
-wifi:
-  ssid: !secret wifi_ssid
-  password: !secret wifi_pass
-
-api:
-
-ota:
-
 substitutions:
-  rgb_receiver_light_entity: light.dormitorio_norte_rgb
+  device_name: eh-dor-nor-ac
+  friendly_name: Dormitorio Norte AC
 
 packages:
-  rgb_receiver: !include rgb_receiver.package.yaml
+  board: !include .pkg.esp8266.yaml
+  home: !include .pkg.home.yaml
+  wifi: !include .pkg.wifi.yaml
+  bmp280: !include
+    file: .pkg.bmp280.yaml
+    vars:
+      name: Dormitorio Norte
+  ir_ac_hack: !include
+    file: .pkg.ir_ac_hack.yaml
+    vars:
+      pin_number: GPIO14
+  rgb_receiver: !include
+    file: .pkg.rgb_receiver.yaml
+    vars:
+      rgb_receiver_light_entity: light.dormitorio_norte_rgb
 
 logger:
-  level: DEBUG
-  baud_rate: 0
-
-remote_receiver:
-  id: rcvr
-  pin:
-    number: GPIO14
-    inverted: True
-    mode: OUTPUT_OPEN_DRAIN
-  tolerance: 45%
 
 remote_transmitter:
-  - id: receiver_hack
-    carrier_duty_percent: 100%
-    pin:
-      number: GPIO14
-      inverted: true
-      mode: OUTPUT_OPEN_DRAIN
   - id: ir_LED
     carrier_duty_percent: 50%
     pin: GPIO12
 
 climate:
   - platform: coolix
-    sensor: temp_norte
+    sensor: bmp280_temperature
     name: "AC Dormitorio Norte"
     supports_heat: True
     supports_cool: True
-    receiver_id: rcvr
-    transmitter_id: receiver_hack
+    receiver_id: ir_hack_rx
+    transmitter_id: ir_hack_tx
 
 switch:
-  - platform: restart
-    name: "Dormitorio Norte Ac Restart"
-
   - platform: template
     name: Dor Nor Netflix
     turn_on_action:
@@ -66,24 +49,7 @@ switch:
     turn_on_action:
       - remote_transmitter.transmit_nec:
           transmitter_id: ir_LED
-          address: 0x00FD
-          command: 0xC03F
+          address: 0xbf00 # fd00 -> 00bf
+          command: 0xfC03 # 3fc0 -> 03fc
 
-i2c:
-  id: i2c_component
-
-sensor:
-  - platform: bmp280
-    temperature:
-      id: temp_norte
-      name: "Temperature Dor Norte"
-      oversampling: 1x
-    pressure:
-      name: "Presion Dor Norte"
-      oversampling: 1x
-    address: 0x76
-    update_interval: 60s
-
-binary_sensor:
-  - platform: status
-    name: "Dormitorio Norte AC Status"
+debug:

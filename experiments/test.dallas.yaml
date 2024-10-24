@@ -1,0 +1,23 @@
+esphome:
+  name: test-local2
+  platformio_options:
+    upload_speed: 921600
+
+esp32:
+  board: nodemcu-32s
+
+logger:
+  level: DEBUG
+
+dallas:
+  - pin: GPIO23
+    update_interval: 10s
+
+sensor:
+  - platform: dallas
+    index: 0
+    name: "Dallas Temperature 1"
+
+  - platform: dallas
+    index: 1
+    name: "Dallas Temperature 2 "

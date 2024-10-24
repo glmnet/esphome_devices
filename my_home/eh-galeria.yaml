@@ -1,75 +1,40 @@
-esphome:
-  name: eh-patio
-  includes:
-    - arduino_port_expander.h
+substitutions:
+  device_name: eh-galeria
+  friendly_name: Galeria
 
-esp8266:
-  board: esp12e
-  restore_from_flash: true
-
-wifi:
-  networks:
-    ssid: !secret wifi_ssid
-    password: !secret wifi_pass
-    #bssid: !secret bssid_airport_express
-
-captive_portal:
-
-ota:
-
-api:
-
-i2c:
-  id: i2ccomponent
-
-logger:
-  level: DEBUG
-
-custom_component:
-  - id: ape
-    lambda: |-
-      auto ape_component = new ArduinoPortExpander(i2ccomponent, 0x08);
-      return {ape_component};
+packages:
+  home: !include .pkg.home.yaml
+  wifi: !include .pkg.wifi.yaml
+  board: !include .pkg.esp8266.yaml
+  ape: !include .pkg.ape.yaml
 
 output:
-  - platform: custom
-    type: binary
-    lambda: |-
-      return {ape_binary_output(ape, 7),
-              ape_binary_output(ape, 6),
-              ape_binary_output(ape, 5),
-              ape_binary_output(ape, 4),
-              ape_binary_output(ape, 13)};
-    outputs:
-      - id: gpio_relay_1
-        inverted: true
-      - id: gpio_relay_2
-        inverted: true
-      - id: gpio_relay_3
-        inverted: true
-      - id: gpio_relay_4
-        inverted: true
-      - id: ardu_13_npn
+  - platform: gpio
+    id: ardu_13_npn
+    inverted: true
+    pin:
+      arduino_port_expander: ape
+      number: 13
 
 light:
   - platform: binary
     id: galeria
     name: "Galeria"
-    output: gpio_relay_1
+    output: ape_relay_1
     effects:
       - strobe:
           name: Strobe
   - platform: binary
     id: patio_proyector_este
     name: "Patio Proyector Este"
-    output: gpio_relay_2
+    output: ape_relay_2
     effects:
       - strobe:
           name: Strobe
   - platform: binary
     id: patio_proyector_oeste
     name: "Patio Proyector Oeste"
-    output: gpio_relay_3
+    output: ape_relay_3
     effects:
       - strobe:
           name: Strobe
@@ -98,12 +63,10 @@ switch:
   - platform: output
     id: sirena
     name: "Sirena"
-    output: gpio_relay_4
+    output: ape_relay_4
     on_turn_on:
       then:
         - script.execute: auto_off_siren
-  - platform: restart
-    name: "Patio Restart"
 
   - platform: template
     id: C3_Lock
@@ -315,77 +278,128 @@ cover:
     acceleration_wait_time: 900ms
 
 binary_sensor:
-  - platform: status
-    name: "Patio Status"
-
-  - platform: custom
-    lambda: |-
-      return {ape_binary_sensor(ape, 8),
-              ape_binary_sensor(ape, 9),
-              ape_binary_sensor(ape, 10),
-              ape_binary_sensor(ape, 0),
-              ape_binary_sensor(ape, 14 + 1),
-              ape_binary_sensor(ape, 12),
-              ape_binary_sensor(ape, 11),
-              // Cortinas
-              ape_binary_sensor(ape, 2),
-              ape_binary_sensor(ape, 3),
-              ape_binary_sensor(ape, 14 + 0),
-              };
-
-    binary_sensors:
-      - name: "Puerta Frente"
-        device_class: door
-        filters:
-          delayed_on_off: 100ms
-      - name: "Puerta Cocina"
-        device_class: door
-        filters:
-          delayed_on_off: 100ms
-      - name: "Puerta Estudio"
-        device_class: door
-        filters:
-          delayed_on_off: 100ms
-      - name: "Movimiento Galeria"
-        device_class: motion
-        filters:
-          delayed_on_off: 100ms
-      - name: "Switch Galeria 1"
-        internal: true
-        filters:
-          delayed_on_off: 100ms
-        on_state:
-          then:
-            - light.toggle: galeria
-      - name: "Switch Galeria Proyectores"
-        filters:
-          delayed_on_off: 100ms
-        on_state:
-          then:
-            - script.execute: toggle_proyectores
-        internal: true
-      - name: "Switch Galeria Patio"
-        filters:
-          delayed_on_off: 100ms
-      - name: "Cortina Pasillo"
-        id: bs_pasillo
-        device_class: opening
-        filters:
-          - invert:
-          - delayed_on_off: 2s
-        internal: true
-      - id: bs_centro
-        filters:
-          - invert:
-          - delayed_on_off: 2s
-        internal: true
-      - name: "Cortina Muro"
-        id: bs_muro
-        device_class: opening
-        filters:
-          - invert:
-          - delayed_on_off: 2s
-        internal: true
+  - platform: gpio
+    pin:
+      arduino_port_expander: ape
+      number: 8
+      mode:
+        input: true
+        pullup: true
+    name: "Puerta Frente"
+    device_class: door
+    filters:
+      delayed_on_off: 100ms
+  - platform: gpio
+    pin:
+      arduino_port_expander: ape
+      number: 9
+      mode:
+        input: true
+        pullup: true
+    name: "Puerta Cocina"
+    device_class: door
+    filters:
+      delayed_on_off: 100ms
+  - platform: gpio
+    pin:
+      arduino_port_expander: ape
+      number: 10
+      mode:
+        input: true
+        pullup: true
+    name: "Puerta Estudio"
+    device_class: door
+    filters:
+      delayed_on_off: 100ms
+  - platform: gpio
+    pin:
+      arduino_port_expander: ape
+      number: 0
+      mode:
+        input: true
+        pullup: true
+    name: "Movimiento Galeria"
+    device_class: motion
+    filters:
+      delayed_on_off: 100ms
+  - platform: gpio
+    pin:
+      arduino_port_expander: ape
+      number: 15
+      mode:
+        input: true
+        pullup: true
+    name: "Switch Galeria 1"
+    internal: true
+    filters:
+      delayed_on_off: 100ms
+    on_state:
+      then:
+        - light.toggle: galeria
+  - platform: gpio
+    pin:
+      arduino_port_expander: ape
+      number: 12
+      mode:
+        input: true
+        pullup: true
+    name: "Switch Galeria Proyectores"
+    filters:
+      delayed_on_off: 100ms
+    on_state:
+      then:
+        - script.execute: toggle_proyectores
+    internal: true
+  - platform: gpio
+    pin:
+      arduino_port_expander: ape
+      number: 11
+      mode:
+        input: true
+        pullup: true
+    name: "Switch Galeria Patio"
+    filters:
+      delayed_on_off: 100ms
+  - platform: gpio
+    pin:
+      arduino_port_expander: ape
+      number: 2
+      mode:
+        input: true
+        pullup: true
+    name: "Cortina Pasillo"
+    id: bs_pasillo
+    device_class: opening
+    filters:
+      - invert:
+      - delayed_on_off: 2s
+    internal: true
+  - platform: gpio
+    pin:
+      arduino_port_expander: ape
+      number: 3
+      mode:
+        input: true
+        pullup: true
+    id: bs_centro
+    filters:
+      - invert:
+      - delayed_on_off: 2s
+    internal: true
+  - platform: gpio
+    pin:
+      arduino_port_expander: ape
+      number: 14
+      mode:
+        input: true
+        pullup: true
+    name: "Cortina Muro"
+    id: bs_muro
+    device_class: opening
+    filters:
+      - invert:
+      - delayed_on_off: 2s
+    internal: true
   - platform: template
     name: "Cortina Centro"
     device_class: opening
@@ -466,6 +480,8 @@ sensor:
   - platform: dallas
     address: 0x2771C02712646128
     name: Temperatura Patio
+    filters:
+      - filter_out: 85.0
 ###
 # module info:
 # Male Header:

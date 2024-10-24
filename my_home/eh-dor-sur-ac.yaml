@@ -1,74 +1,54 @@
-esphome:
-  name: eh-dor-sur-ac
-
-esp8266:
-  board: esp12e
-  restore_from_flash: true
-
 substitutions:
-  rgb_receiver_light_entity: light.dormitorio_sur_rgb
+  device_name: eh-dor-sur-ac
+  friendly_name: Dormitorio Sur AC
 
 packages:
-  rgb_receiver: !include rgb_receiver.package.yaml
-
-wifi:
-  ssid: !secret wifi_ssid
-  password: !secret wifi_pass
-
-api:
-
-ota:
+  board: !include .pkg.esp8266.yaml
+  home: !include .pkg.home.yaml
+  wifi: !include .pkg.wifi.yaml
+  dht22: !include
+    file: .pkg.dht22.yaml
+    vars:
+      name: Dormitorio Norte
+      pin: GPIO4
+  # rgb_receiver: !include
+  #   file: .pkg.rgb_receiver.yaml
+  #   vars:
+  #     rgb_receiver_light_entity: light.dormitorio_sur_rgb
+  ir_ac_hack: !include
+    file: .pkg.ir_ac_hack.yaml
+    vars:
+      pin_number: GPIO14
 
 logger:
-  level: DEBUG
-
-remote_receiver:
-  id: rcvr
-  pin:
-    number: GPIO14
-    inverted: True
-    mode: INPUT_PULLUP
-  tolerance: 45%
+  baud_rate: 0
 
 remote_transmitter:
-  carrier_duty_percent: 50%
-  pin: GPIO12
+  - carrier_duty_percent: 50%
+    pin: GPIO12
+    id: ir_led
 
 climate:
   - platform: tcl112
-    sensor: temp_sur
+    sensor: dht_temperature
     name: "AC Dormitorio Sur"
     supports_heat: True
     supports_cool: True
-    receiver_id: rcvr
+    receiver_id: ir_hack_rx
+    transmitter_id: ir_hack_tx
 
 switch:
-  - platform: restart
-    name: "Dormitorio Sur Ac Restart"
   - platform: template
     name: Dor Sur Netflix
     turn_on_action:
       - remote_transmitter.transmit_nec:
+          transmitter_id: ir_led
           address: 0xFD
           command: 0xC23D # 0x43
   - platform: template
     name: Dor Sur TV Power
     turn_on_action:
       - remote_transmitter.transmit_nec:
+          transmitter_id: ir_led
           address: 0x00FD
           command: 0xC03F
-
-sensor:
-  - platform: dht
-    model: DHT22
-    pin: GPIO4
-    temperature:
-      id: temp_sur
-      name: Temperatura Dormitorio Sur
-    humidity:
-      name: Humedad Dormitorio Sur
-    update_interval: 60s
-
-binary_sensor:
-  - platform: status
-    name: "Dormitorio Sur AC Status"

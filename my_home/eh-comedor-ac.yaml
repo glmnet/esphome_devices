@@ -1,62 +1,32 @@
 substitutions:
-  node_name: Comedor AC
+  device_name: eh-comedor-ac
+  friendly_name: Comedor AC
 
-esphome:
-  name: eh-comedor-ac
-  platform: ESP8266
-  board: nodemcu
-
-wifi:
-  ssid: !secret wifi_ssid
-  password: !secret wifi_pass
-
-api:
-
-ota:
-
-logger:
-  level: DEBUG
-
-# remote_receiver:
-#   id: rcvr
-#   pin:
-#     number: GPIO14
-#     inverted: True
-#     mode: INPUT_PULLUP
-#   tolerance: 45%
-#   dump: raw
-
-# remote_transmitter:
-#   carrier_duty_percent: 50%
-#   pin: GPIO122
-
-remote_receiver:
-  id: rcvr
-  pin:
-    number: GPIO14
-    inverted: True
-    mode: OUTPUT_OPEN_DRAIN
-  tolerance: 45%
-
-remote_transmitter:
-  - id: receiver_hack
-    carrier_duty_percent: 100%
-    pin:
-      number: GPIO14
-      inverted: true
-      mode: OUTPUT_OPEN_DRAIN
+packages:
+  board: !include .pkg.esp8266.yaml
+  home: !include .pkg.home.yaml
+  wifi: !include .pkg.wifi.yaml
+  bmp280: !include
+    file: .pkg.bmp280.yaml
+    vars:
+      name: Comedor
+  ir_ac_hack: !include
+    file: .pkg.ir_ac_hack.yaml
+    vars:
+      pin_number: GPIO14
 
 climate:
   - platform: whirlpool
-    name: whirlpool ac
+    name: AC Comedor
     id: whirlpool_ac
-    sensor: temp_comedor
-    receiver_id: rcvr
+    sensor: bmp280_temperature
+    receiver_id: ir_hack_rx
     model: DG11J1-91
+    on_control:
+      then:
+        - script.execute: await_state_check
 
 binary_sensor:
-  - platform: status
-    name: "${node_name} Status"
   - platform: gpio
     id: whirlpool_on
     name: Whirlpool on
@@ -67,44 +37,6 @@ binary_sensor:
       - invert:
       - delayed_off: 200ms
 
-    # on_press:
-    #   - logger.log: 'Detected AC is on'
-    #   - lambda: |-
-    #       auto mode = id(whirlpool_ac)->mode;
-    #       if (mode == climate::ClimateMode::CLIMATE_MODE_OFF)
-    #       {
-    #         id(whirlpool_ac).mode = static_cast<climate::ClimateMode>(id(ac_mode_global));
-    #         id(whirlpool_ac).publish_state();
-    #       }
-    # on_release:
-    #   - logger.log: 'Detected AC is off'
-    #   - lambda: |-
-    #       auto mode = id(whirlpool_ac)->mode;
-    #       if (mode != climate::ClimateMode::CLIMATE_MODE_OFF
-    #         && mode != climate::ClimateMode::CLIMATE_MODE_FAN_ONLY)
-    #       {
-    #         id(whirlpool_ac).mode = climate::ClimateMode::CLIMATE_MODE_OFF;
-    #         id(whirlpool_ac).publish_state();
-    #       }
-
-i2c:
-
-sensor:
-  - platform: bmp280
-    temperature:
-      id: temp_comedor
-      name: "Temperatura Comedor"
-      oversampling: 1x
-    pressure:
-      name: "Presion Comedor"
-      oversampling: 1x
-    address: 0x76
-    update_interval: 60s
-
-switch:
-  - platform: restart
-    name: "Comedor AC restart"
-
 globals:
   - id: ac_mode_global
     type: int
@@ -112,14 +44,21 @@ globals:
     restore_value: yes
 
 interval:
-  # - interval: 10s
-  #   then:
-  #     # keep active non off known state
-  #     - lambda: |-
-  #         static int number = 12;
-  #         ESP_LOGD("main", "mode: %d", number++);
-
   - interval: 10s
+    then:
+      - if:
+          condition:
+            - not:
+                - script.is_running: await_state_check
+          then:
+            - script.execute: update_ac_state
+
+script:
+  - id: await_state_check
+    then:
+      - delay: 2s # this time takes LCD to follow command, i.e. if I turn on AC it takes this time to turn on the LCD (and GPIO13)
+      - script.execute: update_ac_state
+  - id: update_ac_state
     then:
       # keep active non off known state
       - lambda: |-

@@ -1,5 +1,6 @@
 substitutions:
-  esphome_name: eh-dor-nor-rgb
-  node_name: Dormitorio Norte RGB
+  device_name: eh-dor-nor-rgb
+  friendly_name: Dormitorio Norte RGB
 
-<<: !include EHMagicHome_base.yaml
+packages:
+  magic_home: !include .pkg.magic_home.yaml

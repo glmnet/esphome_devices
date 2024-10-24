@@ -1,0 +1,495 @@
+substitutions:
+  # Change this model to fit your particular one.
+  # You can find it in Home Assistant as the device diagnostic "Model Name".
+  model: "RD6006"
+  device_name: "eh-rd6006"
+
+  device_friendly_name: "RD 6006"
+  friendly_name: "RD 6006"
+  device_description: "Power Supply"
+
+  # Model specific settings (Don't change these!)
+  RD6006_voltage_maximum: "60"
+  RD6006_voltage_accuracy: "2"
+  RD6006_voltage_multiplier: "0.01"
+  RD6006_current_maximum: "6"
+  RD6006_current_accuracy: "3"
+  RD6006_current_multiplier: "0.001"
+
+  RD6006P_voltage_maximum: "60"
+  RD6006P_voltage_accuracy: "3"
+  RD6006P_voltage_multiplier: "0.001"
+  RD6006P_current_maximum: "6"
+  RD6006P_current_accuracy: "4"
+  RD6006P_current_multiplier: "0.0001"
+
+  RD6012_voltage_maximum: "60"
+  RD6012_voltage_accuracy: "2"
+  RD6012_voltage_multiplier: "0.01"
+  RD6012_current_maximum: "12"
+  RD6012_current_accuracy: "2"
+  RD6012_current_multiplier: "0.01"
+
+  RD6018_voltage_maximum: "60"
+  RD6018_voltage_accuracy: "2"
+  RD6018_voltage_multiplier: "0.01"
+  RD6018_current_maximum: "18"
+  RD6018_current_accuracy: "2"
+  RD6018_current_multiplier: "0.01"
+
+packages:
+  home: !include .pkg.home.yaml
+  wifi: !include .pkg.wifi.yaml
+
+esphome:
+  name: $device_name
+  friendly_name: $device_friendly_name
+  comment: $device_description
+  name_add_mac_suffix: false
+  project:
+    name: "wildekek.rd6006-controller"
+    version: "1.4.1"
+
+esp8266:
+  board: esp01_1m
+
+# Enable logging
+logger:
+  level: INFO
+  # Disable logging via UART, since we're using this for modbus communication
+  baud_rate: 0
+
+# Enable status LED
+status_led:
+  pin:
+    number: GPIO2
+    inverted: true
+
+# Enable Home Assistant API
+api:
+
+ota:
+
+# Configure WiFi
+wifi:
+  ssid: !secret wifi_ssid
+  password: !secret wifi_pass
+
+captive_portal:
+
+uart:
+  id: mod_bus
+  tx_pin: GPIO1
+  rx_pin: GPIO3
+  baud_rate: 460800
+  data_bits: 8
+  stop_bits: 1
+  parity: none
+
+modbus:
+  id: modbus1
+
+modbus_controller:
+  - id: powersupply
+    ## This address should be set to the "Address" value in the config menu
+    address: 0x01
+    modbus_id: modbus1
+    setup_priority: -10
+    update_interval: 5s
+
+time:
+  # Get the time from HA, so we can use it for uptime
+  - platform: homeassistant
+    id: time_homeassistant
+    on_time_sync:
+      - logger.log: Time has been set and is valid!
+      - component.update: sensor_uptime_timestamp
+      - number.set:
+          id: date_year
+          value: !lambda return id(time_homeassistant).now().year;
+      - number.set:
+          id: date_month
+          value: !lambda return id(time_homeassistant).now().month;
+      - number.set:
+          id: date_day
+          value: !lambda return id(time_homeassistant).now().day_of_month;
+      - number.set:
+          id: date_hour
+          value: !lambda return id(time_homeassistant).now().hour;
+      - number.set:
+          id: date_minute
+          value: !lambda return id(time_homeassistant).now().minute;
+      - number.set:
+          id: date_second
+          value: !lambda return id(time_homeassistant).now().second;
+
+sensor:
+  - platform: modbus_controller
+    id: model_number
+    name: "Model Number"
+    entity_category: diagnostic
+    disabled_by_default: True
+    modbus_controller_id: powersupply
+    address: 0
+    skip_updates: 10
+    unit_of_measurement: ""
+    register_type: holding
+    value_type: U_WORD
+    accuracy_decimals: 0
+    on_value:
+      then:
+        - lambda: |-
+            id(model_name).publish_state(value_accuracy_to_string(x, 0));
+
+  - platform: modbus_controller
+    name: "Serial Number"
+    entity_category: diagnostic
+    disabled_by_default: True
+    modbus_controller_id: powersupply
+    address: 1
+    skip_updates: 10
+    register_type: holding
+    value_type: U_DWORD
+    accuracy_decimals: 0
+
+  - platform: modbus_controller
+    modbus_controller_id: powersupply
+    address: 3
+    name: "Firmware version"
+    entity_category: diagnostic
+    disabled_by_default: True
+    unit_of_measurement: ""
+    register_type: holding
+    value_type: U_WORD
+    accuracy_decimals: 2
+    filters:
+      - multiply: 0.01
+
+  - platform: modbus_controller
+    modbus_controller_id: powersupply
+    address: 10
+    name: "Output voltage"
+    device_class: voltage
+    state_class: measurement
+    unit_of_measurement: "V"
+    register_type: holding
+    value_type: U_WORD
+    accuracy_decimals: ${${model}_voltage_accuracy}
+    filters:
+      - multiply: ${${model}_voltage_multiplier}
+
+  - platform: modbus_controller
+    address: 11
+    name: "Output current"
+    device_class: current
+    state_class: measurement
+    unit_of_measurement: "A"
+    register_type: holding
+    value_type: U_WORD
+    accuracy_decimals: ${${model}_current_accuracy}
+    filters:
+      - multiply: ${${model}_current_multiplier}
+
+  - platform: modbus_controller
+    modbus_controller_id: powersupply
+    address: 12
+    name: "Output Power"
+    device_class: power
+    state_class: measurement
+    unit_of_measurement: "W"
+    register_type: holding
+    value_type: U_DWORD
+    accuracy_decimals: 2
+    filters:
+      - multiply: 0.01
+
+  - platform: modbus_controller
+    modbus_controller_id: powersupply
+    address: 33
+    name: "Battery voltage"
+    device_class: voltage
+    state_class: measurement
+    unit_of_measurement: "V"
+    register_type: holding
+    value_type: U_WORD
+    accuracy_decimals: ${${model}_voltage_accuracy}
+    filters:
+      - multiply: ${${model}_voltage_multiplier}
+
+  - platform: modbus_controller
+    modbus_controller_id: powersupply
+    address: 38
+    name: "Battery charge"
+    device_class: "energy_storage"
+    state_class: measurement
+    unit_of_measurement: "Ah"
+    icon: "mdi:battery-60"
+    register_type: holding
+    value_type: U_DWORD
+    accuracy_decimals: 3
+    filters:
+      - multiply: 0.001
+
+  - platform: modbus_controller
+    modbus_controller_id: powersupply
+    address: 40
+    name: "Battery energy"
+    device_class: "energy_storage"
+    state_class: measurement
+    unit_of_measurement: "Wh"
+    icon: "mdi:battery-60"
+    register_type: holding
+    value_type: U_DWORD
+    accuracy_decimals: 3
+    filters:
+      - multiply: 0.001
+
+  - platform: modbus_controller
+    modbus_controller_id: powersupply
+    address: 14
+    name: "Input voltage"
+    device_class: voltage
+    unit_of_measurement: "V"
+    register_type: holding
+    value_type: U_WORD
+    accuracy_decimals: ${${model}_voltage_accuracy}
+    filters:
+      - multiply: ${${model}_voltage_multiplier}
+
+  - platform: modbus_controller
+    name: "Temperature"
+    device_class: temperature
+    state_class: measurement
+    modbus_controller_id: powersupply
+    register_type: holding
+    address: 4
+    value_type: S_DWORD
+    unit_of_measurement: "°C"
+
+  - platform: modbus_controller
+    name: "Temperature external"
+    state_class: measurement
+    modbus_controller_id: powersupply
+    register_type: holding
+    address: 34
+    value_type: S_DWORD
+    device_class: temperature
+    unit_of_measurement: "°C"
+
+  - platform: wifi_signal
+    name: "Wi-Fi Signal"
+    disabled_by_default: True
+    update_interval: 60s
+
+  # Uptime is used internally only
+  - platform: uptime
+    id: sensor_uptime
+  # This sensor is an alternative for the uptime sensor, which only sends the
+  # startup timestamp of the device to home assistant once
+  - platform: template
+    id: sensor_uptime_timestamp
+    name: "Uptime"
+    entity_category: diagnostic
+    device_class: "timestamp"
+    accuracy_decimals: 0
+    update_interval: never
+    lambda: |-
+      static float timestamp = (
+        id(time_homeassistant).utcnow().timestamp - id(sensor_uptime).state
+      );
+      return timestamp;
+
+text_sensor:
+  - platform: wifi_info
+    ip_address:
+      name: "IP Address"
+      disabled_by_default: True
+    ssid:
+      name: "Wi-Fi SSID"
+      disabled_by_default: True
+    bssid:
+      name: "Wi-Fi BSSID"
+      disabled_by_default: True
+  - platform: template
+    id: model_name
+    name: "Model Name"
+    entity_category: diagnostic
+    # Updated by model number
+    update_interval: never
+    filters:
+      - map:
+          - 60062 -> RD6006
+          - 60065 -> RD6006P
+          - 60121 -> RD6012
+          - 60181 -> RD6018
+
+binary_sensor:
+  - platform: modbus_controller
+    modbus_controller_id: powersupply
+    name: "Keypad lock"
+    entity_category: diagnostic
+    device_class: lock
+    address: 15
+    register_type: holding
+    bitmask: 0x1
+    filters:
+      - invert:
+  - platform: modbus_controller
+    modbus_controller_id: powersupply
+    address: 32
+    name: "Battery mode"
+    device_class: connectivity
+    register_type: holding
+    bitmask: 0x1
+  - platform: modbus_controller
+    modbus_controller_id: powersupply
+    name: "Over Voltage Protection"
+    device_class: problem
+    address: 16
+    register_type: holding
+    bitmask: 0x1
+  - platform: modbus_controller
+    modbus_controller_id: powersupply
+    name: "Over Current Protection"
+    device_class: problem
+    address: 16
+    register_type: holding
+    bitmask: 0x2
+  - platform: modbus_controller
+    modbus_controller_id: powersupply
+    name: "Constant Voltage"
+    address: 17
+    register_type: holding
+    bitmask: 0x1
+    filters:
+      - invert:
+  - platform: modbus_controller
+    modbus_controller_id: powersupply
+    name: "Constant Current"
+    address: 17
+    register_type: holding
+    bitmask: 0x1
+
+number:
+  - platform: modbus_controller
+    modbus_controller_id: powersupply
+    name: "Backlight"
+    icon: "mdi:lightbulb"
+    entity_category: config
+    address: 72
+    value_type: U_WORD
+    min_value: 0
+    max_value: 5
+
+  - platform: modbus_controller
+    modbus_controller_id: powersupply
+    name: "Output voltage"
+    device_class: voltage
+    unit_of_measurement: "V"
+    entity_category: config
+    address: 8
+    value_type: U_WORD
+    min_value: 0
+    max_value: ${${model}_voltage_maximum}
+    step: ${${model}_voltage_multiplier}
+    lambda: !lambda return x * ${${model}_voltage_multiplier};
+    write_lambda: !lambda return x * (1/${${model}_voltage_multiplier});
+
+  - platform: modbus_controller
+    modbus_controller_id: powersupply
+    name: "Output current"
+    device_class: current
+    unit_of_measurement: "A"
+    entity_category: config
+    address: 9
+    value_type: U_WORD
+    min_value: 0
+    max_value: ${${model}_current_maximum}
+    step: ${${model}_current_multiplier}
+    lambda: !lambda return x * ${${model}_current_multiplier};
+    write_lambda: !lambda return x * (1/${${model}_current_multiplier});
+
+  - platform: modbus_controller
+    modbus_controller_id: powersupply
+    name: "Over Voltage Protection"
+    device_class: voltage
+    unit_of_measurement: "V"
+    address: 82
+    entity_category: config
+    value_type: U_WORD
+    min_value: 0
+    max_value: ${${model}_voltage_maximum}
+    step: ${${model}_voltage_multiplier}
+    lambda: !lambda return x * ${${model}_voltage_multiplier};
+    write_lambda: !lambda return x * (1/${${model}_voltage_multiplier});
+
+  - platform: modbus_controller
+    modbus_controller_id: powersupply
+    name: "Over Current Protection"
+    device_class: current
+    unit_of_measurement: "A"
+    address: 83
+    entity_category: config
+    value_type: U_WORD
+    min_value: 0
+    max_value: ${${model}_current_maximum}
+    step: ${${model}_current_multiplier}
+    lambda: !lambda return x * ${${model}_current_multiplier};
+    write_lambda: !lambda return x * (1/${${model}_current_multiplier});
+
+  # Date components are kept internal
+  - platform: modbus_controller
+    id: date_year
+    modbus_controller_id: powersupply
+    entity_category: diagnostic
+    register_type: holding
+    address: 48
+    value_type: U_WORD
+  - platform: modbus_controller
+    id: date_month
+    modbus_controller_id: powersupply
+    entity_category: diagnostic
+    register_type: holding
+    address: 49
+    value_type: U_WORD
+  - platform: modbus_controller
+    id: date_day
+    modbus_controller_id: powersupply
+    entity_category: diagnostic
+    register_type: holding
+    address: 50
+    value_type: U_WORD
+  - platform: modbus_controller
+    id: date_hour
+    modbus_controller_id: powersupply
+    entity_category: diagnostic
+    register_type: holding
+    address: 51
+    value_type: U_WORD
+  - platform: modbus_controller
+    id: date_minute
+    modbus_controller_id: powersupply
+    entity_category: diagnostic
+    register_type: holding
+    address: 52
+    value_type: U_WORD
+  - platform: modbus_controller
+    id: date_second
+    modbus_controller_id: powersupply
+    entity_category: diagnostic
+    register_type: holding
+    address: 53
+    value_type: U_WORD
+
+switch:
+  - platform: modbus_controller
+    modbus_controller_id: powersupply
+    name: "Output"
+    address: 18
+    register_type: holding
+    bitmask: 0x1
+    entity_category: config
+
+button:
+  - platform: safe_mode
+    name: "Safe mode"

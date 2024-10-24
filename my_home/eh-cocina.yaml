@@ -1,105 +1,97 @@
-esphome:
-  name: eh-cocina
-  includes:
-    - arduino_port_expander.h
+substitutions:
+  device_name: eh-cocina
+  friendly_name: Cocina
 
-esp8266:
-  board: esp12e
-  restore_from_flash: true
-
-wifi:
-  ssid: !secret wifi_ssid
-  password: !secret wifi_pass
-
-api:
-
-ota:
-
-i2c:
-  id: i2c_component
-
-logger:
-  level: DEBUG
-
-custom_component:
-  - id: ape
-    lambda: |-
-      auto ape_component = new ArduinoPortExpander(i2c_component, 0x08);
-      return {ape_component};
-    components:
-      id: ape_componentex
-
-output:
-  - platform: custom
-    type: binary
-    lambda: |-
-      return {ape_binary_output(ape, 7),
-              ape_binary_output(ape, 6),
-              ape_binary_output(ape, 5),
-              ape_binary_output(ape, 4)};
-    outputs:
-      - id: gpio_relay_1
-        inverted: true
-      - id: gpio_relay_2
-        inverted: true
-      - id: gpio_relay_3
-        inverted: true
-      - id: gpio_relay_4
-        inverted: true
+packages:
+  home: !include .pkg.home.yaml
+  wifi: !include .pkg.wifi.yaml
+  board: !include .pkg.esp8266.yaml
+  ape: !include .pkg.ape.yaml
 
 light:
   - platform: binary
     id: luz_cocina
     name: "Luz cocina"
-    output: gpio_relay_1
+    output: ape_relay_1
+    restore_mode: RESTORE_DEFAULT_OFF
   - platform: binary
     id: luz_mesa_cocina
     name: "Luz mesa cocina"
-    output: gpio_relay_2
+    output: ape_relay_2
   - platform: binary
     id: luz_exterior_pasillo
     name: "Luz exterior pasillo"
-    output: gpio_relay_3
+    output: ape_relay_3
+    restore_mode: RESTORE_DEFAULT_OFF
 
 binary_sensor:
-  - platform: status
-    name: "Cocina Status"
-  - platform: custom
-    lambda: |-
-      return {ape_binary_sensor(ape, 2), // ribbon purple
-              ape_binary_sensor(ape, 3), // ribbon white
-              ape_binary_sensor(ape, 8), // ribbon verde
-              ape_binary_sensor(ape, 15), // A1 ribbon orange
-              ape_binary_sensor(ape, 14)}; // ribbon red
-    binary_sensors:
-      - name: "Switch Cocina puerta 1"
-        internal: true
-        filters:
-          delayed_on_off: 100ms
-        on_state:
-          then:
-            - light.toggle: luz_cocina
-      - name: "Switch Cocina puerta 2"
-        internal: true
-        filters:
-          delayed_on_off: 100ms
-        on_state:
-          then:
-            - light.toggle: luz_mesa_cocina
-      - name: "Switch Cocina puerta 3"
-        filters:
-          delayed_on_off: 100ms
-        on_state:
-          then:
-            - light.toggle: luz_exterior_pasillo
-      - name: "Switch Mesa cocina"
-        internal: true
-        filters:
-          delayed_on_off: 100ms
-        on_state:
-          then:
-            - light.toggle: luz_mesa_cocina
-      - name: "Ventana cocina"
-        filters:
-          delayed_on_off: 100ms
-        device_class: window
+  - platform: gpio
+    pin:
+      arduino_port_expander: ape
+      number: 2 # ribbon purple
+      mode:
+        input: true
+        pullup: true
+    name: "Switch Cocina puerta 1"
+    internal: true
+    filters:
+      delayed_on_off: 100ms
+    on_state:
+      then:
+        - light.toggle: luz_cocina
+
+  - platform: gpio
+    pin:
+      arduino_port_expander: ape
+      number: 3 # ribbon white
+      mode:
+        input: true
+        pullup: true
+    name: "Switch Cocina puerta 2"
+    internal: true
+    filters:
+      delayed_on_off: 100ms
+    on_state:
+      then:
+        - light.toggle: luz_mesa_cocina
+
+  - platform: gpio
+    pin:
+      arduino_port_expander: ape
+      number: 8 # ribbon verde
+      mode:
+        input: true
+        pullup: true
+    name: "Switch Cocina puerta 3"
+    filters:
+      delayed_on_off: 100ms
+    on_state:
+      then:
+        - light.toggle: luz_exterior_pasillo
+
+  - platform: gpio
+    pin:
+      arduino_port_expander: ape
+      number: 15 # A1 ribbon orange
+      mode:
+        input: true
+        pullup: true
+    name: "Switch Mesa cocina"
+    internal: true
+    filters:
+      delayed_on_off: 100ms
+    on_state:
+      then:
+        - light.toggle: luz_mesa_cocina
+
+  - platform: gpio
+    pin:
+      arduino_port_expander: ape
+      number: 14 # ribbon red
+      mode:
+        input: true
+        pullup: true
+    name: "Ventana cocina"
+    filters:
+      delayed_on_off: 100ms
+    device_class: window

@@ -1,34 +1,13 @@
-esphome:
-  name: eh-piscina
-  platformio_options:
-    upload_speed: 921600
+substitutions:
+  device_name: eh-piscina
+  friendly_name: Piscina
 
-esp32:
-  framework:
-    type: esp-idf
-  board: nodemcu-32s
-
-wifi:
-  ssid: !secret wifi_ssid
-  password: !secret wifi_pass
-
-logger:
-
-api:
-
-ota:
-# ethernet:
-#   type: LAN8720
-#   mdc_pin: GPIO23
-#   mdio_pin: GPIO18
-#   clk_mode: GPIO0_IN
-#   phy_addr: 1
-#   power_pin: GPIO17
-#   #enable_mdns: true
+packages:
+  home: !include .pkg.home.yaml
+  wifi: !include .pkg.wifi.yaml
+  board: !include .pkg.esp32.idf.yaml
 
 binary_sensor:
-  - platform: status
-    name: "Piscina Status"
   - platform: remote_receiver
     receiver_id: rx_rf
     id: btn_top
@@ -63,7 +42,7 @@ binary_sensor:
       - delayed_off: 1s
     on_press:
       then:
-        - switch.toggle: switch_pump_watering
+        - switch.toggle: switch_well_pump
 
   - platform: homeassistant
     entity_id: input_boolean.alarma_luces
@@ -82,10 +61,6 @@ binary_sensor:
         - light.turn_off: luz_proyectores_oeste
 
 sensor:
-  - platform: uptime
-    name: Piscina uptime
-  - platform: wifi_signal
-    name: Piscina Wifi Signal
   - platform: dallas
     name: Piscina Temperatura sensor en tubo
     id: pipe_temperature_sensor
@@ -111,10 +86,24 @@ sensor:
     name: Piscina Temperatura
     id: pool_temperature_sensor
     device_class: temperature
-    unit_of_measurement: ºC
+
+  - platform: template
+    lambda: "return id(switch_pool_pump).state ? 1 : 0;"
+    id: pool_pump_accum_encendido
+
+  - platform: integration
+    name: Bomba Piscina Tiempo encendido total
+    device_class: duration
+    state_class: total_increasing
+    unit_of_measurement: s
+    time_unit: s
+    restore: True
+    sensor: pool_pump_accum_encendido
 
 status_led:
-  pin: GPIO12
+  pin:
+    number: GPIO12
+    ignore_strapping_warning: True
 
 output:
   - platform: gpio
@@ -122,7 +111,9 @@ output:
     id: relay2
     inverted: true
   - platform: gpio
-    pin: GPIO2
+    pin:
+      number: GPIO2
+      ignore_strapping_warning: True
     id: relay3
     inverted: true
 
@@ -134,19 +125,61 @@ switch:
     pin:
       number: GPIO5
       inverted: true
+      ignore_strapping_warning: True
     on_turn_on:
       # auto turn off after 3 hours
-      - script.execute: auto_off_pump
+      - script.execute: auto_off_pool_pump
 
   - platform: gpio
-    id: switch_pump_watering
+    id: switch_well_pump
     name: Bomba riego
     restore_mode: ALWAYS_OFF
     pin:
       number: GPIO15
       inverted: true
-  - platform: restart
-    name: "Piscina Restart"
+      ignore_strapping_warning: True
+    on_turn_on:
+      - script.execute: auto_off_well_pump
+      - switch.turn_on: switch_riego_transformador
+      - switch.turn_on: switch_riego_manguera
+
+  - platform: gpio
+    id: switch_riego_transformador
+    name: Piscina switch_riego_transformador
+    pin:
+      number: GPIO33
+      inverted: True
+  - platform: gpio
+    id: switch_riego_manguera
+    name: Riego valvula manguera
+
+    pin:
+      number: GPIO13
+      inverted: True
+    on_turn_on:
+      then:
+        - switch.turn_on: switch_riego_transformador
+  - platform: gpio
+    id: switch_riego_zona_1
+    name: Piscina switch_riego_zona_1
+    pin:
+      number: GPIO16
+      inverted: True
+    on_turn_on:
+      then:
+        - switch.turn_on: switch_riego_transformador
+  - platform: gpio
+    id: switch_riego_zona_2
+    name: Piscina switch_riego_zona_2
+    pin:
+      number: GPIO1
+      inverted: True
+    on_turn_on:
+      then:
+        - switch.turn_on: switch_riego_transformador
+
+logger:
+  baud_rate: 0
 
 light:
   - platform: binary
@@ -179,16 +212,81 @@ dallas:
   pin: GPIO32
   update_interval: 5s
 
-debug:
-
-text_sensor:
-  - platform: debug
-    device:
-      name: Piscina Debug
-
 script:
-  - id: auto_off_pump
+  - id: auto_off_pool_pump
     mode: restart
     then:
       - delay: 3h
       - switch.turn_off: switch_pool_pump
+  - id: auto_off_well_pump
+    mode: restart
+    then:
+      - delay: 1h
+      - switch.turn_off: switch_well_pump
+
+sprinkler:
+  - id: lawn_sprinkler_ctrlr
+    main_switch: "Riego patio"
+    auto_advance_switch: "Riego patio automatico"
+    pump_start_pump_delay: 3s
+    pump_stop_valve_delay: 10s
+    valve_overlap: 5s
+    valves:
+      # Riego con manguera inciial por 20 segundos para purgar arena
+      - valve_switch: "Riego patio manguera"
+        enable_switch: "Habilitar riego manguera"
+        pump_switch_id: switch_well_pump
+        run_duration_number:
+          name: Riego manguera segundos
+          max_value: 200
+          min_value: 10
+          initial_value: 20
+        valve_switch_id: switch_riego_manguera
+      - valve_switch: "Riego patio casa"
+        enable_switch: "Habilitar riego patio casa"
+        pump_switch_id: switch_well_pump
+        run_duration_number:
+          name: Riego casa minutos
+          max_value: 20
+          min_value: 1
+          initial_value: 5
+          unit_of_measurement: min
+        valve_switch_id: switch_riego_zona_1
+      - valve_switch: "Riego patio quincho"
+        enable_switch: "Habilitar riego patio quincho"
+        pump_switch_id: switch_well_pump
+        run_duration_number:
+          name: Riego patio minutos
+          max_value: 20
+          min_value: 1
+          initial_value: 5
+          unit_of_measurement: min
+        valve_switch_id: switch_riego_zona_2
+
+interval:
+  interval:
+    seconds: 2
+  then:
+    - if:
+        condition:
+          - switch.is_on: switch_riego_transformador
+          - for:
+              time: 5s
+              condition:
+                - switch.is_off: switch_riego_zona_1
+                - switch.is_off: switch_riego_zona_2
+                - switch.is_off: switch_riego_manguera
+        then:
+          - switch.turn_off: switch_riego_transformador
+
+    # Asegurarse que las valvulas estan apagadas
+    # cuando se apaga la bomba
+    - if:
+        condition:
+          - switch.is_on: switch_riego_manguera
+          - for:
+              time: 3s
+              condition:
+                - switch.is_off: switch_well_pump
+        then:
+          - switch.turn_off: switch_riego_manguera

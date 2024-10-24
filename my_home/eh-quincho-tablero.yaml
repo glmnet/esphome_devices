@@ -19,43 +19,32 @@
 # 5  GND                                   Blue
 
 substitutions:
-  device_name: Tablero quincho
-  tank_max_level: "1000" # liters
+  device_name: eh-quincho-tablero
+  friendly_name: Tablero quincho
+  tank_max_level: "1100.f" # liters
+
+packages:
+  home: !include .pkg.home.yaml
+  wifi: !include .pkg.wifi.yaml
+  board: !include .pkg.esp32.arduino.yaml
 
 esphome:
-  name: eh-quincho-tablero
-  platformio_options:
-    upload_speed: 921600
   on_boot:
     then:
       - light.turn_on:
           id: status_led
           effect: Status Led
 
-wifi:
-  ssid: !secret wifi_ssid
-  password: !secret wifi_pass
-
 logger:
   logs:
     light: INFO
 
-api:
+globals:
+  - id: tank_liters
+    type: float
+    initial_value: "0.0"    
+    restore_value: True
 
-ota:
-# ethernet:
-#   type: LAN8720
-#   mdc_pin: GPIO23
-#   mdio_pin: GPIO18
-#   clk_mode: GPIO0_IN
-#   phy_addr: 1
-#   power_pin: GPIO17
-#   #enable_mdns: true
-
-esp32:
-  framework:
-    type: arduino
-  board: nodemcu-32s
 
 binary_sensor:
   - platform: gpio
@@ -64,20 +53,21 @@ binary_sensor:
       inverted: true
       number: GPIO2
       mode: INPUT
+      ignore_strapping_warning: True
     name: Tanque abajo vacio
     device_class: problem
     filters:
       - delayed_on_off: 2s # debounce for some noisy from pump or generator
     on_release:
       # tank almost full
-      - sensor.template.publish:
+      - globals.set: 
           id: tank_liters
-          state: !lambda "return 900.0;"
+          value: !lambda "return 900.0;"
     on_press:
       # tank almost empty
-      - sensor.template.publish:
+      - globals.set: 
           id: tank_liters
-          state: !lambda "return 80.0;"
+          value: !lambda "return 80.0;"
       # prevent pump run without water
       - delay: 50s
       - switch.turn_off: bomba_tanque
@@ -93,6 +83,7 @@ binary_sensor:
   - platform: gpio
     pin:
       number: GPIO15
+      ignore_strapping_warning: True
       mode: INPUT
     name: "Tanque abajo rebalsado"
     filters:
@@ -110,10 +101,6 @@ binary_sensor:
         input: True
 
 sensor:
-  - platform: uptime
-    name: ${device_name} uptime
-  - platform: wifi_signal
-    name: ${device_name} Wifi Signal
   - platform: dallas
     name: Temperatura termotanque quincho
     address: 0x5221e03f12646128
@@ -126,17 +113,17 @@ sensor:
     id: water_flow_sensor
     unit_of_measurement: "l/min"
     filters:
-      - lambda: return (x / 450.0); # 450 pulses 1 liter
+      - lambda: return (x / 450.); # 450 pulses 1 liter
     on_value:
-      - sensor.template.publish:
+      - globals.set: 
           id: tank_liters
-          state: !lambda |-
-            float new_level = id(tank_liters).state;
+          value: !lambda |-
+            float new_level = id(tank_liters);
             if (isnan(new_level))
-              new_level = id(flotador_vacio).state ? 50.0 : 900.0;
+              new_level = id(flotador_vacio).state ? 50.0f : 900.f;
             new_level += x;
-            if (new_level > 900.0 && id(flotador_vacio).state)
-              return 900;
+            if (new_level > 900.f && id(flotador_vacio).state)
+              return 900.f;
             if (new_level > ${tank_max_level}) return ${tank_max_level};
             return new_level;
     total:
@@ -151,9 +138,9 @@ sensor:
       accuracy_decimals: 3
 
   - platform: template
-    id: tank_liters
-    unit_of_measurement: l
+    unit_of_measurement: liters
     name: Nivel Tanque Abajo
+    lambda: return id(tank_liters);
   - platform: adc
     pin: GPIO36
     name: Termotanque calentando LDR
@@ -191,10 +178,6 @@ output:
     id: relay4
     inverted: true
 
-button:
-  - platform: restart
-    name: Reiniciar ${device_name}
-
 switch:
   - platform: output
     name: Encendido termotanque quincho
@@ -207,8 +190,10 @@ switch:
 
 light:
   - platform: binary
-    name: Luz Quincho
+    #name: Luz Quincho Cartel
+    id: _temp
     output: relay2
+    restore_mode: ALWAYS_ON # because now it is actually giving power to other device
   - platform: binary
     name: Luz Cocina quincho
     output: relay3
@@ -245,9 +230,9 @@ interval:
             binary_sensor.is_on: tanque_abajo_lleno
           then:
             lambda: |-
-              float new_level = id(tank_liters).state;
-              if (isnan(new_level) || new_level < 950)
-                id(tank_liters).publish_state(950);
+              float new_level = id(tank_liters);
+              if (isnan(new_level) || new_level < 950.0)
+                id(tank_liters) = 950.0;
       - if:
           condition:
             switch.is_on: bomba_tanque
@@ -255,13 +240,13 @@ interval:
           # about 0.38 liters every second are pumped out of the tank
           then:
             - lambda: |-
-                float new_level = id(tank_liters).state;
+                float new_level = id(tank_liters);
                 if (isnan(new_level))
-                  new_level = id(flotador_vacio).state ? 50.0 : 900.00;
+                  new_level = id(flotador_vacio).state ? 50.0 : 900.0;
 
                 new_level -= 0.38;
                 if (new_level < 0)
                   new_level = 0;
                 if (new_level < 70.0 && !id(flotador_vacio).state)
                   new_level = 70;
-                id(tank_liters).publish_state(new_level);
+                id(tank_liters) = new_level;

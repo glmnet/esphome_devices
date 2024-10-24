@@ -1,86 +1,78 @@
-esphome:
-  name: eh-dor-este
-  platform: ESP8266
-  board: nodemcu
-  includes:
-    - arduino_port_expander.h
+substitutions:
+  device_name: eh-dor-este
+  friendly_name: Dormitorio Este
 
-wifi:
-  ssid: !secret wifi_ssid
-  password: !secret wifi_pass
-
-api:
-
-ota:
-
-i2c:
-  id: i2ccomponent
-
-logger:
-  level: DEBUG
-
-custom_component:
-  - id: ape
-    lambda: |-
-      auto ape_component = new ArduinoPortExpander(i2ccomponent, 0x08);
-      return {ape_component};
-
-output:
-  - platform: custom
-    type: binary
-    lambda: |-
-      return {ape_binary_output(ape, 7),
-              ape_binary_output(ape, 6)};
-    outputs:
-      - id: gpio_relay_1
-        inverted: true
-      - id: gpio_relay_2
-        inverted: true
+packages:
+  home: !include .pkg.home.yaml
+  wifi: !include .pkg.wifi.yaml
+  board: !include .pkg.esp8266.yaml
+  ape: !include .pkg.ape.yaml
 
 light:
   - platform: binary
     id: luz_dormitorio_este
     name: "Dormitorio Este"
-    output: gpio_relay_1
+    output: ape_relay_1
   - platform: binary
     id: luz_dormitorio_este_cama
     name: "Dormitorio Este Cama"
-    output: gpio_relay_2
+    output: ape_relay_2
 
 binary_sensor:
-  - platform: status
-    name: "Dormitorio Este Status"
-  - platform: custom
-    lambda: |-
-      return {ape_binary_sensor(ape, 15), // A1 ribbon orange
-              ape_binary_sensor(ape, 3), // ribbon white
-              ape_binary_sensor(ape, 8), // ribbon green
-              ape_binary_sensor(ape, 2), // ribbon purple
-              ape_binary_sensor(ape, 14)}; // A0 ribbon red
-    binary_sensors:
-      - name: "Switch Puerta 1"
-        internal: true
-        on_state:
-          then:
-            - light.toggle: luz_dormitorio_este
-      - name: "Switch puerta 2"
-        internal: true
-        on_state:
-          then:
-            - light.toggle: luz_dormitorio_este_cama
-      - name: "Switch Cama 1"
-        internal: true
-        on_state:
-          then:
-            - light.toggle: luz_dormitorio_este
-      - name: "Switch Cama 2"
-        internal: true
-        on_state:
-          then:
-            - light.toggle: luz_dormitorio_este_cama
-      - name: "Ventana Dormitorio Este"
-        device_class: window
-
-switch:
-  - platform: restart
-    name: "Dormitorio Este Restart"
+  - platform: gpio
+    pin:
+      arduino_port_expander: ape
+      number: 15 # A1 ribbon orange
+      mode:
+        input: true
+        pullup: true
+    name: "Switch Puerta 1"
+    internal: true
+    on_state:
+      then:
+        - light.toggle: luz_dormitorio_este
+  - platform: gpio
+    pin:
+      arduino_port_expander: ape
+      number: 3 # ribbon white
+      mode:
+        input: true
+        pullup: true
+    name: "Switch puerta 2"
+    internal: true
+    on_state:
+      then:
+        - light.toggle: luz_dormitorio_este_cama
+  - platform: gpio
+    pin:
+      arduino_port_expander: ape
+      number: 8 # ribbon green
+      mode:
+        input: true
+        pullup: true
+    name: "Switch Cama 1"
+    internal: true
+    on_state:
+      then:
+        - light.toggle: luz_dormitorio_este
+  - platform: gpio
+    pin:
+      arduino_port_expander: ape
+      number: 2 # ribbon purple
+      mode:
+        input: true
+        pullup: true
+    name: "Switch Cama 2"
+    internal: true
+    on_state:
+      then:
+        - light.toggle: luz_dormitorio_este_cama
+  - platform: gpio
+    pin:
+      arduino_port_expander: ape
+      number: 14 # A0 ribbon red
+      mode:
+        input: true
+        pullup: true
+    name: "Ventana Dormitorio Este"
+    device_class: window

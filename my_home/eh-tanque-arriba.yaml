@@ -1,0 +1,89 @@
+substitutions:
+  device_name: eh-tanque-arriba
+  friendly_name: Tanque Arriba
+
+packages:
+  board: !include .pkg.esp32.idf.yaml
+  home: !include .pkg.home.yaml
+  wifi: !include .pkg.wifi.yaml
+
+i2c:
+  scl: GPIO13
+  sda: GPIO14
+  scan: true
+
+status_led:
+  pin: GPIO12
+
+output:
+  - platform: gpio
+    pin: GPIO16
+    id: relay4
+    inverted: true
+  - platform: gpio
+    pin: GPIO32
+    id: relay3
+    inverted: true
+  - platform: gpio
+    pin: GPIO4
+    id: relay2
+    inverted: true
+  - platform: gpio
+    pin: GPIO5
+    id: relay1
+    inverted: true
+  - platform: gpio
+    pin: GPIO15
+    id: output_gpio15 # JST Two Pin
+
+binary_sensor:
+  - platform: gpio
+    pin: GPIO33 #1
+    name: Tanque arriba flotador pide
+    id: tanque_arriba_flotador
+    filters:
+      - delayed_on_off: 2s
+
+  - platform: gpio
+    pin: GPIO39 #2
+    name: Tanque arriba lleno
+  - platform: gpio
+    pin:
+      number: GPIO35 #3
+      inverted: True
+    name: Bomba Presurizadora Pide
+  - platform: gpio
+    pin:
+      number: GPIO36 #4
+      inverted: true
+    name: Bomba Presurizadora Presurizado
+    internal: true
+
+light:
+  - platform: binary
+    name: Luz Patio 1
+    output: relay1
+  - platform: binary
+    name: Luz Patio 2
+    output: relay2
+    id: luz_patio_2
+  - platform: binary
+    name: Luz Patio 3
+    output: relay3
+    id: luz_patio_3
+
+switch:
+  - platform: output
+    name: Presurizadora
+    id: switch_presurizadora
+    output: output_gpio15
+
+sensor:
+  - platform: ina219
+    address: 0x40
+    shunt_resistance: 0.1 ohm
+    bus_voltage:
+      name: "Tanque Arriba Bus Voltage"
+    max_voltage: 32.0V
+    max_current: 3.2A
+    update_interval: 60s

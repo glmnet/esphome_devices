@@ -1,7 +1,6 @@
 substitutions:
-  esphome_name: eh-galeria-rgb
-  node_name: Galeria RGB
+  device_name: eh-galeria-rgb
+  friendly_name: Galeria RGB
 
-<<: !include EHH801_base.yaml
-
-web_server:
+packages:
+  h801: !include .pkg.h801.yaml

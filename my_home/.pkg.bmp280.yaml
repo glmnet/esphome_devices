@@ -1,0 +1,14 @@
+i2c:
+  id: i2c_component
+
+sensor:
+  - platform: bmp280
+    address: 0x76
+    update_interval: 60s
+    temperature:
+      id: bmp280_temperature
+      name: "Temperatura ${name}"
+      oversampling: 1x
+    pressure:
+      name: "Presion ${name}"
+      oversampling: 1x

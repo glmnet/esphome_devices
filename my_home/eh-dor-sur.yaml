@@ -1,59 +1,26 @@
-esphome:
-  name: eh-dor-sur
-  platform: ESP8266
-  board: nodemcu
-  # Use a local copy of ESPHome
-  includes:
-    - arduino_port_expander.h
+substitutions:
+  device_name: eh-dor-sur
+  friendly_name: Dormitorio Sur
 
-wifi:
-  ssid: !secret wifi_ssid
-  password: !secret wifi_pass
-
-api:
-
-ota:
-
-i2c:
-  id: i2ccomponent
-
-logger:
-  level: DEBUG
-
-custom_component:
-  - id: ape
-    lambda: |-
-      auto ape_component = new ArduinoPortExpander(i2ccomponent, 0x08);
-      return {ape_component};
-
-output:
-  - platform: custom
-    type: binary
-    lambda: |-
-      return {ape_binary_output(ape, 7),
-              ape_binary_output(ape, 6),
-              ape_binary_output(ape, 5)};
-    outputs:
-      - id: gpio_relay_1
-        inverted: true
-      - id: gpio_relay_2
-        inverted: true
-      - id: gpio_relay_3
-        inverted: true
+packages:
+  home: !include .pkg.home.yaml
+  wifi: !include .pkg.wifi.yaml
+  board: !include .pkg.esp8266.yaml
+  ape: !include .pkg.ape.yaml
 
 light:
   - platform: binary
     id: luz_dormitorio_sur
     name: "Dormitorio Sur"
-    output: gpio_relay_1
+    output: ape_relay_1
   - platform: binary
     id: luz_dormitorio_sur_cama_pared
     name: "Dormitorio Sur Cama Pared"
-    output: gpio_relay_2
+    output: ape_relay_2
   - platform: binary
     id: luz_dormitorio_sur_cama_ventana
     name: "Dormitorio Sur Cama Ventana"
-    output: gpio_relay_3
+    output: ape_relay_3
 
 sensor:
   - platform: homeassistant
@@ -62,177 +29,215 @@ sensor:
     attribute: brightness
 
 binary_sensor:
-  - platform: status
-    name: "Dormitorio Sur Status"
   - platform: homeassistant
     id: colors_led_feedback
     entity_id: light.dormitorio_sur_rgb
-
-  - platform: custom
-    lambda: |-
-      return {ape_binary_sensor(ape, 2), // ribbon purple
-              ape_binary_sensor(ape, 16), // ribbon white
-              ape_binary_sensor(ape, 8), // ribbon verde
-              ape_binary_sensor(ape, 1),
-              ape_binary_sensor(ape, 0),
-              ape_binary_sensor(ape, 10), //  "Cama Ventana Arriba"
-              ape_binary_sensor(ape, 9), // "Cama Ventana Abajo"
-              ape_binary_sensor(ape, 14)}; // ribbon red
-    binary_sensors:
-      - name: "Switch Puerta 1"
-        internal: true
-        on_state:
+  - platform: gpio
+    pin:
+      arduino_port_expander: ape
+      number: 2 # ribbon purple
+      mode:
+        input: true
+        pullup: true
+    name: "Switch Puerta 1"
+    internal: true
+    on_state:
+      then:
+        - light.toggle: luz_dormitorio_sur
+  - platform: gpio
+    pin:
+      arduino_port_expander: ape
+      number: 16 # ribbon white
+      mode:
+        input: true
+        pullup: true
+    name: "Switch puerta 2"
+    internal: true
+    on_state:
+      then:
+        if:
+          condition:
+            or:
+              - light.is_on: luz_dormitorio_sur_cama_ventana
+              - light.is_on: luz_dormitorio_sur_cama_pared
           then:
-            - light.toggle: luz_dormitorio_sur
-      - name: "Switch puerta 2"
-        internal: true
-        on_state:
-          then:
-            if:
-              condition:
-                or:
-                  - light.is_on: luz_dormitorio_sur_cama_ventana
-                  - light.is_on: luz_dormitorio_sur_cama_pared
-              then:
-                - light.turn_off: luz_dormitorio_sur_cama_ventana
-                - light.turn_off: luz_dormitorio_sur_cama_pared
-              else:
-                - light.turn_on: luz_dormitorio_sur_cama_ventana
-                - light.turn_on: luz_dormitorio_sur_cama_pared
-      - name: "Switch puerta sur"
-      - name: "Switch Cama Pared 1" # Enciende luces
-        internal: true
-        on_state:
-          then:
-            - if:
+            - light.turn_off: luz_dormitorio_sur_cama_ventana
+            - light.turn_off: luz_dormitorio_sur_cama_pared
+          else:
+            - light.turn_on: luz_dormitorio_sur_cama_ventana
+            - light.turn_on: luz_dormitorio_sur_cama_pared
+  - platform: gpio
+    pin:
+      arduino_port_expander: ape
+      number: 8 # ribbon green
+      mode:
+        input: true
+        pullup: true
+    name: "Switch puerta sur"
+  - platform: gpio
+    pin:
+      arduino_port_expander: ape
+      number: 1
+      mode:
+        input: true
+        pullup: true
+    name: "Switch Cama Pared 1" # Enciende luces
+    internal: true
+    on_state:
+      then:
+        - if:
+            condition:
+              binary_sensor.is_off: colors_led_feedback
+            then:
+              script.execute: color_leds_lights_low
+            else:
+              if:
                 condition:
-                  binary_sensor.is_off: colors_led_feedback
+                  sensor.in_range:
+                    id: colors_led_brightness
+                    below: 100
                 then:
-                  script.execute: color_leds_lights_low
+                  script.execute: color_leds_lights_high
                 else:
                   if:
                     condition:
-                      sensor.in_range:
-                        id: colors_led_brightness
-                        below: 100
+                      light.is_off: luz_dormitorio_sur_cama_pared
                     then:
-                      script.execute: color_leds_lights_high
+                      light.turn_on: luz_dormitorio_sur_cama_pared
                     else:
                       if:
                         condition:
-                          light.is_off: luz_dormitorio_sur_cama_pared
+                          light.is_off: luz_dormitorio_sur
                         then:
-                          light.turn_on: luz_dormitorio_sur_cama_pared
+                          light.turn_on: luz_dormitorio_sur
                         else:
-                          if:
-                            condition:
-                              light.is_off: luz_dormitorio_sur
-                            then:
-                              light.turn_on: luz_dormitorio_sur
-                            else:
-                              light.turn_on: luz_dormitorio_sur_cama_ventana
-
-      - name: "Switch Cama Pared 2" # Apaga luces
-        internal: true
-        on_state:
-          then:
-            - if:
-                condition:
-                  light.is_on: luz_dormitorio_sur
-                then:
-                  light.turn_off: luz_dormitorio_sur
-                else:
-                  if:
-                    condition:
-                      light.is_on: luz_dormitorio_sur_cama_pared
-                    then:
-                      light.turn_off: luz_dormitorio_sur_cama_pared
-                    else:
-                      if:
-                        condition:
-                          binary_sensor.is_on: colors_led_feedback
-                        then:
-                          if:
-                            condition:
-                              sensor.in_range:
-                                id: colors_led_brightness
-                                above: 100
-                            then:
-                              script.execute: color_leds_lights_low
-                            else:
-                              script.execute: color_leds_lights_off
-                        else:
-                          light.turn_off: luz_dormitorio_sur_cama_ventana
-      - name: "Switch Cama Ventana 1" # Enciende luces
-        internal: true
-        on_state:
-          then:
-            - if:
-                condition:
-                  binary_sensor.is_off: colors_led_feedback
-                then:
-                  script.execute: color_leds_lights_low
-                else:
-                  if:
-                    condition:
-                      sensor.in_range:
-                        id: colors_led_brightness
-                        below: 100
-                    then:
-                      script.execute: color_leds_lights_high
-                    else:
-                      if:
-                        condition:
-                          light.is_off: luz_dormitorio_sur_cama_ventana
-                        then:
                           light.turn_on: luz_dormitorio_sur_cama_ventana
-                        else:
-                          if:
-                            condition:
-                              light.is_off: luz_dormitorio_sur
-                            then:
-                              light.turn_on: luz_dormitorio_sur
-                            else:
-                              light.turn_on: luz_dormitorio_sur_cama_pared
 
-      - name: "Switch Cama Ventana 2"
-        internal: true
-        on_state:
-          then:
-            - if:
+  - platform: gpio
+    pin:
+      arduino_port_expander: ape
+      number: 0
+      mode:
+        input: true
+        pullup: true
+    name: "Switch Cama Pared 2" # Apaga luces
+    internal: true
+    on_state:
+      then:
+        - if:
+            condition:
+              light.is_on: luz_dormitorio_sur
+            then:
+              light.turn_off: luz_dormitorio_sur
+            else:
+              if:
                 condition:
-                  light.is_on: luz_dormitorio_sur
+                  light.is_on: luz_dormitorio_sur_cama_pared
                 then:
-                  light.turn_off: luz_dormitorio_sur
+                  light.turn_off: luz_dormitorio_sur_cama_pared
                 else:
                   if:
                     condition:
-                      light.is_on: luz_dormitorio_sur_cama_ventana
+                      binary_sensor.is_on: colors_led_feedback
                     then:
+                      if:
+                        condition:
+                          sensor.in_range:
+                            id: colors_led_brightness
+                            above: 100
+                        then:
+                          script.execute: color_leds_lights_low
+                        else:
+                          script.execute: color_leds_lights_off
+                    else:
                       light.turn_off: luz_dormitorio_sur_cama_ventana
+  - platform: gpio
+    pin:
+      arduino_port_expander: ape
+      number: 10
+      mode:
+        input: true
+        pullup: true
+    name: "Switch Cama Ventana 1" # Enciende luces
+    internal: true
+    on_state:
+      then:
+        - if:
+            condition:
+              binary_sensor.is_off: colors_led_feedback
+            then:
+              script.execute: color_leds_lights_low
+            else:
+              if:
+                condition:
+                  sensor.in_range:
+                    id: colors_led_brightness
+                    below: 100
+                then:
+                  script.execute: color_leds_lights_high
+                else:
+                  if:
+                    condition:
+                      light.is_off: luz_dormitorio_sur_cama_ventana
+                    then:
+                      light.turn_on: luz_dormitorio_sur_cama_ventana
                     else:
                       if:
                         condition:
-                          binary_sensor.is_on: colors_led_feedback
+                          light.is_off: luz_dormitorio_sur
                         then:
-                          if:
-                            condition:
-                              sensor.in_range:
-                                id: colors_led_brightness
-                                above: 100
-                            then:
-                              script.execute: color_leds_lights_low
-                            else:
-                              script.execute: color_leds_lights_off
+                          light.turn_on: luz_dormitorio_sur
                         else:
-                          light.turn_off: luz_dormitorio_sur_cama_pared
+                          light.turn_on: luz_dormitorio_sur_cama_pared
 
-      - name: "Ventana Dormitorio Sur"
-        device_class: window
+  - platform: gpio
+    pin:
+      arduino_port_expander: ape
+      number: 9
+      mode:
+        input: true
+        pullup: true
+    name: "Switch Cama Ventana 2"
+    internal: true
+    on_state:
+      then:
+        - if:
+            condition:
+              light.is_on: luz_dormitorio_sur
+            then:
+              light.turn_off: luz_dormitorio_sur
+            else:
+              if:
+                condition:
+                  light.is_on: luz_dormitorio_sur_cama_ventana
+                then:
+                  light.turn_off: luz_dormitorio_sur_cama_ventana
+                else:
+                  if:
+                    condition:
+                      binary_sensor.is_on: colors_led_feedback
+                    then:
+                      if:
+                        condition:
+                          sensor.in_range:
+                            id: colors_led_brightness
+                            above: 100
+                        then:
+                          script.execute: color_leds_lights_low
+                        else:
+                          script.execute: color_leds_lights_off
+                    else:
+                      light.turn_off: luz_dormitorio_sur_cama_pared
 
-switch:
-  - platform: restart
-    name: "Dormitorio Sur Restart"
+  - platform: gpio
+    pin:
+      arduino_port_expander: ape
+      number: 14
+      mode:
+        input: true
+        pullup: true
+    name: "Ventana Dormitorio Sur"
+    device_class: window
 
 script:
   - id: color_leds_lights_low

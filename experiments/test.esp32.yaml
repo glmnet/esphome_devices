@@ -9,15 +9,11 @@ esp32:
   board: nodemcu-32s
 
 logger:
-  level: VERY_VERBOSE
-  logs:
-    api.service: DEBUG
 
-dallas:
-  pin: GPIO32
-  update_interval: 5s
+wifi:
+  ssid: glm-iot
+  password: elledestaencendido
 
-sensor:
-  - platform: dallas
-    name: temp_sensor1
-    index: 0
+api:
+
+ota:

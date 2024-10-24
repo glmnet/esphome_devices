@@ -1,57 +1,23 @@
-esphome:
-  name: eh-cocina-ac
-  platform: ESP8266
-  board: nodemcu
+substitutions:
+  device_name: eh-cocina-ac
+  friendly_name: Cocina AC
 
-logger:
-  level: DEBUG
-
-wifi:
-  ssid: !secret wifi_ssid
-  password: !secret wifi_pass
-
-api:
-
-ota:
-
-binary_sensor:
-  - platform: status
-    name: "Cocina AC Status"
-
-i2c:
-  id: i2c_component
-
-sensor:
-  - platform: bmp280
-    temperature:
-      id: temp_cocina
-      name: "Temperatura Cocina"
-      oversampling: 1x
-    pressure:
-      name: "Presion Cocina"
-      oversampling: 1x
-    address: 0x76
-    update_interval: 60s
-
-remote_receiver:
-  id: rcvr
-  pin:
-    number: GPIO14
-    inverted: True
-    mode: OUTPUT_OPEN_DRAIN
-  tolerance: 45%
-
-remote_transmitter:
-  - id: receiver_hack
-    carrier_duty_percent: 100%
-    pin:
-      number: GPIO14
-      inverted: true
-      mode: OUTPUT_OPEN_DRAIN
+packages:
+  board: !include .pkg.esp8266.yaml
+  home: !include .pkg.home.yaml
+  wifi: !include .pkg.wifi.yaml
+  bmp280: !include
+    file: .pkg.bmp280.yaml
+    vars:
+      name: Cocina
+  ir_ac_hack: !include
+    file: .pkg.ir_ac_hack.yaml
+    vars:
+      pin_number: GPIO14
 
 climate:
   - platform: coolix
-    receiver_id: rcvr
-    sensor: temp_cocina
-    name: "AC Cocina"
+    receiver_id: ir_hack_rx
+    sensor: bmp280_temperature
+    name: AC Cocina
     supports_heat: false

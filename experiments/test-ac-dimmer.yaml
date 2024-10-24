@@ -1,0 +1,33 @@
+esp8266:
+  board: nodemcuv2
+
+esphome:
+  name: test-ac-dimmer
+  platformio_options:
+    upload_speed: 921600
+
+output:
+  - platform: ac_dimmer
+    gate_pin: GPIO12
+    zero_cross_pin:
+      number: GPIO13
+      mode:
+        input: true
+        pullup: True
+    id: dimmer1
+
+light:
+  - platform: monochromatic
+    output: dimmer1
+    name: light
+
+wifi:
+  ssid: !secret wifi_ssid
+  password: !secret wifi_pass
+
+web_server:
+
+logger:
+  level: VERBOSE
+
+api:

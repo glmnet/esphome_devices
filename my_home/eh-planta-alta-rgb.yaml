@@ -1,5 +1,6 @@
 substitutions:
-  esphome_name: eh-planta-alta-rgb
-  node_name: Planta Alta RGB
+  device_name: eh-planta-alta-rgb
+  friendly_name: Planta Alta RGB
 
-<<: !include EHH801_base.yaml
+packages:
+  h801: !include .pkg.h801.yaml

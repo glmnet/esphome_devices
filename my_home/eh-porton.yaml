@@ -1,74 +1,87 @@
----
-esphome:
-  name: eh-porton
-  includes:
-    - arduino_port_expander.h
-
-esp8266:
-  board: nodemcu
-  restore_from_flash: true
-
 substitutions:
-  device_name: Porton
+  device_name: eh-porton
+  friendly_name: Porton
 
 packages:
-  wifi: !include home_device.package.yaml
-
+  home: !include .pkg.home.yaml
+  wifi: !include .pkg.wifi.yaml
+  board: !include .pkg.esp8266.yaml
+ 
+external_components:
+  source: github://glmnet/esphome-components
+  components: [arduino_port_expander]
+  
 i2c:
-  id: i2ccomponent
 
-logger:
-  level: DEBUG
-
-custom_component:
-  - id: ape
-    lambda: |-
-      auto ape_component = new ArduinoPortExpander(id(i2ccomponent), 0x08);
-      return {ape_component};
+arduino_port_expander:
+  id: ape
 
 output:
-  - platform: custom
-    type: binary
-    lambda: |-
-      return {ape_binary_output(id(ape), 4)};
-    outputs:
-      - id: gpio_relay_1
+  - platform: gpio
+    id: ape_relay_1
+    pin:
+      arduino_port_expander: ape
+      number: 4
 
-switch:
+button:
   - platform: output
+    duration: 1s
+    output: ape_relay_1
     name: "Porton boton"
     id: porton_boton
-    output: gpio_relay_1
-    on_turn_on:
-      then:
-        - delay: 1s
-        - switch.turn_off: porton_boton
 
 binary_sensor:
-  - platform: custom
-    lambda: |-
-      return {ape_binary_sensor(id(ape), 2),
-              ape_binary_sensor(id(ape), 3),
-              ape_binary_sensor(id(ape), 5),
-              ape_binary_sensor(id(ape), 14),
-              ape_binary_sensor(id(ape), 15)};
-    binary_sensors:
-      - name: Porton
-        device_class: garage_door
-        filters:
-          delayed_on_off: 2s
-      - name: Movimiento garage
-        device_class: motion
-      - name: Barrera porton garage
-        device_class: safety
-      - name: Porton movimiento
-        device_class: moving
-        filters:
-          - invert:
-      - name: Porton Manual
-        device_class: garage_door
-        filters:
-          - delayed_on_off: 2s
+  - platform: gpio
+    pin:
+      arduino_port_expander: ape
+      number: 2
+      mode:
+        input: true
+        pullup: true
+    name: Porton
+    device_class: garage_door
+    filters:
+      delayed_on_off: 2s
+  - platform: gpio
+    pin:
+      arduino_port_expander: ape
+      number: 3
+      mode:
+        input: true
+        pullup: true
+    name: Movimiento garage
+    device_class: motion
+  - platform: gpio
+    pin:
+      arduino_port_expander: ape
+      number: 5
+      mode:
+        input: true
+        pullup: true
+    name: Barrera porton garage
+    device_class: safety
+  - platform: gpio
+    pin:
+      arduino_port_expander: ape
+      number: 14
+      mode:
+        input: true
+        pullup: true
+    name: Porton movimiento
+    device_class: moving
+    filters:
+      - invert:
+  - platform: gpio
+    pin:
+      arduino_port_expander: ape
+      number: 15
+      mode:
+        input: true
+        pullup: true
+    name: Porton Manual
+    device_class: garage_door
+    filters:
+      - delayed_on_off: 2s
 
 # Ribbon:
 # Black: VCC 3.3V

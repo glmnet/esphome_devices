@@ -1,53 +1,27 @@
-esphome:
-  name: eh-estudio-ac
+substitutions:
+  device_name: eh-estudio-ac
+  friendly_name: Estudio AC
 
-esp8266:
-  board: esp12e
-  restore_from_flash: true
-
-logger:
-  level: DEBUG
-
-wifi:
-  ssid: !secret wifi_ssid
-  password: !secret wifi_pass
-
-api:
-
-ota:
+packages:
+  board: !include .pkg.esp8266.yaml
+  home: !include .pkg.home.yaml
+  wifi: !include .pkg.wifi.yaml
+  ir_ac_hack: !include
+    file: .pkg.ir_ac_hack.yaml
+    vars:
+      pin_number: GPIO14
 
 dallas:
   pin: GPIO2
-  update_interval: 60s
-
-binary_sensor:
-  - platform: status
-    name: "Estudio AC Status"
 
 sensor:
   - platform: dallas
-    address: 0xF77AF93F12646128
-    id: dallas_temp
-    name: Temperatura estudio
-
-remote_receiver:
-  id: rcvr
-  pin:
-    number: GPIO14
-    inverted: True
-    mode: OUTPUT_OPEN_DRAIN
-  tolerance: 45%
-
-remote_transmitter:
-  - id: receiver_hack
-    carrier_duty_percent: 100%
-    pin:
-      number: GPIO14
-      inverted: true
-      mode: OUTPUT_OPEN_DRAIN
+    address: 0xf77af93f12646128
+    id: dallas_temperature
 
 climate:
   - platform: tcl112
-    receiver_id: rcvr
-    sensor: dallas_temp
-    name: "AC Estudio"
+    receiver_id: ir_hack_rx
+    sensor: dallas_temperature
+    name: AC Estudio
+

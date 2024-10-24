@@ -1,9 +1,14 @@
 # This node controls remote startup and shutdown of a gasoline electricity generator
+substitutions:
+  device_name: eh-generador
+  friendly_name: Generador
+
+packages:
+  board: !include .pkg.esp32.arduino.yaml
+  home: !include .pkg.home.yaml
+  wifi: !include .pkg.wifi.yaml
 
 esphome:
-  name: eh-generador
-  platformio_options:
-    upload_speed: 921600
   on_boot:
     # make sure choke is open position, if for some reason generator starts and the thing reboots this will make it run smooth.
     - delay: 2s
@@ -22,22 +27,13 @@ esphome:
               format: "%d v_batt: %.3f"
               args: [id(log_counter), id(v_batt).state]
 
-esp32:
-  board: esp32doit-devkit-v1
-  framework:
-    type: arduino
-
-substitutions:
-  device_name: Generador
-
-ota:
-
 logger:
   level: DEBUG
   logs:
     pulse_counter: INFO
     sensor: INFO
     adc: INFO
+    sim800l: DEBUG
 
 globals:
   - id: log_counter
@@ -47,8 +43,6 @@ globals:
 
 wifi:
   reboot_timeout: 0s
-  ssid: !secret wifi_ssid
-  password: !secret wifi_pass
 
 uart:
   - id: sim800l_uart
@@ -209,17 +203,22 @@ output:
     inverted: true
   - platform: gpio
     id: ignition_ground
-    pin: GPIO0 # relay 2
+    pin:
+      number: GPIO0 # relay 2
+      ignore_strapping_warning: true
     inverted: true
   - platform: gpio
     id: starter_coil
     pin: # GPIO2 # relay 3
       number: GPIO2
+      ignore_strapping_warning: true
     inverted: true
 
   - platform: gpio
     id: battery_saver
-    pin: GPIO15 # relay 4
+    pin:
+      number: GPIO15 # relay 4
+      ignore_strapping_warning: true
     inverted: true
 
   - platform: ledc
@@ -234,19 +233,31 @@ servo:
   transition_length: 400ms
 
 sensor:
-  - platform: uptime
-    name: ${device_name} Uptime
+  - platform: template
+    lambda: "return id(generador_on).state ? 1 : 0;"
+    id: generador_accum_encendido
+
+  - platform: integration
+    name: Generador Tiempo encendido total
+    device_class: duration
+    state_class: total_increasing
+    unit_of_measurement: s
+    time_unit: s
+    restore: True
+    sensor: generador_accum_encendido
 
   - platform: dallas
     index: 0
-    name: ${device_name} Temperatura Motor
+    name: Generador Temperatura Motor
+    filters:
+      - filter_out: 85.0
 
   - platform: adc
     pin: GPIO39
     id: v_fuente
-    unit_of_measurement: Volt
+    unit_of_measurement: V
     state_class: measurement
-    name: ${device_name} Voltage Fuente
+    name: Generador Voltage Fuente
     update_interval: 2s # should update every 30s due to the filter
     filters:
       # 33k / 1k5  -> (33k + 1k5) / 1k5 = 23
@@ -256,9 +267,9 @@ sensor:
   - platform: adc
     pin: GPIO36
     id: v_batt
-    unit_of_measurement: Volt
+    unit_of_measurement: V
     state_class: measurement
-    name: ${device_name} Voltage Bateria
+    name: Generador Voltage Bateria
     update_interval: 2s # should update every 30s due to the filter
     filters:
       # 33k / 1k5  -> (33k + 1k5) / 1k5 = 23
@@ -280,7 +291,7 @@ sensor:
 
   - platform: template
     id: engine_rpm_instant_public
-    name: ${device_name} Motor RPM
+    name: Generador Motor RPM
     unit_of_measurement: RPM
     state_class: measurement
     lambda: !lambda return id(engine_rpm_instant).state;
@@ -294,17 +305,29 @@ sensor:
     address: 0xF8
     voltage:
       name: Generador voltage
+      filters:
+        - lambda: "if (x > 2000000) return {}; return x;"
     current:
       name: Generador corriente
+      filters:
+        - lambda: "if (x > 2000000) return {}; return x;"
     energy:
       name: Generador energia
+      filters:
+        - lambda: "if (x > 2000000) return {}; return x;"
     power:
       name: Generador potencia
+      filters:
+        - lambda: "if (x > 2000000) return {}; return x;"
     frequency:
       name: Generador frecuencia
+      filters:
+        - lambda: "if (x > 2000000) return {}; return x;"
     power_factor:
       name: Generador factor potencia
-    update_interval: 10s
+      filters:
+        - lambda: "if (x > 2000000) return {}; return x;"
+    update_interval: never
 
 modbus:
   # used by pzemac
@@ -317,31 +340,35 @@ script:
       - servo.write:
           id: choke_valve
           level: -65%
-      - delay: 400ms
+      - delay: 60ms
       - servo.write:
           id: choke_valve
           level: -45%
-      - delay: 400ms
+      - delay: 60ms
       - servo.write:
           id: choke_valve
           level: -35%
-      - delay: 400ms
+      - delay: 70ms
       - servo.write:
           id: choke_valve
           level: -5%
-      - delay: 400ms
+      - delay: 200ms
       - servo.write:
           id: choke_valve
           level: 15%
-      - delay: 400ms
+      - delay: 200ms
       - servo.write:
           id: choke_valve
           level: 30%
   - id: close_choke # Close is for startup only
     then:
-      servo.write:
-        id: choke_valve
-        level: -85%
+      - servo.write:
+          id: choke_valve
+          level: -5%
+      - delay: 100ms
+      - servo.write:
+          id: choke_valve
+          level: -85%
 
   - id: starter_max_time
     mode: single
@@ -358,14 +385,15 @@ script:
           level: info
       - output.turn_off: ignition_ground
       - output.turn_off: carburator_fuel_valve
-
+      - servo.write:
+          id: choke_valve
+          level: 15%
+      - delay: 200ms
       - script.execute: close_choke
-      - delay: 3s
+      - delay: 500ms
       - logger.log:
           format: "Comando arranque..."
           level: info
-
-      - delay: 1s
       - script.execute: starter_max_time
       - output.turn_on: starter_coil
       - wait_until:
@@ -373,13 +401,15 @@ script:
             - not:
                 script.is_running: starter_max_time
             - for:
-                time: 1s
+                time: 0.7s
                 condition:
                   - sensor.in_range:
                       id: engine_rpm_instant
                       above: 700
 
-      - delay: 200ms
+      - logger.log:
+          level: INFO
+          format: "RPM encendido detectado"
       - output.turn_off: starter_coil
 
       # check if timed out
@@ -414,7 +444,7 @@ script:
 binary_sensor:
   - platform: template
     id: generador_on
-    name: ${device_name} Encendido
+    name: Generador Encendido
     lambda: !lambda return id(engine_rpm_instant).state > 2700;
   - platform: gpio
     pin: GPIO35
@@ -462,6 +492,14 @@ interval:
     then:
       if:
         condition:
+          - binary_sensor.is_on: generador_on
+        then:
+          - component.update: pzem1
+
+  - interval: 5s
+    then:
+      if:
+        condition:
           or:
             - sensor.in_range:
                 id: engine_rpm_instant_public
@@ -475,8 +513,6 @@ interval:
             state: !lambda return id(engine_rpm_instant).state;
 
 button:
-  - platform: restart
-    name: Reiniciar generador
   - platform: template
     name: Generador reiniciar contador energia
     on_press:

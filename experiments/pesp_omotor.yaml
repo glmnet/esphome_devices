@@ -15,37 +15,61 @@ logger:
   level: DEBUG
 
 ota:
-
-api:
-  services:
-    - service: set_q
-      variables:
-        level_percent: int
-        frequency_hz: int
-      then:
-        - logger.log:
-            format: "Setting level: %d freq: %d"
-            args: [level_percent, frequency_hz]
-        - output.ledc.set_frequency:
-            id: pwm_power
-            frequency: !lambda "return frequency_hz;"
-        - output.set_level:
-            id: pwm_power
-            level: !lambda "return level_percent / 100.0;"
+  - platform: esphome
 
 i2c:
   scl: GPIO13
   sda: GPIO14
   scan: true
 
-pcf8574:
-  - id: main
-    address: 0x3F
-  - id: aux
-    address: 0x3B
+pca9554:
+  - id: shield_pca
+    address: 0x21
+    pin_count: 16
+
+binary_sensor:
+  - platform: gpio
+    name: ALARM_L J7 1
+    pin:
+      pca9554: shield_pca
+      number: 14
+      mode: INPUT
+  - platform: gpio
+    name: ALARM_R J6 1
+    pin:
+      pca9554: shield_pca
+      number: 15
+      mode: INPUT
+  - platform: gpio
+    name: Pin Up CN3 9
+    pin:
+      pca9554: shield_pca
+      number: 0
+      mode: INPUT
+  - platform: gpio
+    name: Pin Down CN3 10
+    pin:
+      pca9554: shield_pca
+      number: 1
+      mode: INPUT
+  - platform: gpio
+    name: Lifter Up CN3 11
+    pin:
+      pca9554: shield_pca
+      number: 2
+      mode: INPUT
+  - platform: gpio
+    name: Lifter Down CN3 12
+    pin:
+      pca9554: shield_pca
+      number: 3
+      mode: INPUT
 
 ads1115:
-  address: 0x48
+  - address: 0x48
+    id: base_ads1115
+  - address: 0x49
+    id: shield_ads1115
 
 status_led:
   pin: GPIO12
@@ -64,70 +88,161 @@ output:
 light:
   - platform: monochromatic
     output: AQ0
-    name: AQ0_Light
+    name: AQ0_Light J7 5
 
   - platform: monochromatic
     output: AQ1
-    name: AQ1_Light
+    name: AQ1_Light J6 5
 
 sensor:
   - platform: ads1115
+    ads1115_id: base_ads1115
     multiplexer: A0_GND
     gain: 6.144
     name: AnalogA0
     update_interval: 5s
 
   - platform: ads1115
+    ads1115_id: base_ads1115
     multiplexer: A1_GND
     gain: 6.144
     name: AnalogA1
     update_interval: 5s
 
   - platform: ads1115
+    ads1115_id: base_ads1115
     multiplexer: A2_GND
     gain: 6.144
     name: AnalogA2
     update_interval: 5s
 
   - platform: ads1115
+    ads1115_id: base_ads1115
     multiplexer: A3_GND
     gain: 6.144
     name: AnalogA3
     update_interval: 5s
 
+  - platform: ads1115
+    ads1115_id: shield_ads1115
+    multiplexer: A0_GND
+    gain: 6.144
+    name: SAnalogA0
+    update_interval: 1s
+
+  - platform: ads1115
+    ads1115_id: shield_ads1115
+    multiplexer: A1_GND
+    gain: 6.144
+    name: SAnalogA1
+    update_interval: 1s
+
+  - platform: ads1115
+    ads1115_id: shield_ads1115
+    multiplexer: A2_GND
+    gain: 6.144
+    name: SAnalogA2
+    update_interval: 1s
+
+  - platform: ads1115
+    ads1115_id: shield_ads1115
+    multiplexer: A3_GND
+    gain: 6.144
+    name: SAnalogA3
+    update_interval: 1s
+
 switch:
   - platform: gpio
-    name: Aux1Command
+    name: Run Brake L J7 10
+    pin:
+      pca9554: shield_pca
+      number: 8
+      mode: OUTPUT
+  - platform: gpio
+    name: Run Brake R J6 10
+    pin:
+      pca9554: shield_pca
+      number: 9
+      mode: OUTPUT
+  - platform: gpio
+    name: Start Stop L R J6J7 8
+    pin:
+      pca9554: shield_pca
+      number: 10
+      mode: OUTPUT
+  - platform: gpio
+    name: Alarm Reset L R J6J7 7
+    pin:
+      pca9554: shield_pca
+      number: 11
+      mode: OUTPUT
+  - platform: gpio
+    name: CW CCW L J7 9
+    pin:
+      pca9554: shield_pca
+      number: 12
+      mode: OUTPUT
+  - platform: gpio
+    name: CW CCW R J6 9
+    pin:
+      pca9554: shield_pca
+      number: 13
+      mode: OUTPUT
+
+  - platform: gpio
+    name: Aux1Command CN3 3
     pin:
       number: GPIO4
       mode: OUTPUT
   - platform: gpio
-    name: Aux2Command
+    name: Aux2Command CN3 4
     pin:
       number: GPIO5
       mode: OUTPUT
 
   - platform: gpio
-    name: PinCommand
+    name: PinCommand CN3 5
     pin:
-      pcf8574: aux
-      number: 0
+      pca9554: shield_pca
+      number: 7
+      mode: OUTPUT
+
+  - platform: gpio
+    name: LifterCommand CN3 6
+    pin:
+      pca9554: shield_pca
+      number: 6
       mode: OUTPUT
   - platform: gpio
-    name: LifterCommand
+    name: BreakCommand CN3 7
     pin:
-      pcf8574: aux
-      number: 1
+      pca9554: shield_pca
+      number: 5
       mode: OUTPUT
   - platform: gpio
-    name: BreakCommand
+    name: MasterCommand CN3 8
     pin:
-      pcf8574: aux
-      number: 2
+      pca9554: shield_pca
+      number: 4
       mode: OUTPUT
-  - platform: gpio
-    name: MasterCommand
-    pin:
-      pcf8574: aux
-      number: 3
-      mode: OUTPUT
+
+  - platform: template
+    name: Shield power 1Khz
+    optimistic: True
+    on_turn_on:
+      then:
+        - output.ledc.set_frequency:
+            id: pwm_power
+            frequency: 1000
+        - output.set_level:
+            id: pwm_power
+            level: 1
+    on_turn_off:
+      then:
+        - output.set_level:
+            id: pwm_power
+            level: 0
+
+web_server:
+  version: 3
+  js_url: https://oi.esphome.io/v3/www.js

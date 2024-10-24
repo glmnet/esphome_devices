@@ -1,5 +1,6 @@
 substitutions:
-  esphome_name: eh-dor-sur-rgb
-  node_name: Dormitorio Sur RGB
+  device_name: eh-dor-sur-rgb
+  friendly_name: Dormitorio Sur RGB
 
-<<: !include EHMagicHome_base.yaml
+packages:
+  magic_home: !include .pkg.magic_home.yaml

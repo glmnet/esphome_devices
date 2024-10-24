@@ -1,147 +1,197 @@
 substitutions:
-  device_name: Planta Alta
   # Capacidad del tanque
   tanque_lleno_l: "550"
   # Litros cuando el flotador activa
   tanque_flotador_cargando: "375"
   # Litros cuando el flotador desactiva
-  tanque_flotador_descargando: "40"
+  tanque_flotador_descargando: "60"
+  device_name: eh-planta-alta
+  friendly_name: Planta Alta
 
-esp8266:
-  board: nodemcu
+packages:
+  home: !include .pkg.home.yaml
+  wifi: !include .pkg.wifi.yaml
+  board: !include .pkg.esp8266.yaml
 
-wifi:
-  networks:
-    - ssid: !secret wifi_ssid
-      password: !secret wifi_pass
-      #bssid: !secret bssid_mikrotik
-  fast_connect: true
+globals:
+  - id: tank_liters
+    type: float
+    initial_value: "0.0"    
+    restore_value: True
 
-# Enable logging
-logger:
-  level: DEBUG
-  logs:
-    i2c: DEBUG
-    uart: DEBUG
-
-# Enable Home Assistant API
-api:
-
-ota:
+external_components:
+  - source: github://glmnet/esphome@ape-external-component
+    components: [arduino_port_expander]
 
 i2c:
-  id: i2ccomponent
 
-esphome:
-  name: eh-planta-alta
-
-  includes:
-    - arduino_port_expander.h
-  on_boot:
-    switch.turn_on: auto_pressure_pump_with_light
-
-custom_component:
-  - id: ape1 # bornes verdes
-    lambda: |-
-      auto ape_component = new ArduinoPortExpander(i2ccomponent, 0x08);
-      return {ape_component};
-  - id: ape2 # sim 800 side
-    lambda: |-
-      auto ape_component = new ArduinoPortExpander(i2ccomponent, 0x09);
-      return {ape_component};
+arduino_port_expander:
+  - id: ape1
+    address: 0x08
+  - id: ape2
+    address: 0x09
 
 binary_sensor:
-  - platform: custom
-    lambda: |-
-      return {ape_binary_sensor(id(ape2), 6),
-              ape_binary_sensor(id(ape2), 8),
-              ape_binary_sensor(id(ape2), 4),
-              ape_binary_sensor(id(ape2), 7),
-              ape_binary_sensor(id(ape2), 3),
-              ape_binary_sensor(id(ape2), 9),
-              ape_binary_sensor(id(ape2), 5),
-              ape_binary_sensor(id(ape2), 2),
-              ape_binary_sensor(id(ape2), 11),
-              ape_binary_sensor(id(ape2), 10),
-              ape_binary_sensor(id(ape1), 8),
-              ape_binary_sensor(id(ape1), 9)};
-    binary_sensors:
-      - name: "Switch Escalera 1"
-        internal: true
-        filters:
-          - delayed_on_off: 100ms
-        on_state:
-          then:
-            - light.toggle: luz_escalera
-      - name: "Switch Escalera Hall"
-      - name: "Switch Ante Baño 1"
-        internal: true
-        filters:
-          - delayed_on_off: 100ms
-        on_state:
-          then:
-            - light.toggle: luz_ante_banio_pa
-      - name: "Switch Ante Baño 2"
-        internal: true
-        filters:
-          - delayed_on_off: 100ms
-        on_state:
-          then:
-            - light.toggle: luz_ante_banio_pa
-      - name: "Switch Baño"
-        filters:
-          - delayed_on_off: 100ms
-        internal: true
-        on_state:
-          then:
-            - light.toggle: luz_banio_pa
-      - name: "Movimiento Baño"
-        device_class: motion
-        filters:
-          - delayed_on_off: 100ms
-      - name: "Movimiento Hall"
-        device_class: motion
-        filters:
-          - delayed_on_off: 100ms
-      - name: "Ventana Baño"
-        device_class: window
-        filters:
-          - delayed_on_off: 100ms
-      - name: "Tanque Agua Arriba Flotador Pide"
-        id: tanque_arriba_flotador
-        filters:
-          - invert:
-          - delayed_on_off: 2s
-        on_press:
-          - sensor.template.publish:
-              id: tank_liters
-              state: ${tanque_flotador_descargando}
-        on_release:
-          - sensor.template.publish:
-              id: tank_liters
-              state: ${tanque_flotador_cargando}
+  - platform: gpio
+    pin:
+      arduino_port_expander: ape2
+      number: 6
+      mode:
+        input: true
+        pullup: true
+    name: "Switch Escalera 1"
+    internal: true
+    filters:
+      - delayed_on_off: 100ms
+    on_state:
+      then:
+        - light.toggle: luz_escalera
+  - platform: gpio
+    pin:
+      arduino_port_expander: ape2
+      number: 8
+      mode:
+        input: true
+        pullup: true
+    name: "Switch Escalera Hall"
+  - platform: gpio
+    pin:
+      arduino_port_expander: ape2
+      number: 4
+      mode:
+        input: true
+        pullup: true
+    name: "Switch Ante Baño 1"
+    internal: true
+    filters:
+      - delayed_on_off: 100ms
+    on_state:
+      then:
+        - light.toggle: luz_ante_banio_pa
+  - platform: gpio
+    pin:
+      arduino_port_expander: ape2
+      number: 7
+      mode:
+        input: true
+        pullup: true
+    name: "Switch Ante Baño 2"
+    internal: true
+    filters:
+      - delayed_on_off: 100ms
+    on_state:
+      then:
+        - light.toggle: luz_ante_banio_pa
+  - platform: gpio
+    pin:
+      arduino_port_expander: ape2
+      number: 3
+      mode:
+        input: true
+        pullup: true
+    name: "Switch Baño"
+    filters:
+      - delayed_on_off: 100ms
+    internal: true
+    on_state:
+      then:
+        - light.toggle: luz_banio_pa
+  - platform: gpio
+    pin:
+      arduino_port_expander: ape2
+      number: 9
+      mode:
+        input: true
+        pullup: true
+    name: "Movimiento Baño"
+    device_class: motion
+    filters:
+      - delayed_on_off: 100ms
+  - platform: gpio
+    pin:
+      arduino_port_expander: ape2
+      number: 5
+      mode:
+        input: true
+        pullup: true
+    name: "Movimiento Hall"
+    device_class: motion
+    filters:
+      - delayed_on_off: 100ms
+  - platform: gpio
+    pin:
+      arduino_port_expander: ape2
+      number: 2
+      mode:
+        input: true
+        pullup: true
+    name: "Ventana Baño"
+    device_class: window
+    filters:
+      - delayed_on_off: 100ms
+  - platform: gpio
+    pin:
+      arduino_port_expander: ape2
+      number: 11
+      mode:
+        input: true
+        pullup: true
+    name: "Tanque Agua Arriba Flotador Pide"
+    id: tanque_arriba_flotador
+    filters:
+      - invert:
+      - delayed_on_off: 2s
+    on_press:
+      - globals.set:
+          id: tank_liters
+          value: ${tanque_flotador_descargando}
+    on_release:
+      - globals.set:
+          id: tank_liters
+          value: ${tanque_flotador_cargando}
 
-      - name: "Tanque Agua Arriba Lleno"
-        id: top_tank_full
-        filters:
-          - invert:
-          - delayed_on_off: 2s
-        on_press:
-          - sensor.template.publish:
-              id: tank_liters
-              state: ${tanque_lleno_l}
-      - name: "Tanque agua arriba flujo en salida"
-        id: water_flowing_down
-        filters:
-          delayed_on_off: 100ms
-        on_release:
-          if:
-            condition:
-              switch.is_on: pressure_pump
-            then:
-              switch.turn_off: pressure_pump
+  - platform: gpio
+    pin:
+      arduino_port_expander: ape2
+      number: 10
+      mode:
+        input: true
+        pullup: true
+    name: "Tanque Agua Arriba Lleno"
+    id: top_tank_full
+    filters:
+      - invert:
+    #   - delayed_on_off: 15s
+    on_press:
+      - globals.set:
+          id: tank_liters
+          value: ${tanque_lleno_l}
+  - platform: gpio
+    pin:
+      arduino_port_expander: ape1
+      number: 8
+      mode:
+        input: true
+        pullup: true
+    name: "Tanque agua arriba flujo en salida"
+    id: water_flowing_down
+    filters:
+      delayed_on_off: 100ms
+    on_release:
+      if:
+        condition:
+          switch.is_on: pressure_pump
+        then:
+          switch.turn_off: pressure_pump
 
-      - name: "Tuberia casa presurizada"
+  - platform: gpio
+    pin:
+      arduino_port_expander: ape1
+      number: 9
+      mode:
+        input: true
+        pullup: true
+    name: "Tuberia casa presurizada"
 
   - platform: status
     name: "Planta Alta Status"
@@ -204,36 +254,59 @@ binary_sensor:
         - light.turn_off: luz_patio_proyectores_sureste
 
 output:
-  - platform: custom
-    type: binary
-    lambda: |- # LTR all relays
-      return {ape_binary_output(id(ape1), 2), // Baño
-              ape_binary_output(id(ape1), 3), // Escalera
-              ape_binary_output(id(ape1), 4), // Ante Baño
-              ape_binary_output(id(ape1), 5), //
-              ape_binary_output(id(ape1), 10), // Comun Luz Patio
-              ape_binary_output(id(ape1), 11), // Luz Patio Este
-              ape_binary_output(id(ape1), 12), // Luz Patio Oeste
-              ape_binary_output(id(ape1), 6), // Luz Patio SurEste
-              ape_binary_output(id(ape2), 13)}; // Pressure pump
-    outputs:
-      - id: gpio_relay_1
-        inverted: true
-      - id: gpio_relay_2
-        inverted: true
-      - id: gpio_relay_3
-        inverted: true
-      - id: gpio_relay_4
-        inverted: true
-      - id: gpio_relay_5
-        inverted: true
-      - id: gpio_relay_6
-        inverted: true
-      - id: gpio_relay_7
-        inverted: true
-      - id: gpio_relay_8
-        inverted: true
-      - id: gpio_pressure_pump
+  - id: gpio_relay_1 # Baño
+    inverted: true
+    platform: gpio
+    pin:
+      arduino_port_expander: ape1
+      number: 2    
+  - id: gpio_relay_2 # Escalera
+    inverted: true
+    platform: gpio
+    pin:
+      arduino_port_expander: ape1
+      number: 3
+  - id: gpio_relay_3 # Ante Baño
+    inverted: true
+    platform: gpio
+    pin:
+      arduino_port_expander: ape1
+      number: 4
+  - id: gpio_relay_4 # 
+    inverted: true
+    platform: gpio
+    pin:
+      arduino_port_expander: ape1
+      number: 5
+  - id: gpio_relay_5 # Comun Luz Patio
+    inverted: true
+    platform: gpio
+    pin:
+      arduino_port_expander: ape1
+      number: 10
+  - id: gpio_relay_6 # Luz Patio Este
+    inverted: true
+    platform: gpio
+    pin:
+      arduino_port_expander: ape1
+      number: 11
+  - id: gpio_relay_7 # Luz Patio Oeste
+    inverted: true
+    platform: gpio
+    pin:
+      arduino_port_expander: ape1
+      number: 12
+  - id: gpio_relay_8 # Luz Patio SurEste
+    inverted: true
+    platform: gpio
+    pin:
+      arduino_port_expander: ape1
+      number: 6
+  - id: gpio_pressure_pump # Pressure pump
+    platform: gpio
+    pin:
+      arduino_port_expander: ape2
+      number: 13
 
 light:
   - platform: binary
@@ -256,7 +329,8 @@ light:
       - strobe:
   - platform: binary
     id: luz_hall_pa
-    name: "Luz Hall Planta alta"
+    # Not connected
+    # name: "Luz Hall Planta alta"
     output: gpio_relay_4
     effects:
       - strobe:
@@ -330,6 +404,7 @@ switch:
     name: Presurizadora con luz baño
     optimistic: true
     id: auto_pressure_pump_with_light
+    restore_mode: ALWAYS_ON
 
 interval:
   - interval: 1s
@@ -339,9 +414,9 @@ interval:
             binary_sensor.is_on: top_tank_full
           then:
             lambda: |-
-              float new_level = id(tank_liters).state;
+              float new_level = id(tank_liters);
               if (isnan(new_level))
-                id(tank_liters).publish_state(${tanque_lleno_l});
+                id(tank_liters) = ${tanque_lleno_l};
       - if:
           condition:
             binary_sensor.is_on: bomba_tanque
@@ -349,7 +424,7 @@ interval:
           # about 0.38 liters every second are pumped into the tank
           then:
             - lambda: |-
-                float new_level = id(tank_liters).state;
+                float new_level = id(tank_liters);
                 if (isnan(new_level))
                   new_level = id(tanque_arriba_flotador).state ? 40.0 : ${tanque_flotador_cargando};
 
@@ -358,13 +433,13 @@ interval:
                   new_level = ${tanque_lleno_l};
                 if (new_level > ${tanque_flotador_cargando} && id(tanque_arriba_flotador).state)
                   new_level = ${tanque_flotador_cargando};
-                id(tank_liters).publish_state(new_level);
+                id(tank_liters) = new_level;
       - if:
           condition:
             binary_sensor.is_on: water_flowing_down
           then:
             - lambda: |-
-                float new_level = id(tank_liters).state;
+                float new_level = id(tank_liters);
                 if (isnan(new_level))
                   new_level = id(tanque_arriba_flotador).state ? 40.0 : 450.00;
 
@@ -379,7 +454,7 @@ interval:
                 if (new_level < 0)
                   new_level = 0;
 
-                id(tank_liters).publish_state(new_level);
+                id(tank_liters) = new_level;
       - if:
           condition:
             - switch.is_off: pressure_pump
@@ -412,23 +487,11 @@ interval:
                 format: Apagando bomba, no hay flujo de agua
 
 sensor:
-  - platform: uptime
-    name: Planta alta uptime
-  - platform: template
-    id: tank_liters
-    on_value:
-      - sensor.template.publish:
-          id: tank_level
-          # tank max is 550 liters, convert to %
-          state: !lambda "return x/5.5;"
-    unit_of_measurement: litre
   - platform: template
     name: Nivel Tanque Arriba
-    id: tank_level
-    unit_of_measurement: "%"
+    unit_of_measurement: liters
+    lambda: return id(tank_liters);
 
-web_server:
-#
 #
 # IO Table
 ## MW / UW Marked Wire / Unmarked Wire

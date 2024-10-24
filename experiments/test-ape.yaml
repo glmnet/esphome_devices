@@ -1,0 +1,85 @@
+esphome:
+  name: test-ape
+  platformio_options:
+    upload_speed: 921600
+#   on_boot:
+#     then:
+#       - delay: 2s
+#       - light.turn_on:
+#           id: l1
+#           effect: Strobe
+
+# Enable logging
+logger:
+  level: DEBUG
+  logs:
+    i2c: DEBUG
+
+esp8266:
+  restore_from_flash: True
+  board: nodemcuv2
+
+wifi:
+  ssid: !secret wifi_ssid
+  password: !secret wifi_pass
+
+# Enable Home Assistant API
+api:
+
+ota:
+
+i2c:
+
+arduino_port_expander:
+  id: x
+  address: 0x08
+  analog_reference: DEFAULT
+
+binary_sensor:
+  - platform: gpio
+    pin:
+      arduino_port_expander: x
+      number: 12
+      mode:
+        input: True
+        pullup: True
+    name: bs-12
+    id: ape_12
+    on_state:
+      then:
+        - light.toggle: l1
+
+output:
+  - platform: gpio
+    pin:
+      arduino_port_expander: x
+      number: 13
+      mode:
+        output: True
+    id: ape_13
+
+sensor:
+  - platform: arduino_port_expander
+    id: sx
+    pin: A0
+    name: Ardu A0
+    update_interval: 10s
+    filters:
+      - multiply: 0.0032258064516129 # x / 1023.0 * 3.3 v
+
+preferences:
+  flash_write_interval: 5s
+
+button:
+  - platform: restart
+    name: Test Restart
+
+light:
+  - platform: binary
+    name: light pin 13
+    output: ape_13
+    effects:
+      - strobe:
+          name: Strobe
+    id: l1
+    restore_mode: RESTORE_DEFAULT_OFF

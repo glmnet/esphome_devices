@@ -1,20 +1,11 @@
-esphome:
-  name: eh-quincho
+substitutions:
+  device_name: eh-quincho
+  friendly_name: Quincho
 
-esp32:
-  board: esp32doit-devkit-v1
-  framework:
-    type: esp-idf
-api:
-
-ota:
-
-wifi:
-  ssid: !secret wifi_ssid
-  password: !secret wifi_pass
-
-logger:
-  level: DEBUG
+packages:
+  board: !include .pkg.esp32.idf.yaml
+  home: !include .pkg.home.yaml
+  wifi: !include .pkg.wifi.yaml
 
 output:
   - platform: gpio
@@ -41,14 +32,8 @@ light:
   - platform: binary
     output: relay2
     name: Luz Quincho NE
-  - platform: binary
-    output: relay3
-    name: Quincho Parlantes
 
 binary_sensor:
-  - platform: status
-    name: Quincho Status
-
   - platform: gpio
     pin: GPIO33 #1
     name: Puerta quincho parrilla
@@ -62,8 +47,18 @@ binary_sensor:
       - invert:
     device_class: door
   - platform: gpio
-    pin: GPIO35 #3
-    id: spare_gpio3
+    pin:
+      number: GPIO35
+      inverted: True
+    name: spare_gpio3
+    internal: true
   - platform: gpio
-    pin: GPIO36 #4
-    id: spare_gpio4
+    pin: GPIO36
+    name: spare_gpio4
+    internal: true
+
+switch:
+  - platform: output
+    name: Quincho Parlantes
+    id: switch_quincho_parlantes
+    output: relay3

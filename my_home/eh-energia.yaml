@@ -5,9 +5,16 @@
 #  L3  Black              Yellow
 #
 #  Neutral: Blue
+substitutions:
+  device_name: eh-energia
+  friendly_name: Energia
+
+packages:
+  home: !include .pkg.home.yaml
+  wifi: !include .pkg.wifi.yaml
+  board: !include .pkg.esp8266.yaml
 
 esphome:
-  name: eh-energia
   on_boot:
     then:
       - delay: 2s
@@ -15,25 +22,8 @@ esphome:
           id: led_strip
           effect: "Voltage"
 
-esp8266:
-  board: esp12e
-  restore_from_flash: true
-
-packages:
-  wifi: !include ../package.wifi.yaml
-
-captive_portal:
-
-ota:
-
-api:
-
 logger:
   baud_rate: 0
-  level: DEBUG
-
-substitutions:
-  device_name: Energia
 
 uart:
   baud_rate: 9600
@@ -46,14 +36,14 @@ sensor:
     id: pzem1
     address: 0x01
     current:
-      name: ${device_name} L1 Corriente
+      name: ${friendly_name} L1 Corriente
     voltage:
       id: l1_volt
-      name: ${device_name} L1 Voltage
+      name: ${friendly_name} L1 Voltage
     frequency:
-      name: ${device_name} L1 Frecuencia
+      name: ${friendly_name} L1 Frecuencia
     energy:
-      name: ${device_name} L1 Energía
+      name: ${friendly_name} L1 Energía
       filters:
         - lambda: |-
             if (x < 40000000.0)
@@ -62,23 +52,23 @@ sensor:
               return {};
 
     power:
-      name: "${device_name} L1 Potencia"
+      name: "${friendly_name} L1 Potencia"
     power_factor:
-      name: ${device_name} L1 Factor de potencia
+      name: ${friendly_name} L1 Factor de potencia
     update_interval: never
 
   - platform: pzemac
     id: pzem2
     address: 2
     current:
-      name: ${device_name} L2 Corriente
+      name: ${friendly_name} L2 Corriente
     voltage:
       id: l2_volt
-      name: ${device_name} L2 Voltage
+      name: ${friendly_name} L2 Voltage
     frequency:
-      name: ${device_name} L2 Frecuencia
+      name: ${friendly_name} L2 Frecuencia
     energy:
-      name: ${device_name} L2 Energía
+      name: ${friendly_name} L2 Energía
       filters:
         - lambda: |-
             if (x < 40000000.0)
@@ -87,22 +77,22 @@ sensor:
               return {};
 
     power:
-      name: "${device_name} L2 Potencia"
+      name: "${friendly_name} L2 Potencia"
     power_factor:
-      name: ${device_name} L2 Factor de potencia
+      name: ${friendly_name} L2 Factor de potencia
     update_interval: never
   - platform: pzemac
     id: pzem3
     address: 3
     current:
-      name: ${device_name} L3 Corriente
+      name: ${friendly_name} L3 Corriente
     voltage:
       id: l3_volt
-      name: ${device_name} L3 Voltage
+      name: ${friendly_name} L3 Voltage
     frequency:
-      name: ${device_name} L3 Frecuencia
+      name: ${friendly_name} L3 Frecuencia
     energy:
-      name: ${device_name} L3 Energía
+      name: ${friendly_name} L3 Energía
       filters:
         - lambda: |-
             if (x < 40000000.0)
@@ -111,13 +101,10 @@ sensor:
               return {};
 
     power:
-      name: "${device_name} L3 Potencia"
+      name: "${friendly_name} L3 Potencia"
     power_factor:
-      name: ${device_name} L3 Factor de potencia
+      name: ${friendly_name} L3 Factor de potencia
     update_interval: never
-
-  - platform: uptime
-    name: Energia Uptime
 
 light:
   - platform: neopixelbus
@@ -133,12 +120,12 @@ light:
           lambda: |-
             struct EnergyLEDCallbacks {
               static auto voltage_color(float voltage) {
-                if (voltage < 20)
-                  return Color(0, 0, 0); // Off: line down
-                if (voltage < 220)
-                  return Color(220, 0, 0); // Red: low
+                if (voltage < 160)
+                  return Color(255, 0, 0); // Red: line down
+                if (voltage < 200)
+                  return Color(204, 102, 0); // Orange: low
                 if (voltage < 240)
-                  return Color(0, 170, 0); // Green: about right 215-240 VAC
+                  return Color(0, 140, 0); // Green: about right 200-240 VAC
                 return Color(170, 170, 0); // Yellow: over voltage
               }
             };
@@ -155,8 +142,6 @@ light:
             it[2] = Color::random_color();
 
 button:
-  - platform: restart
-    name: Energia Restart
   - platform: template
     name: Reset PZEM
     on_press:
@@ -190,5 +175,3 @@ interval:
             - pzemac.reset_energy: pzem2
             - delay: 300ms
             - pzemac.reset_energy: pzem3
-
-web_server:

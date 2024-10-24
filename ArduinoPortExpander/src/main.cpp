@@ -1,11 +1,11 @@
 /*
 Ports:
-	0 0 .. 13 13
-	A0: 14, A1: 15, A2: 16, A3: 17: A4: 18: A5: 19: A6: 20, A7: 21
-	port bits: 5 ... 0..32
-	0:   0: 00000
-	1:	 1:	00001
-	A7: 21: 10101
+  0 0 .. 13 13
+  A0: 14, A1: 15, A2: 16, A3: 17: A4: 18: A5: 19: A6: 20, A7: 21
+  port bits: 5 ... 0..32
+  0:   0: 00000
+  1:	 1:	00001
+  A7: 21: 10101
 
 
 */
@@ -40,8 +40,8 @@ void setup()
 
 void loop()
 {
-  //int temp = analogRead(A1);
-  //Serial.println(temp);
+  // int temp = analogRead(A1);
+  // Serial.println(temp);
 }
 
 volatile byte buffer[3];
@@ -79,8 +79,8 @@ void readDigital()
   DIGITAL_READ(2, A3, 2);
 
 // I2C
-//DIGITAL_READ(2, A4, 4);
-//DIGITAL_READ(2, A5, 8);
+// DIGITAL_READ(2, A4, 4);
+// DIGITAL_READ(2, A5, 8);
 
 // DIGITAL READ not supports on A3 .. A7
 #ifdef DEBUG_READ

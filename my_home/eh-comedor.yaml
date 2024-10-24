@@ -1,124 +1,133 @@
-esphome:
-  name: eh-comedor
-  platform: ESP8266
-  board: nodemcu
-  # Use a local copy of ESPHome
-  includes:
-    - arduino_port_expander.h
+substitutions:
+  device_name: eh-comedor
+  friendly_name: Comedor
 
-wifi:
-  ssid: !secret wifi_ssid
-  password: !secret wifi_pass
-
-api:
-
-ota:
-
-i2c:
-  id: i2ccomponent
-
-logger:
-  level: DEBUG
-
-custom_component:
-  - id: ape
-    lambda: |-
-      auto ape_component = new ArduinoPortExpander(i2ccomponent, 0x08);
-      return {ape_component};
-
-output:
-  - platform: custom
-    type: binary
-    lambda: |-
-      return {ape_binary_output(ape, 7),
-              ape_binary_output(ape, 6),
-              ape_binary_output(ape, 5),
-              ape_binary_output(ape, 4)};
-    outputs:
-      - id: gpio_relay_1
-        inverted: true
-      - id: gpio_relay_2
-        inverted: true
-      - id: gpio_relay_3
-        inverted: true
-      - id: gpio_relay_4
-        inverted: true
+packages:
+  home: !include .pkg.home.yaml
+  wifi: !include .pkg.wifi.yaml
+  board: !include .pkg.esp8266.yaml
+  ape: !include .pkg.ape.yaml
 
 light:
   - platform: binary
     id: spot_puerta
     name: "Spot Puerta"
-    output: gpio_relay_1
+    output: ape_relay_1
+    restore_mode: RESTORE_DEFAULT_OFF
   - platform: binary
     id: spots_living
     name: "Spots Living"
-    output: gpio_relay_2
+    output: ape_relay_2
+    restore_mode: RESTORE_DEFAULT_OFF
   - platform: binary
     id: comedor
     name: "Luz Comedor"
-    output: gpio_relay_3
+    output: ape_relay_3
+    restore_mode: RESTORE_DEFAULT_OFF
   - platform: binary
     id: garage
     name: "Garage"
-    output: gpio_relay_4
+    output: ape_relay_4
 
 binary_sensor:
-  - platform: status
-    name: "Comedor Status"
-  - platform: custom
-    lambda: |-
-      return {ape_binary_sensor(ape, 3),
-              ape_binary_sensor(ape, 2),
-              ape_binary_sensor(ape, 8),
-              ape_binary_sensor(ape, 9),
-              ape_binary_sensor(ape, 10),
-              ape_binary_sensor(ape, 11),
-              ape_binary_sensor(ape, 14),
-              ape_binary_sensor(ape, 15)
-              };
-    binary_sensors:
-      - name: "Switch Comedor Puerta 1"
-        filters:
-          delayed_on_off: 100ms
-        internal: true
-        on_state:
-          then:
-            - light.toggle: comedor
-      - name: "Switch Comedor Puerta 2"
-        filters:
-          delayed_on_off: 100ms
-        internal: true
-        on_state:
-          then:
-            - switch.toggle: spots
-      - name: "Switch Comedor Puerta 3"
-        filters:
-          delayed_on_off: 100ms
-        internal: true
-        on_state:
-          then:
-            - light.toggle: garage
-      - name: "Switch Garage 1"
-        filters:
-          delayed_on_off: 100ms
-        internal: true
-        on_state:
-          then:
-            - light.toggle: garage
-      - name: "Switch Garage 2"
-        filters:
-          delayed_on_off: 100ms
-      - name: "Switch Garage 3"
-        filters:
-          delayed_on_off: 100ms
-      - name: "Ventana Comedor Oeste"
-        filters:
-          delayed_on_off: 100ms
-        device_class: window
-      - name: "Movimiento Comedor"
-        filters:
-          delayed_on_off: 100ms
-        device_class: motion
+  - platform: gpio
+    pin:
+      arduino_port_expander: ape
+      number: 3 
+      mode:
+        input: true
+        pullup: true
+    name: "Switch Comedor Puerta 1"
+    filters:
+      delayed_on_off: 100ms
+    internal: true
+    on_state:
+      then:
+        - light.toggle: comedor
+  - platform: gpio
+    pin:
+      arduino_port_expander: ape
+      number: 2  
+      mode:
+        input: true
+        pullup: true
+    name: "Switch Comedor Puerta 2"
+    filters:
+      delayed_on_off: 100ms
+    internal: true
+    on_state:
+      then:
+        - switch.toggle: spots
+  - platform: gpio
+    pin:
+      arduino_port_expander: ape
+      number: 8
+      mode:
+        input: true
+        pullup: true
+    name: "Switch Comedor Puerta 3"
+    filters:
+      delayed_on_off: 100ms
+    internal: true
+    on_state:
+      then:
+        - light.toggle: garage
+  - platform: gpio
+    pin:
+      arduino_port_expander: ape
+      number: 9
+      mode:
+        input: true
+        pullup: true
+    name: "Switch Garage 1"
+    filters:
+      delayed_on_off: 100ms
+    internal: true
+    on_state:
+      then:
+        - light.toggle: garage
+  - platform: gpio
+    pin:
+      arduino_port_expander: ape
+      number: 10
+      mode:
+        input: true
+        pullup: true
+    name: "Switch Garage 2"
+    filters:
+      delayed_on_off: 100ms
+  - platform: gpio
+    pin:
+      arduino_port_expander: ape
+      number: 11
+      mode:
+        input: true
+        pullup: true
+    name: "Switch Garage 3"
+    filters:
+      delayed_on_off: 100ms
+  - platform: gpio
+    pin:
+      arduino_port_expander: ape
+      number: 14
+      mode:
+        input: true
+        pullup: true
+    name: "Ventana Comedor Oeste"
+    filters:
+      delayed_on_off: 100ms
+    device_class: window
+  - platform: gpio
+    pin:
+      arduino_port_expander: ape
+      number: 15
+      mode:
+        input: true
+        pullup: true
+    name: "Movimiento Comedor"
+    filters:
+      delayed_on_off: 100ms
+    device_class: motion
 
 switch:
   - platform: template
@@ -131,10 +140,6 @@ switch:
     turn_off_action:
       - light.turn_off: spots_living
       - light.turn_off: spot_puerta
-
-button:
-  - platform: restart
-    name: "Comedor Restart"
 # ESP                     Female Header
 #                           11  12        PS
 # 0 RX   Arduino            13  14        PS

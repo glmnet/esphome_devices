@@ -1,48 +1,36 @@
-esphome:
-  name: eh_magic_home_3
-  platform: ESP8266
+packages: 
+  home: !include .pkg.home.yaml
+  wifi: !include .pkg.wifi.yaml
+
+esp8266:
   board: esp8285
-  libraries:
-    - FastLED
-  includes:
-    - light_effects.h
-
-substitutions:
-  light_id: magic_home_light_3
-  light_name: MH Light 3
-
-wifi:
-  ssid: !secret wifi_ssid
-  password: !secret wifi_pass
-
-# Enable logging
+  restore_from_flash: true
+  
+# Disable UART logging
 logger:
   baud_rate: 0
 
-# Enable Home Assistant API
-api:
-ota:
-
 light:
   - platform: rgb
-    id: ${light_id}
-    name: ${light_name}
+    id: light_1
+    name: $friendly_name
     red: pwm_r
     green: pwm_g
     blue: pwm_b
+    restore_mode: RESTORE_DEFAULT_OFF 
 
     effects:
-      - lambda:
-          name: RedGreenColorWheel
-          update_interval: 15ms
-          lambda: color_wheel(id(${light_id}));
+      # - lambda:
+      #     name: RedGreenColorWheel
+      #     update_interval: 15ms
+      #     lambda: color_wheel(id(light_1));
 
       - lambda:
           name: RedGreenFade
           update_interval: 4s
           lambda: |-
             static int state = 0;
-            auto call = id(${light_id}).turn_on();
+            auto call = id(light_1).turn_on();
             // Transtion of 1000ms = 1s
             call.set_transition_length(4000);
             if (state == 0) {
