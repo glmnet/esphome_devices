@@ -1,6 +1,0 @@
-substitutions:
-  device_name: eh-ledvance-d5
-  friendly_name: Ledvance-d5
-
-packages:
-  board: !include .pkg.ledvance-d.yaml

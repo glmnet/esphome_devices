@@ -1,6 +1,0 @@
-substitutions:
-  device_name: eh-planta-alta-rgb
-  friendly_name: Planta Alta RGB
-
-packages:
-  h801: !include .pkg.h801.yaml

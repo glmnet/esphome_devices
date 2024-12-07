@@ -1,6 +1,0 @@
-substitutions:
-  device_name: eh-pa-antebanio-rgb
-  friendly_name: Planta Alta Antebanio RGB
-
-packages:
-  h801: !include .pkg.h801.yaml

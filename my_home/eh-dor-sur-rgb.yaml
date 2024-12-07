@@ -1,6 +1,0 @@
-substitutions:
-  device_name: eh-dor-sur-rgb
-  friendly_name: Dormitorio Sur RGB
-
-packages:
-  magic_home: !include .pkg.magic_home.yaml

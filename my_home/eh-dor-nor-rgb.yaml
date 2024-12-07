@@ -1,6 +1,0 @@
-substitutions:
-  device_name: eh-dor-nor-rgb
-  friendly_name: Dormitorio Norte RGB
-
-packages:
-  magic_home: !include .pkg.magic_home.yaml

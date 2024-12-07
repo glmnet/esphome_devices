@@ -1,4 +1,0 @@
-substitutions:
-  cam_number: "4"
-
-<<: !include .camera_base.yaml
