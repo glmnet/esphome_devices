@@ -9,7 +9,7 @@ packages:
   dht22: !include
     file: .pkg.dht22.yaml
     vars:
-      name: Dormitorio Norte
+      name: Dormitorio Sur
       pin: GPIO4
   # rgb_receiver: !include
   #   file: .pkg.rgb_receiver.yaml

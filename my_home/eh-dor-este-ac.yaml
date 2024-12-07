@@ -9,7 +9,7 @@ packages:
   bmp280: !include
     file: .pkg.bmp280.yaml
     vars:
-      name: Dormitorio Norte
+      name: Dormitorio Este
   ir_ac_hack: !include
     file: .pkg.ir_ac_hack.yaml
     vars:

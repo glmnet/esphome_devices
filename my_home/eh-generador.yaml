@@ -3,10 +3,43 @@ substitutions:
   device_name: eh-generador
   friendly_name: Generador
 
+# PINOUT
+# GPIO0 relay 2 - ignition ground
+# GPIO1 Spare (Program / Ddebug Tx pin)
+# GPIO2 relay 3 - starter coil
+# GPIO3 Spare (Program / Ddebug Rx pin)
+# GPIO4 relay 1 - carburator fuel valve
+# GPIO5 Spare
+# GPIO10 pm-uart tx
+# GPIO12 Spare
+# GPIO13 Spare
+# GPIO14 pm-uart rx
+# GPIO15 relay4 - battery save
+# GPIO16 sim800 uart rx
+# GPIO17 sim800 uart tx
+# GPIO18 Spare
+# GPIO19 Spare
+# GPIO21 Spare
+# GPIO22 dallas
+# GPIO23 choke valve servo
+# GPIO25 Spare
+# GPIO26 Spare
+# GPIO27 Spare
+# GPIO32 Spare
+# GPIO33 Spare
+# GPIO34 RPM sensor
+# GPIO35 start switch (not really used)
+# GPIO36 batt vdc meter
+# GPIO39 line vdc meter
+
+
+
+
+
 packages:
   board: !include .pkg.esp32.arduino.yaml
   home: !include .pkg.home.yaml
-  wifi: !include .pkg.wifi.yaml
+  wifi: !include .pkg.wifi.yaml  
 
 esphome:
   on_boot:
@@ -27,13 +60,13 @@ esphome:
               format: "%d v_batt: %.3f"
               args: [id(log_counter), id(v_batt).state]
 
+
 logger:
   level: DEBUG
   logs:
     pulse_counter: INFO
     sensor: INFO
     adc: INFO
-    sim800l: DEBUG
 
 globals:
   - id: log_counter
@@ -216,7 +249,7 @@ output:
 
   - platform: gpio
     id: battery_saver
-    pin:
+    pin: 
       number: GPIO15 # relay 4
       ignore_strapping_warning: true
     inverted: true
@@ -244,7 +277,7 @@ sensor:
     unit_of_measurement: s
     time_unit: s
     restore: True
-    sensor: generador_accum_encendido
+    sensor: generador_accum_encendido  
 
   - platform: dallas
     index: 0
@@ -305,27 +338,27 @@ sensor:
     address: 0xF8
     voltage:
       name: Generador voltage
-      filters:
+      filters: 
         - lambda: "if (x > 2000000) return {}; return x;"
     current:
       name: Generador corriente
-      filters:
+      filters: 
         - lambda: "if (x > 2000000) return {}; return x;"
     energy:
       name: Generador energia
-      filters:
+      filters: 
         - lambda: "if (x > 2000000) return {}; return x;"
     power:
       name: Generador potencia
-      filters:
+      filters: 
         - lambda: "if (x > 2000000) return {}; return x;"
     frequency:
       name: Generador frecuencia
-      filters:
+      filters: 
         - lambda: "if (x > 2000000) return {}; return x;"
     power_factor:
       name: Generador factor potencia
-      filters:
+      filters: 
         - lambda: "if (x > 2000000) return {}; return x;"
     update_interval: never
 

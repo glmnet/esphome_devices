@@ -1,0 +1,6 @@
+substitutions: 
+  device_name: eh-ledvance-d6
+  friendly_name: Ledvance-d6
+
+packages:
+  board: !include .pkg.ledvance-d.yaml

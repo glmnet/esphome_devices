@@ -1,0 +1,53 @@
+---
+
+packages:
+  home: !include .pkg.home.yaml
+  wifi: !include .pkg.wifi.yaml
+
+  
+bk72xx:
+  board: generic-bk7231n-qfn32-tuya
+
+debug:
+  update_interval: 30s
+  
+text_sensor:
+  - platform: debug
+    reset_reason:
+      name: ${friendly_name} reset reason
+
+bp1658cj:
+  clock_pin: PWM5
+  data_pin: PWM4
+  max_power_color_channels: 2
+  max_power_white_channels: 1
+
+output:
+  - platform: bp1658cj
+    id: output_red
+    channel: 1
+  - platform: bp1658cj
+    id: output_green
+    channel: 2
+  - platform: bp1658cj
+    id: output_blue
+    channel: 0
+  - platform: bp1658cj
+    id: output_cold
+    channel: 4
+  - platform: bp1658cj
+    id: output_warm
+    channel: 3
+
+light:
+  - platform: rgbww
+    id: light_rgbww
+    name: Luz ${friendly_name}
+    color_interlock: true
+    cold_white_color_temperature: 6500 K
+    warm_white_color_temperature: 2700 K
+    red: output_red
+    green: output_green
+    blue: output_blue
+    cold_white: output_cold
+    warm_white: output_warm

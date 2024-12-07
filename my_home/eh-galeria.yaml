@@ -472,13 +472,14 @@ script:
   #         then:
   #           logger.log: "hello"
 
-dallas:
+one_wire:
+  platform: gpio 
   pin: GPIO14
-  update_interval: 600s
 
 sensor:
-  - platform: dallas
+  - platform: dallas_temp
     address: 0x2771C02712646128
+    update_interval: 600s
     name: Temperatura Patio
     filters:
       - filter_out: 85.0

@@ -2,7 +2,7 @@ esphome:
   name: "${device_name}"
   platformio_options:
     upload_speed: 921600
-
+    
 api:
 
 binary_sensor:
@@ -10,8 +10,8 @@ binary_sensor:
     name: "${friendly_name} Status"
 
 ota:
-  - platform: esphome
-
+  platform: esphome
+  
 sensor:
   - platform: uptime
     name: ${friendly_name} uptime
@@ -23,6 +23,9 @@ button:
 logger:
 
 web_server:
+  port: 80
+  version: 3
+  js_url: https://oi.esphome.io/v3/www.js
   auth:
     username: glm
-    password: dontdamage
+    password: !secrets web_server_pass

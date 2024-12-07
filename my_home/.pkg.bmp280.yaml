@@ -2,7 +2,7 @@ i2c:
   id: i2c_component
 
 sensor:
-  - platform: bmp280
+  - platform: bmp280_i2c
     address: 0x76
     update_interval: 60s
     temperature:

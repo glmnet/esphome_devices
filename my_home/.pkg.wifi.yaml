@@ -1,9 +1,10 @@
 wifi:
   ssid: !secret wifi_ssid
-  password: !secret wifi_pass
+  password: !secret wifi_password
+  fast_connect: True
   ap:
     ssid: esp-${device_name}
-    password: !secret wifi_pass
+    password: !secret wifi_password
 
 sensor:
   - platform: wifi_signal

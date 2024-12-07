@@ -10,15 +10,15 @@ packages:
 
 light:
   - platform: binary
-    id: techo
+    id: luz_techo
     name: "${friendly_name} luz techo"
     output: ape_relay_1
   - platform: binary
-    id: cama_pared
+    id: luz_spot_pared
     name: "${friendly_name} luz cama pared"
     output: ape_relay_2
   - platform: binary
-    id: cama_ventana
+    id: luz_spot_ventana
     name: "${friendly_name} luz cama ventana"
     output: ape_relay_3
 
@@ -29,7 +29,16 @@ switch:
     name: "${friendly_name} tomas electricos"
     restore_mode: ALWAYS_ON
 
+sensor:
+  - platform: homeassistant
+    entity_id: light.dormitorio_norte_rgb
+    id: colors_led_brightness
+    attribute: brightness
+
 binary_sensor:
+  - platform: homeassistant
+    id: colors_led_feedback
+    entity_id: light.dormitorio_norte_rgb
   - platform: gpio
     pin:
       arduino_port_expander: ape
@@ -42,7 +51,7 @@ binary_sensor:
       delayed_on_off: 100ms
     on_state:
       then:
-        - light.toggle: techo
+        - light.toggle: luz_techo
   - platform: gpio
     pin:
       arduino_port_expander: ape
@@ -58,14 +67,14 @@ binary_sensor:
         if:
           condition:
             or:
-              - light.is_on: cama_ventana
-              - light.is_on: cama_pared
+              - light.is_on: luz_spot_ventana
+              - light.is_on: luz_spot_pared
           then:
-            - light.turn_off: cama_ventana
-            - light.turn_off: cama_pared
+            - light.turn_off: luz_spot_ventana
+            - light.turn_off: luz_spot_pared
           else:
-            - light.turn_on: cama_ventana
-            - light.turn_on: cama_pared
+            - light.turn_on: luz_spot_ventana
+            - light.turn_on: luz_spot_pared
   - platform: gpio
     pin:
       arduino_port_expander: ape
@@ -79,7 +88,7 @@ binary_sensor:
   - platform: gpio
     pin:
       arduino_port_expander: ape
-      number: 11
+      number: 14
       mode:
         input: true
         pullup: true
@@ -88,11 +97,37 @@ binary_sensor:
       delayed_on_off: 100ms
     on_state:
       then:
-        - light.toggle: cama_pared
+        - if:
+            condition:
+              binary_sensor.is_off: colors_led_feedback
+            then:
+              script.execute: color_leds_lights_low
+            else:
+              if:
+                condition:
+                  sensor.in_range:
+                    id: colors_led_brightness
+                    below: 100
+                then:
+                  script.execute: color_leds_lights_high
+                else:
+                  if:
+                    condition:
+                      light.is_off: luz_spot_pared
+                    then:
+                      light.turn_on: luz_spot_pared
+                    else:
+                      if:
+                        condition:
+                          light.is_off: luz_techo
+                        then:
+                          light.turn_on: luz_techo
+                        else:
+                          light.turn_on: luz_spot_ventana
   - platform: gpio
     pin:
       arduino_port_expander: ape
-      number: 12
+      number: 15
       mode:
         input: true
         pullup: true
@@ -101,11 +136,37 @@ binary_sensor:
       delayed_on_off: 100ms
     on_state:
       then:
-        - light.toggle: techo
+        - if:
+            condition:
+              light.is_on: luz_techo
+            then:
+              light.turn_off: luz_techo
+            else:
+              if:
+                condition:
+                  light.is_on: luz_spot_pared
+                then:
+                  light.turn_off: luz_spot_pared
+                else:
+                  if:
+                    condition:
+                      binary_sensor.is_on: colors_led_feedback
+                    then:
+                      if:
+                        condition:
+                          sensor.in_range:
+                            id: colors_led_brightness
+                            above: 100
+                        then:
+                          script.execute: color_leds_lights_low
+                        else:
+                          script.execute: color_leds_lights_off
+                    else:
+                      light.turn_off: luz_spot_ventana
   - platform: gpio
     pin:
       arduino_port_expander: ape
-      number: 14
+      number: 11
       mode:
         input: true
         pullup: true
@@ -114,11 +175,37 @@ binary_sensor:
       delayed_on_off: 100ms
     on_state:
       then:
-        - light.toggle: cama_ventana
+        - if:
+            condition:
+              binary_sensor.is_off: colors_led_feedback
+            then:
+              script.execute: color_leds_lights_low
+            else:
+              if:
+                condition:
+                  sensor.in_range:
+                    id: colors_led_brightness
+                    below: 100
+                then:
+                  script.execute: color_leds_lights_high
+                else:
+                  if:
+                    condition:
+                      light.is_off: luz_spot_ventana
+                    then:
+                      light.turn_on: luz_spot_ventana
+                    else:
+                      if:
+                        condition:
+                          light.is_off: luz_techo
+                        then:
+                          light.turn_on: luz_techo
+                        else:
+                          light.turn_on: luz_spot_pared
   - platform: gpio
     pin:
       arduino_port_expander: ape
-      number: 15
+      number: 12
       mode:
         input: true
         pullup: true
@@ -127,7 +214,33 @@ binary_sensor:
       delayed_on_off: 100ms
     on_state:
       then:
-        - light.toggle: techo
+        - if:
+            condition:
+              light.is_on: luz_techo
+            then:
+              light.turn_off: luz_techo
+            else:
+              if:
+                condition:
+                  light.is_on: luz_spot_ventana
+                then:
+                  light.turn_off: luz_spot_ventana
+                else:
+                  if:
+                    condition:
+                      binary_sensor.is_on: colors_led_feedback
+                    then:
+                      if:
+                        condition:
+                          sensor.in_range:
+                            id: colors_led_brightness
+                            above: 100
+                        then:
+                          script.execute: color_leds_lights_low
+                        else:
+                          script.execute: color_leds_lights_off
+                    else:
+                      light.turn_off: luz_spot_pared
   - platform: gpio
     pin:
       arduino_port_expander: ape
@@ -179,3 +292,26 @@ remote_transmitter:
 # 17 APE 12                        switch cama pared 2
 # 18
 
+script:
+  - id: color_leds_lights_low
+    then:
+      homeassistant.service:
+        service: light.turn_on
+        data:
+          entity_id: light.dormitorio_norte_rgb
+          brightness: "80"
+
+  - id: color_leds_lights_high
+    then:
+      homeassistant.service:
+        service: light.turn_on
+        data:
+          entity_id: light.dormitorio_norte_rgb
+          brightness: "200"
+
+  - id: color_leds_lights_off
+    then:
+      homeassistant.service:
+        service: light.turn_off
+        data:
+          entity_id: light.dormitorio_norte_rgb

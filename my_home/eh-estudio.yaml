@@ -217,7 +217,7 @@ script:
       - logger.log: Stopping fan in 10 minutes
       - delay: 10 min
       - fan.turn_off: extractor_banio
-
+      
 ###
 # module info:
 # Male Header:

@@ -155,12 +155,12 @@ globals:
     type: boolean
 
 interval:
-  - interval: 6s
+  - interval: 3s
     then:
       - component.update: pzem1
-      - delay: 2s
+      - delay: 1s
       - component.update: pzem2
-      - delay: 2s
+      - delay: 1s
       - component.update: pzem3
       - if:
           condition:

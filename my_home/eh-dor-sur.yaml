@@ -10,15 +10,15 @@ packages:
 
 light:
   - platform: binary
-    id: luz_dormitorio_sur
+    id: luz_techo
     name: "Dormitorio Sur"
     output: ape_relay_1
   - platform: binary
-    id: luz_dormitorio_sur_cama_pared
+    id: luz_spot_pared
     name: "Dormitorio Sur Cama Pared"
     output: ape_relay_2
   - platform: binary
-    id: luz_dormitorio_sur_cama_ventana
+    id: luz_spot_ventana
     name: "Dormitorio Sur Cama Ventana"
     output: ape_relay_3
 
@@ -43,7 +43,7 @@ binary_sensor:
     internal: true
     on_state:
       then:
-        - light.toggle: luz_dormitorio_sur
+        - light.toggle: luz_techo
   - platform: gpio
     pin:
       arduino_port_expander: ape
@@ -58,14 +58,14 @@ binary_sensor:
         if:
           condition:
             or:
-              - light.is_on: luz_dormitorio_sur_cama_ventana
-              - light.is_on: luz_dormitorio_sur_cama_pared
+              - light.is_on: luz_spot_ventana
+              - light.is_on: luz_spot_pared
           then:
-            - light.turn_off: luz_dormitorio_sur_cama_ventana
-            - light.turn_off: luz_dormitorio_sur_cama_pared
+            - light.turn_off: luz_spot_ventana
+            - light.turn_off: luz_spot_pared
           else:
-            - light.turn_on: luz_dormitorio_sur_cama_ventana
-            - light.turn_on: luz_dormitorio_sur_cama_pared
+            - light.turn_on: luz_spot_ventana
+            - light.turn_on: luz_spot_pared
   - platform: gpio
     pin:
       arduino_port_expander: ape
@@ -73,7 +73,7 @@ binary_sensor:
       mode:
         input: true
         pullup: true
-    name: "Switch puerta sur"
+    name: "${friendly_name} switch puerta 3"
   - platform: gpio
     pin:
       arduino_port_expander: ape
@@ -101,17 +101,17 @@ binary_sensor:
                 else:
                   if:
                     condition:
-                      light.is_off: luz_dormitorio_sur_cama_pared
+                      light.is_off: luz_spot_pared
                     then:
-                      light.turn_on: luz_dormitorio_sur_cama_pared
+                      light.turn_on: luz_spot_pared
                     else:
                       if:
                         condition:
-                          light.is_off: luz_dormitorio_sur
+                          light.is_off: luz_techo
                         then:
-                          light.turn_on: luz_dormitorio_sur
+                          light.turn_on: luz_techo
                         else:
-                          light.turn_on: luz_dormitorio_sur_cama_ventana
+                          light.turn_on: luz_spot_ventana
 
   - platform: gpio
     pin:
@@ -126,15 +126,15 @@ binary_sensor:
       then:
         - if:
             condition:
-              light.is_on: luz_dormitorio_sur
+              light.is_on: luz_techo
             then:
-              light.turn_off: luz_dormitorio_sur
+              light.turn_off: luz_techo
             else:
               if:
                 condition:
-                  light.is_on: luz_dormitorio_sur_cama_pared
+                  light.is_on: luz_spot_pared
                 then:
-                  light.turn_off: luz_dormitorio_sur_cama_pared
+                  light.turn_off: luz_spot_pared
                 else:
                   if:
                     condition:
@@ -150,7 +150,7 @@ binary_sensor:
                         else:
                           script.execute: color_leds_lights_off
                     else:
-                      light.turn_off: luz_dormitorio_sur_cama_ventana
+                      light.turn_off: luz_spot_ventana
   - platform: gpio
     pin:
       arduino_port_expander: ape
@@ -178,17 +178,17 @@ binary_sensor:
                 else:
                   if:
                     condition:
-                      light.is_off: luz_dormitorio_sur_cama_ventana
+                      light.is_off: luz_spot_ventana
                     then:
-                      light.turn_on: luz_dormitorio_sur_cama_ventana
+                      light.turn_on: luz_spot_ventana
                     else:
                       if:
                         condition:
-                          light.is_off: luz_dormitorio_sur
+                          light.is_off: luz_techo
                         then:
-                          light.turn_on: luz_dormitorio_sur
+                          light.turn_on: luz_techo
                         else:
-                          light.turn_on: luz_dormitorio_sur_cama_pared
+                          light.turn_on: luz_spot_pared
 
   - platform: gpio
     pin:
@@ -203,15 +203,15 @@ binary_sensor:
       then:
         - if:
             condition:
-              light.is_on: luz_dormitorio_sur
+              light.is_on: luz_techo
             then:
-              light.turn_off: luz_dormitorio_sur
+              light.turn_off: luz_techo
             else:
               if:
                 condition:
-                  light.is_on: luz_dormitorio_sur_cama_ventana
+                  light.is_on: luz_spot_ventana
                 then:
-                  light.turn_off: luz_dormitorio_sur_cama_ventana
+                  light.turn_off: luz_spot_ventana
                 else:
                   if:
                     condition:
@@ -227,7 +227,7 @@ binary_sensor:
                         else:
                           script.execute: color_leds_lights_off
                     else:
-                      light.turn_off: luz_dormitorio_sur_cama_pared
+                      light.turn_off: luz_spot_pared
 
   - platform: gpio
     pin:

@@ -18,6 +18,7 @@ logger:
 api:
 
 ota:
+  platform: esphome
 
 esp32_camera:
   external_clock:

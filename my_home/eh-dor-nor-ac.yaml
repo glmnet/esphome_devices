@@ -14,12 +14,13 @@ packages:
     file: .pkg.ir_ac_hack.yaml
     vars:
       pin_number: GPIO14
-  rgb_receiver: !include
-    file: .pkg.rgb_receiver.yaml
-    vars:
-      rgb_receiver_light_entity: light.dormitorio_norte_rgb
+  # rgb_receiver: !include
+  #   file: .pkg.rgb_receiver.yaml
+  #   vars:
+  #     rgb_receiver_light_entity: light.dormitorio_norte_rgb
 
 logger:
+  
 
 remote_transmitter:
   - id: ir_LED
@@ -51,5 +52,3 @@ switch:
           transmitter_id: ir_LED
           address: 0xbf00 # fd00 -> 00bf
           command: 0xfC03 # 3fc0 -> 03fc
-
-debug:

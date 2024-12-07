@@ -101,8 +101,9 @@ binary_sensor:
         input: True
 
 sensor:
-  - platform: dallas
+  - platform: dallas_temp
     name: Temperatura termotanque quincho
+    id: termotanque_temp
     address: 0x5221e03f12646128
     filters:
       - filter_out: 85.0
@@ -190,10 +191,9 @@ switch:
 
 light:
   - platform: binary
-    #name: Luz Quincho Cartel
+    name: Luz Quincho Cartel
     id: _temp
     output: relay2
-    restore_mode: ALWAYS_ON # because now it is actually giving power to other device
   - platform: binary
     name: Luz Cocina quincho
     output: relay3
@@ -219,7 +219,7 @@ light:
             }
             call.perform();
 
-dallas:
+one_wire:
   pin: GPIO33
 
 interval:
@@ -250,3 +250,31 @@ interval:
                 if (new_level < 70.0 && !id(flotador_vacio).state)
                   new_level = 70;
                 id(tank_liters) = new_level;
+
+climate:
+  - platform: thermostat
+    name: Termotanque quincho
+    sensor: termotanque_temp
+    min_heating_off_time: 60s
+    min_heating_run_time: 60s
+    min_idle_time: 30s
+    heat_action:
+      - switch.turn_on: switchBoiler
+    idle_action:
+      - switch.turn_off: switchBoiler
+    heat_deadband: 1
+    heat_overrun: 1
+    visual:
+      max_temperature: 60
+      min_temperature: 10
+      temperature_step: 1
+    icon: mdi:water-boiler
+    on_boot_restore_from: MEMORY
+    preset:
+      - name: Normal
+        default_target_temperature_low: 45
+        mode: HEAT
+      - name: Eco
+        default_target_temperature_low: 30
+        mode: HEAT
+

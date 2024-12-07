@@ -1,6 +1,6 @@
 sensor:
   - platform: dht
-    model: DHT22
+    model: AUTO_DETECT
     pin: ${pin}
     temperature:
       id: dht_temperature

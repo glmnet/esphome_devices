@@ -1,0 +1,31 @@
+# JST PIN 1: Looking at the socket horizontally on the PCB, when the notches where latches are inseterd (cutoffs) are at the top, the pin one is at the left.
+#            This is also red wire on lipo batteries balancer
+substitutions:
+  device_name: eh-test-dimmer
+  friendly_name: Test Dimmer
+
+packages:
+  board: !include .pkg.esp32.idf.yaml
+  home: !include .pkg.home.yaml
+  wifi: !include .pkg.wifi.yaml
+
+logger:
+  level: DEBUG
+
+output:
+  - platform: ac_dimmer
+    id: dimmer1
+    gate_pin: GPIO22
+    min_power: 0.2 # 0.3 works but maybe we can go more dimmed
+    zero_cross_pin:
+      number: GPIO23
+      mode:
+        input: true
+
+light:
+  - platform: monochromatic
+    output: dimmer1
+    name: Dimmerized Light
+# dallas:
+#   pin: GPIO32
+#   update_interval: 5s

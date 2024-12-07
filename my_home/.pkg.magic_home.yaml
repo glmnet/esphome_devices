@@ -24,6 +24,7 @@ light:
       #     name: RedGreenColorWheel
       #     update_interval: 15ms
       #     lambda: color_wheel(id(light_1));
+      - random:
 
       - lambda:
           name: RedGreenFade
