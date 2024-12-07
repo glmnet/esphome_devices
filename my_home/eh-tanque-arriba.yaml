@@ -56,6 +56,10 @@ binary_sensor:
     id: top_tank_full
     filters:
       - delayed_on_off: 15s
+    on_press:
+      - globals.set:
+          id: tank_liters
+          value: ${tanque_lleno_l}
   - platform: gpio
     pin:
       number: GPIO35 #3
