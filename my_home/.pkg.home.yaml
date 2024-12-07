@@ -23,7 +23,6 @@ button:
 logger:
 
 web_server:
-  js_url: https://attilafarago.hu/smarthome/esphome_web_server/www.js
   auth:
     username: glm
     password: dontdamage

@@ -1,6 +1,12 @@
 substitutions:
   device_name: eh-tanque-arriba
   friendly_name: Tanque Arriba
+  # Capacidad del tanque
+  tanque_lleno_l: "550"
+  # Litros cuando el flotador activa
+  tanque_flotador_cargando: "375"
+  # Litros cuando el flotador desactiva
+  tanque_flotador_descargando: "60"
 
 packages:
   board: !include .pkg.esp32.idf.yaml
@@ -47,11 +53,23 @@ binary_sensor:
   - platform: gpio
     pin: GPIO39 #2
     name: Tanque arriba lleno
+    id: top_tank_full
+    filters:
+      - delayed_on_off: 15s
   - platform: gpio
     pin:
       number: GPIO35 #3
       inverted: True
     name: Bomba Presurizadora Pide
+    id: water_flowing_down
+    filters:
+      delayed_on_off: 100ms
+    on_release:
+      if:
+        condition:
+          switch.is_on: pressure_pump
+        then:
+          switch.turn_off: pressure_pump
   - platform: gpio
     pin:
       number: GPIO36 #4
@@ -59,24 +77,53 @@ binary_sensor:
     name: Bomba Presurizadora Presurizado
     internal: true
 
+  - platform: homeassistant
+    id: luz_banio_pa
+    entity_id: light.luz_bano_planta_alta
+
+  - platform: homeassistant
+    # water pump used to raise water from low tank to upper
+    entity_id: switch.bomba_elevadora
+    id: bomba_tanque
+
 light:
   - platform: binary
-    name: Luz Patio 1
+    name: Luz Patio Oeste
     output: relay1
   - platform: binary
-    name: Luz Patio 2
+    name: Luz Patio Este
     output: relay2
     id: luz_patio_2
   - platform: binary
-    name: Luz Patio 3
+    name: Luz Patio Proyectores Sureste
     output: relay3
     id: luz_patio_3
 
 switch:
   - platform: output
-    name: Presurizadora
-    id: switch_presurizadora
+    name: Bomba Presurizadora
+    id: pressure_pump
     output: output_gpio15
+
+  - platform: template
+    restore_mode: ALWAYS_OFF
+    optimistic: true
+    name: Presurizadora Automatico
+    id: auto_pressure_pump_manual
+    on_turn_off:
+      - switch.turn_off: pressure_pump
+
+  - platform: template
+    name: Presurizadora con luz baño
+    optimistic: true
+    id: auto_pressure_pump_with_light
+    restore_mode: ALWAYS_ON
+
+globals:
+  - id: tank_liters
+    type: float
+    initial_value: "0.0"
+    restore_value: True
 
 sensor:
   - platform: ina219
@@ -87,3 +134,89 @@ sensor:
     max_voltage: 32.0V
     max_current: 3.2A
     update_interval: 60s
+
+  - platform: template
+    name: Nivel Tanque Arriba
+    unit_of_measurement: liters
+    lambda: return id(tank_liters);
+    update_interval: 10s
+
+interval:
+  - interval: 1s
+    then:
+      - if:
+          condition:
+            binary_sensor.is_on: top_tank_full
+          then:
+            lambda: |-
+              float new_level = id(tank_liters);
+              if (isnan(new_level))
+                id(tank_liters) = ${tanque_lleno_l};
+      - if:
+          condition:
+            binary_sensor.is_on: bomba_tanque
+          # about 500 liters of water are pumped on 22 minutes so
+          # about 0.38 liters every second are pumped into the tank
+          then:
+            - lambda: |-
+                float new_level = id(tank_liters);
+                if (isnan(new_level))
+                  new_level = id(tanque_arriba_flotador).state ? 40.0 : ${tanque_flotador_cargando};
+
+                new_level += 0.38;
+                if (new_level > ${tanque_lleno_l})
+                  new_level = ${tanque_lleno_l};
+                if (new_level > ${tanque_flotador_cargando} && id(tanque_arriba_flotador).state)
+                  new_level = ${tanque_flotador_cargando};
+                id(tank_liters) = new_level;
+      - if:
+          condition:
+            binary_sensor.is_on: water_flowing_down
+          then:
+            - lambda: |-
+                float new_level = id(tank_liters);
+                if (isnan(new_level))
+                  new_level = id(tanque_arriba_flotador).state ? 40.0 : 450.00;
+
+                if (id(pressure_pump).state)
+                  new_level -= 0.16;
+                else
+                  new_level -= 0.07;
+
+                if (new_level < 40 && !id(tanque_arriba_flotador).state)
+                  new_level = 40;
+
+                if (new_level < 0)
+                  new_level = 0;
+
+                id(tank_liters) = new_level;
+
+  - interval: 100ms
+    then:
+      - if:
+          condition:
+            for:
+              time: 15s
+              condition:
+                - not:
+                    binary_sensor.is_on: water_flowing_down
+                - switch.is_on: pressure_pump
+          then:
+            - switch.turn_off: pressure_pump
+            - logger.log:
+                level: WARN
+                format: Apagando bomba, no hay flujo de agua
+      - if:
+          condition:
+            - switch.is_off: pressure_pump
+            - or:
+                - switch.is_on: auto_pressure_pump_manual
+                - and:
+                    - switch.is_on: auto_pressure_pump_with_light
+                    - binary_sensor.is_on: luz_banio_pa
+            - for:
+                time: 5s
+                condition:
+                  - binary_sensor.is_on: water_flowing_down
+          then:
+            switch.turn_on: pressure_pump
